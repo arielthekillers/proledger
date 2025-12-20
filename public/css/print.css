@@ -1,0 +1,174 @@
+/* Print Styles for ProLedger */
+
+@media print {
+
+    /* Hide non-essential elements */
+    .header,
+    .nav,
+    .btn,
+    button,
+    .alert,
+    .no-print {
+        display: none !important;
+    }
+
+    /* Reset body */
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+
+    /* Container */
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .main {
+        padding: 0;
+    }
+
+    /* Cards */
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+        page-break-inside: avoid;
+        margin-bottom: 1rem;
+    }
+
+    .card-glass {
+        background: white !important;
+        backdrop-filter: none !important;
+    }
+
+    /* Page header */
+    .page-header {
+        background: white !important;
+        box-shadow: none !important;
+        border-bottom: 2px solid #333;
+        margin-bottom: 1rem;
+    }
+
+    .page-title {
+        background: none !important;
+        -webkit-text-fill-color: black !important;
+        color: black !important;
+        font-size: 24pt;
+    }
+
+    /* Tables */
+    .table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .table th,
+    .table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    .table thead {
+        background: #f0f0f0 !important;
+        color: black !important;
+    }
+
+    .table tbody tr:hover {
+        background: transparent !important;
+    }
+
+    /* Stat cards */
+    .stat-card {
+        border: 1px solid #ddd;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+
+    .stat-card::before {
+        display: none;
+    }
+
+    .stat-value {
+        color: black !important;
+    }
+
+    /* Grid */
+    .grid {
+        display: grid;
+        gap: 0.5rem;
+    }
+
+    .grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    /* Charts - hide canvas, show fallback */
+    canvas {
+        display: none;
+    }
+
+    /* Badges */
+    .badge {
+        border: 1px solid #333;
+        padding: 2px 6px;
+        font-size: 10pt;
+    }
+
+    /* Colors for print */
+    .text-success,
+    .stat-change.positive {
+        color: #000 !important;
+    }
+
+    .text-danger,
+    .stat-change.negative {
+        color: #000 !important;
+    }
+
+    /* Page breaks */
+    .page-break {
+        page-break-after: always;
+    }
+
+    /* Footer */
+    .footer {
+        display: none;
+    }
+
+    /* Links */
+    a {
+        text-decoration: none;
+        color: black;
+    }
+
+    /* Print header */
+    @page {
+        margin: 2cm;
+    }
+
+    /* Add print date */
+    .page-header::after {
+        content: "Dicetak: " attr(data-print-date);
+        display: block;
+        font-size: 10pt;
+        color: #666;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Print button styling */
+@media screen {
+    .print-only {
+        display: none;
+    }
+}

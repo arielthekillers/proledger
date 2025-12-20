@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= $title ?? 'ProLedger' ?> - Executive Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#2563EB',
+                            dark: '#1E40AF',
+                            light: '#EFF6FF',
+                        },
+                        slate: {
+                            850: '#1e293b', 
+                            900: '#0F172A',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    
+    <!-- Custom Compatibility CSS -->
+    <link rel="stylesheet" href="<?= APP_URL ?>/css/compat.css">
+    
+    <style type="text/css-disabled">
+        /* DISABLED - Using external compat.css instead */
+        @layer utilities {
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+        }
+        
+        /* @layer components {
+            Compatibility Layer */
+            .card {
+                @apply bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6;
+            }
+            .card-header {
+                @apply px-6 py-5 border-b border-slate-100 flex items-center justify-between;
+            }
+            .card-title {
+                @apply text-lg font-bold text-slate-800;
+            }
+            .card-footer {
+                @apply px-6 py-4 border-t border-slate-100 bg-slate-50;
+            }
+            
+            .btn {
+                @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors shadow-sm;
+            }
+            .btn-primary {
+                @apply bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20;
+            }
+            .btn-outline {
+                @apply bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600;
+            }
+            .btn-sm {
+                @apply px-3 py-1.5 text-sm;
+            }
+            .btn-icon-sm {
+                @apply w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition-colors;
+            }
+            
+            .table {
+                @apply w-full text-left border-collapse;
+            }
+            .table th {
+                @apply px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-50/50 border-b border-slate-200;
+            }
+            .table td {
+                @apply px-6 py-4 border-b border-slate-100 text-slate-600 text-sm;
+            }
+            .table tr:last-child td {
+                @apply border-b-0;
+            }
+            .table tr:hover {
+                @apply bg-slate-50/50;
+            }
+            
+            .badge {
+                @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+            }
+            .badge-secondary {
+                @apply bg-slate-100 text-slate-600;
+            }
+            .badge-success {
+                @apply bg-emerald-100 text-emerald-700;
+            }
+            .badge-danger {
+                @apply bg-red-100 text-red-700;
+            }
+            
+            .form-control {
+                @apply w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors;
+            }
+            
+            /* Utils */
+            .flex-between {
+                @apply flex justify-between items-center;
+            }
+            .text-muted {
+                @apply text-slate-500;
+            }
+            .text-success {
+                @apply text-emerald-600;
+            }
+            .text-danger {
+                @apply text-red-500;
+            }
+            
+            .page-title {
+                @apply text-2xl font-bold text-slate-900;
+            }
+            .page-subtitle {
+                @apply text-sm text-slate-500 mt-1;
+            }
+            
+            .table-modern {
+                @apply table;
+            }
+            
+            /* Mobile Table Response */
+            @media (max-width: 768px) {
+                .table-modern, .table-modern tbody, .table-modern tr, .table-modern td {
+                    display: block;
+                    width: 100%;
+                }
+                .table-modern thread { display: none; } /* Typo fix: thead */
+                .table-modern thead { display: none; }
+                
+                .table-modern tr {
+                    @apply mb-4 bg-white border border-slate-200 rounded-lg shadow-sm p-0 overflow-hidden;
+                }
+                
+                .table-modern td {
+                    @apply flex justify-between items-center px-4 py-3 border-b border-slate-100 text-right;
+                    min-height: 3rem;
+                }
+                
+                .table-modern td:last-child {
+                    @apply border-b-0 justify-end bg-slate-50;
+                }
+                
+                .table-modern td::before {
+                    content: attr(data-label);
+                    @apply font-bold text-xs text-slate-500 uppercase mr-4 text-left flex-1;
+                }
+                
+                .table-modern td[data-label="Nama Paket"] {
+                    @apply bg-white text-left block border-b-2 border-slate-100 p-4;
+                }
+                .table-modern td[data-label="Nama Paket"]::before { display: none; }
+                .table-modern td[data-label="Nama Paket"] div { @apply text-lg text-blue-600 font-bold; }
+            }
+        } */
+    </head>
+<body class="bg-slate-100 text-slate-800 antialiased font-sans">
+    
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0 shadow-xl flex flex-col">
+            <!-- Brand -->
+            <div class="h-20 flex items-center px-8 border-b border-white/10">
+                <a href="<?= APP_URL ?>/" class="flex items-center gap-3 text-xl font-bold tracking-tight">
+                    <div class="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-600/20">
+                        <ion-icon name="wallet" class="text-white text-xl md hydrated"></ion-icon>
+                    </div>
+                    <span>ProLedger</span>
+                </a>
+            </div>
+            
+            <!-- Nav -->
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <?php 
+                $navItemDetails = [
+                    'dashboard' => ['icon' => 'grid-outline', 'label' => 'Dashboard', 'url' => APP_URL . '/'],
+                    'paket' => ['icon' => 'cube-outline', 'label' => 'Paket Kegiatan', 'url' => APP_URL . '/paket'],
+                    'pemodal' => ['icon' => 'people-outline', 'label' => 'Pemodal', 'url' => APP_URL . '/pemodal'],
+                    'rekap' => ['icon' => 'pie-chart-outline', 'label' => 'Rekap Keuangan', 'url' => APP_URL . '/rekap'],
+                ];
+                
+                $activePage = $active ?? '';
+                ?>
+                
+                <?php foreach($navItemDetails as $key => $nav): ?>
+                    <a href="<?= $nav['url'] ?>" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group <?= $activePage === $key ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' : 'text-slate-400 hover:text-white hover:bg-white/5' ?>">
+                        <ion-icon name="<?= $nav['icon'] ?>" class="text-xl"></ion-icon>
+                        <span class="font-medium"><?= $nav['label'] ?></span>
+                        <?php if($activePage === $key): ?>
+                            <ion-icon name="chevron-forward-outline" class="ml-auto opacity-70"></ion-icon>
+                        <?php endif; ?>
+                    </a>
+                <?php endforeach; ?>
+            </nav>
+            
+            <!-- Footer -->
+            <div class="p-6 border-t border-white/10">
+                <p class="text-xs text-slate-500 text-center">&copy; <?= date('Y') ?> ProLedger Corp</p>
+            </div>
+        </aside>
+        
+        <!-- Overlay for mobile -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-40 hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
+
+        <!-- Main Content -->
+        <main class="flex-1 md:ml-72 min-h-screen flex flex-col transition-all duration-300">
+            <!-- Topbar -->
+            <header class="h-20 bg-white/80 backdrop-blur-md sticky top-0 z-30 px-6 flex items-center justify-between border-b border-slate-200/60 support-backdrop-blur:bg-white/80">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                        <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
+                    </button>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-bold text-slate-800"><?= $title ?? 'Dashboard' ?></h1>
+                        <p class="text-xs text-slate-500 mt-0.5 hidden md:block"><?= date('l, d F Y') ?></p>
+                    </div>
+                </div>
+                
+                <!-- User Menu -->
+                <div class="flex items-center gap-4">
+                    <div class="hidden md:block text-right">
+                        <div class="text-sm font-semibold text-slate-800">Administrator</div>
+                        <div class="text-xs text-slate-500">Super Admin</div>
+                    </div>
+                    <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl shadow-lg shadow-blue-500/20 flex items-center justify-center text-white font-bold cursor-pointer hover:scale-105 transition-transform">
+                        A
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content Wrapper -->
+            <div class="p-4 md:p-8 flex-1">
+                <?php if ($success = flash('success')): ?>
+                    <div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm" role="alert">
+                        <ion-icon name="checkmark-circle" class="text-xl"></ion-icon>
+                        <span class="block sm:inline"><?= $success ?></span>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if ($error = flash('error')): ?>
+                    <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm" role="alert">
+                        <ion-icon name="alert-circle" class="text-xl"></ion-icon>
+                        <span class="block sm:inline"><?= $error ?></span>
+                    </div>
+                <?php endif; ?>
