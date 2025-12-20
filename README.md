@@ -1,102 +1,102 @@
 # ProLedger 🚀
-**Collaborative Project Financial Management System**
+**Sistem Manajemen Keuangan Proyek Kolaboratif**
 
-ProLedger is a robust, lightweight, and secure web-based application designed to manage financial records for collaborative projects involving multiple stakeholders (Investors/Pemodal and Companies/Perusahaan). It provides real-time transparency into project funds, expenses, and profit distribution.
+ProLedger adalah aplikasi berbasis web yang tangguh, ringan, dan aman untuk mengelola catatan keuangan proyek kolaboratif yang melibatkan banyak pemangku kepentingan (Investor/Pemodal dan Perusahaan). Aplikasi ini memberikan transparansi waktu nyata (real-time) mengenai dana proyek, pengeluaran, dan pembagian keuntungan.
 
-![ProLedger Dashboard](https://via.placeholder.com/800x400?text=ProLedger+Dashboard+Preview)
+![Pratinjau Dashboard ProLedger](https://via.placeholder.com/800x400?text=Preview+Dashboard+ProLedger)
 
-## ✨ Key Features
+## ✨ Fitur Utama
 
-### 1. 📊 Interactive Dashboard
-- **Real-time Statistics**: View total active projects, registered investors, total capital, and net profit/loss at a glance.
-- **Cash Flow Overview**: Visual summary of total income vs. expenses.
-- **Quick Actions**: One-click access to create projects, transactions, or investments (Admin only).
+### 1. 📊 Dashboard Interaktif
+- **Statistik Real-time**: Lihat total proyek aktif, investor terdaftar, total modal, dan laba/rugi bersih dalam sekilas.
+- **Ringkasan Arus Kas**: Visualisasi ringkas total pemasukan vs pengeluaran.
+- **Aksi Cepat**: Akses satu klik untuk membuat proyek, transaksi, atau investasi baru (Khusus Admin).
 
-### 2. 💼 Project Management (Paket Kegiatan)
-- **Centralized Data**: Manage all project details including Pagu (Ceiling), RAB, and Status.
-- **Automated Calculations**: Automatically calculates "Modal Pasal" (13% of Pagu) and "Modal Belanja".
-- **Status Tracking**: Track project lifecycle (Draft, Running, Finished).
+### 2. 💼 Manajemen Paket Kegiatan
+- **Data Terpusat**: Kelola semua detail proyek termasuk Pagu (Plafon Anggaran), RAB, dan Status.
+- **Perhitungan Otomatis**: Secara otomatis menghitung "Modal Pasal" (13% dari Pagu) dan "Modal Belanja".
+- **Pelacakan Status**: Pantau siklus hidup proyek (Draft, Berjalan, Selesai).
 
-### 3. 👥 Multi-Stakeholder Investment
-- **Investor Management**: Register and manage "Pemodal" (Investors).
-- **Pooled Capital**: Support for multiple investors per single project.
-- **Automatic Share Calculation**: System calculates each investor's share percentage based on their contribution.
+### 3. 👥 Investasi Multi-Stakeholder
+- **Manajemen Investor**: Daftar dan kelola "Pemodal" (Investor).
+- **Modal Gabungan**: Mendukung banyak investor untuk satu proyek.
+- **Perhitungan Bagi Hasil**: Sistem menghitung persentase kepemilikan setiap investor berdasarkan kontribusi mereka secara otomatis.
 
-### 4. 💸 Financial Tracking
-- **Granular Transactions**: Record every inflow and outflow with precision.
-- **Categories**: Organized by "Pasal", "Modal Belanja", "Operasional", etc.
-- **Transparency**: Every transaction is linked to a specific project and timestamped.
+### 4. 💸 Pencatatan Keuangan
+- **Transaksi Terperinci**: Catat setiap pemasukan dan pengeluaran dengan presisi.
+- **Kategori**: Terorganisir berdasarkan "Pasal", "Modal Belanja", "Operasional", dll.
+- **Transparansi**: Setiap transaksi ditautkan ke proyek tertentu dan memiliki stempel waktu.
 
-### 5. 🛡️ Role-Based Access Control (RBAC)
-- **Admin**: Full access to all features (Create/Edit/Delete).
-- **Perusahaan (Company)**: View-only access to their specific assigned projects.
-- **Pemodal (Investor)**: Read-only access restricted strictly to their own investment portfolios and reports.
+### 5. 🛡️ Hak Akses Berbasis Peran (RBAC)
+- **Admin**: Akses penuh ke semua fitur (Buat/Edit/Hapus).
+- **Perusahaan**: Akses lihat-saja (view-only) untuk proyek yang ditugaskan kepada mereka.
+- **Pemodal (Investor)**: Akses lihat-saja yang dibatasi secara ketat hanya untuk portofolio investasi dan laporan mereka sendiri.
 
-### 6. 📈 Reporting (Rekap Keuangan)
-- **Project Recap**: Detailed financial health check per project.
-- **Investor Reports**: Personalized reports showing individual capital vs. current value.
-- **Profit/Loss Analysis**: Automatic calculation of current balance and financial performance.
+### 6. 📈 Pelaporan (Rekap Keuangan)
+- **Rekap Proyek**: Periksa kesehatan keuangan per proyek secara detail.
+- **Laporan Investor**: Laporan personal yang menampilkan modal individu vs nilai saat ini.
+- **Analisis Laba/Rugi**: Perhitungan otomatis saldo saat ini dan performa keuangan.
 
 ---
 
-## 🛠️ Technology Stack
-- **Backend**: Native PHP 8.2+ (Custom Lightweight MVC Architecture)
+## 🛠️ Teknologi yang Digunakan
+- **Backend**: Native PHP 8.2+ (Arsitektur MVC Kustom yang Ringan)
 - **Database**: MySQL 8.0
-- **Frontend**: HTML5, Tailwind CSS (Modern UI)
-- **Icons**: Ionicons
-- **Security**: 
-    - CSRF Protection
-    - Password Hashing (Bcrypt)
-    - Session-based Authentication
-    - Environment Variable Configuration (.env)
+- **Frontend**: HTML5, Tailwind CSS (UI Modern)
+- **Ikon**: Ionicons
+- **Keamanan**: 
+    - Proteksi CSRF
+    - Hashing Password (Bcrypt)
+    - Otentikasi Berbasis Sesi
+    - Konfigurasi Variabel Lingkungan (.env)
 
 ---
 
-## 🚀 Installation & Setup
+## 🚀 Instalasi & Pengaturan
 
-### Prerequisites
+### Prasyarat
 - PHP >= 8.0
 - MySQL
 - Web Server (Apache/Nginx/IIS)
 
-### Steps
+### Langkah-langkah
 
-1.  **Clone the Repository**
+1.  **Clone Repository**
     ```bash
-    git clone https://github.com/yourusername/proledger.git
+    git clone https://github.com/username-anda/proledger.git
     cd proledger
     ```
 
-2.  **Configure Environment**
-    Create a `.env` file from the example:
+2.  **Konfigurasi Environment**
+    Buat file `.env` dari contoh yang tersedia:
     ```bash
     cp .env.example .env
     ```
-    Open `.env` and configure your database usage:
+    Buka file `.env` dan sesuaikan konfigurasi database Anda:
     ```ini
     APP_ENV=local
     DB_DATABASE=proledger
     DB_USERNAME=root
-    DB_PASSWORD=your_password
+    DB_PASSWORD=password_anda
     ```
 
-3.  **Setup Database**
-    - Create a new MySQL database named `proledger`.
-    - Import the database schema from `database/proledger.sql` (if available) or run migrations.
+3.  **Siapkan Database**
+    - Buat database MySQL baru dengan nama `proledger`.
+    - Import skema database dari `database/proledger.sql` (jika tersedia) atau jalankan migrasi.
 
-4.  **Run the Application**
-    If using PHP built-in server:
+4.  **Jalankan Aplikasi**
+    Jika menggunakan server bawaan PHP:
     ```bash
     php -S localhost:8000 -t public
     ```
-    Access the app at `http://localhost:8000`.
+    Akses aplikasi di `http://localhost:8000`.
 
 ---
 
-## 🔒 Security Note
-This project uses a custom authentication system. Ensure `APP_ENV` is set to `production` when deploying live to disable debug overlays and error reporting.
+## 🔒 Catatan Keamanan
+Proyek ini menggunakan sistem otentikasi kustom. Pastikan `APP_ENV` diatur ke `production` saat deploy ke server live untuk menonaktifkan tampilan debug dan pelaporan error.
 
 ---
 
-## 📄 License
-Private / Proprietary.
+## 📄 Lisensi
+Privat / Proprietary.
