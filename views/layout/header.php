@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'ProLedger' ?> - Executive Dashboard</title>
+    <title><?= $title ?? 'PaketFlow' ?> - Manajemen Paket & Distribusi</title>
+    <link rel="icon" type="image/svg+xml" href="<?= APP_URL ?>/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -55,10 +56,10 @@
             <div class="h-14 flex items-center px-5 border-b border-white/10 whitespace-nowrap">
                 <?php $role = $_SESSION['admin_role'] ?? 'user'; ?>
                 <a href="<?= ($role === 'admin') ? APP_URL . '/user' : APP_URL . '/' ?>" class="flex items-center gap-2.5 text-lg font-bold tracking-tight">
-                    <div class="p-1.5 bg-blue-600 rounded-lg shadow-md shadow-blue-600/30 shrink-0 flex items-center justify-center">
-                        <ion-icon name="wallet" class="text-white text-lg md hydrated"></ion-icon>
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-md shadow-blue-500/30 shrink-0 flex items-center justify-center">
+                        <ion-icon name="cube" class="text-white text-lg md hydrated"></ion-icon>
                     </div>
-                    <span class="sidebar-text transition-opacity duration-300">ProLedger</span>
+                    <span class="sidebar-text font-bold text-lg tracking-tight transition-opacity duration-300">Paket<span class="text-blue-400">Flow</span></span>
                 </a>
             </div>
             

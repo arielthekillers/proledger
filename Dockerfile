@@ -1,4 +1,4 @@
-# ProLedger Production Dockerfile for Coolify / Docker
+# PaketFlow Production Dockerfile for Coolify / Docker
 FROM php:8.2-apache
 
 # Install system dependencies
@@ -28,8 +28,8 @@ RUN echo '<Directory /var/www/html/public>\n\
     Options -Indexes +FollowSymLinks\n\
     AllowOverride All\n\
     Require all granted\n\
-</Directory>' > /etc/apache2/conf-available/proledger.conf \
-    && a2enconf proledger
+</Directory>' > /etc/apache2/conf-available/paketflow.conf \
+    && a2enconf paketflow
 
 # PHP Production Configuration
 RUN echo 'upload_max_filesize = 50M\n\

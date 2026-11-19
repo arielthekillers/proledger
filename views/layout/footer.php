@@ -3,7 +3,7 @@
             <!-- Main Footer -->
             <div class="py-3 border-t border-slate-200 mt-auto bg-white/50">
                 <p class="text-xs text-slate-400 text-center">
-                    &copy; <?= date('Y') ?> ProLedger By <a href="https://sintesacorp.id" target="_blank" class="text-blue-600 hover:text-blue-700 font-semibold hover:underline">Sintesa Corp</a>
+                    &copy; <?= date('Y') ?> PaketFlow By <a href="https://sintesacorp.id" target="_blank" class="text-blue-600 hover:text-blue-700 font-semibold hover:underline">Sintesa Corp</a>
                 </p>
             </div>
         </main>
