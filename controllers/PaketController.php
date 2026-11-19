@@ -187,6 +187,7 @@ class PaketController {
             $persenAdmin = ($adaAdmin && isset($_POST['persen_admin']) && $_POST['persen_admin'] !== '') ? (float)$_POST['persen_admin'] : 0.0;
             
             $skemaId = !empty($_POST['skema_id']) ? (int)$_POST['skema_id'] : null;
+            $tipePotongan = (!empty($_POST['tipe_potongan']) && $_POST['tipe_potongan'] === 'kontrak') ? 'kontrak' : 'dpp';
 
             $data = [
                 'nama_paket' => sanitize($_POST['nama_paket']),
@@ -200,6 +201,7 @@ class PaketController {
                 'progres_barang' => $_POST['progres_barang'] ?? 'Belum',
                 'pagu' => $pagu,
                 'pagu_nego' => $paguNego,
+                'tipe_potongan' => $tipePotongan,
                 'persen_pasal' => $persenPasal,
                 'persen_admin' => $persenAdmin,
                 'setor_awal' => null,
@@ -352,6 +354,7 @@ class PaketController {
             $persenAdmin = ($adaAdmin && isset($_POST['persen_admin']) && $_POST['persen_admin'] !== '') ? (float)$_POST['persen_admin'] : 0.0;
             
             $skemaId = !empty($_POST['skema_id']) ? (int)$_POST['skema_id'] : null;
+            $tipePotongan = (!empty($_POST['tipe_potongan']) && $_POST['tipe_potongan'] === 'kontrak') ? 'kontrak' : 'dpp';
 
             $perusahaanId = $existing['perusahaan_id'] ?? (!empty($_POST['perusahaan_id']) ? (int)$_POST['perusahaan_id'] : ($_SESSION['active_perusahaan_id'] ?? null));
             $perusahaanNama = $existing['perusahaan_nama'] ?? $existing['perusahaan'] ?? null;
@@ -368,6 +371,7 @@ class PaketController {
                 'progres_barang' => $_POST['progres_barang'] ?? 'Belum',
                 'pagu' => $pagu,
                 'pagu_nego' => $paguNego,
+                'tipe_potongan' => $tipePotongan,
                 'persen_pasal' => $persenPasal,
                 'persen_admin' => $persenAdmin,
                 'setor_awal' => null,
@@ -418,6 +422,7 @@ class PaketController {
         $persenPasal = $adaPasal ? (float)($_POST['persen_pasal'] ?? 0) : 0;
         $adaAdmin = !empty($_POST['ada_admin']) ? 1 : 0;
         $persenAdmin = $adaAdmin ? (float)($_POST['persen_admin'] ?? 0) : 0;
+        $tipePotongan = (!empty($_POST['tipe_potongan']) && $_POST['tipe_potongan'] === 'kontrak') ? 'kontrak' : 'dpp';
         $perusahaanId = !empty($_POST['perusahaan_id']) ? (int)$_POST['perusahaan_id'] : ($_SESSION['active_perusahaan_id'] ?? null);
 
         if (empty($nama)) {
@@ -433,7 +438,8 @@ class PaketController {
                 'ada_pasal' => $adaPasal,
                 'persen_pasal' => $persenPasal,
                 'ada_admin' => $adaAdmin,
-                'persen_admin' => $persenAdmin
+                'persen_admin' => $persenAdmin,
+                'tipe_potongan' => $tipePotongan
             ]);
 
             echo json_encode([
@@ -445,7 +451,8 @@ class PaketController {
                     'ada_pasal' => $adaPasal,
                     'persen_pasal' => $persenPasal,
                     'ada_admin' => $adaAdmin,
-                    'persen_admin' => $persenAdmin
+                    'persen_admin' => $persenAdmin,
+                    'tipe_potongan' => $tipePotongan
                 ]
             ]);
         } catch (Exception $e) {

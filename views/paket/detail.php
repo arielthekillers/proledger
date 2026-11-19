@@ -8,8 +8,12 @@ $persenPasal = isset($paket['persen_pasal']) && $paket['persen_pasal'] !== '' ? 
 $persenAdmin = isset($paket['persen_admin']) && $paket['persen_admin'] !== '' ? (float)$paket['persen_admin'] : 2.0;
 $totalPersen = $persenPasal + $persenAdmin;
 
-$pasalVal = !empty($paket['pasal_13']) ? (float)$paket['pasal_13'] : calculatePasal($dpp, $persenPasal);
-$adminVal = isset($paket['admin_2']) ? (float)$paket['admin_2'] : calculateAdmin($dpp, $persenAdmin);
+$tipePotongan = $paket['tipe_potongan'] ?? 'dpp';
+$basisPotongan = ($tipePotongan === 'kontrak') ? $acuan : $dpp;
+$basisLabel = ($tipePotongan === 'kontrak') ? 'Nilai Kontrak' : 'DPP';
+
+$pasalVal = !empty($paket['pasal_13']) ? (float)$paket['pasal_13'] : calculatePasal($basisPotongan, $persenPasal);
+$adminVal = isset($paket['admin_2']) ? (float)$paket['admin_2'] : calculateAdmin($basisPotongan, $persenAdmin);
 $totalPasal = !empty($paket['total_pasal']) ? (float)$paket['total_pasal'] : ($pasalVal + $adminVal);
 
 $items = $items ?? [];

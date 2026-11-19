@@ -489,6 +489,7 @@ foreach ($paket as $p) {
                                         data-pasal="<?= (float)$sk['persen_pasal'] ?>" 
                                         data-ada-admin="<?= $sk['ada_admin'] ?>" 
                                         data-admin="<?= (float)$sk['persen_admin'] ?>"
+                                        data-tipe="<?= htmlspecialchars($sk['tipe_potongan'] ?? 'dpp') ?>"
                                         <?= ($sk['id'] == 1) ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($sk['nama_skema']) ?>
                                 </option>
@@ -530,6 +531,17 @@ foreach ($paket as $p) {
                             <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
                         </div>
                     </div>
+                </div>
+
+                <!-- Pilihan Dasar Potongan: Kontrak vs DPP -->
+                <div class="p-2.5 rounded-xl border border-slate-200 bg-white/70">
+                    <label class="flex items-start gap-2 cursor-pointer select-none">
+                        <input type="checkbox" name="tipe_potongan" id="tambah_tipe_potongan" value="kontrak" onchange="updateTambahCalc()" class="w-4 h-4 rounded text-blue-600 focus:ring-0 mt-0.5 cursor-pointer">
+                        <div>
+                            <span class="text-xs font-bold text-slate-800 block">Potongan Diambil dari Nilai Kontrak</span>
+                            <span class="text-[10px] text-slate-500 block leading-tight">Tidak dicentang: potongan dihitung dari DPP (setelah kena pajak). Centang ini jika potongan dihitung dari Nilai Kontrak (sebelum pajak).</span>
+                        </div>
+                    </label>
                 </div>
 
                 <div class="flex items-center justify-between pt-1">
@@ -775,6 +787,17 @@ foreach ($paket as $p) {
                             <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
                         </div>
                     </div>
+                </div>
+
+                <!-- Pilihan Dasar Potongan: Kontrak vs DPP -->
+                <div class="p-2.5 rounded-xl border border-slate-200 bg-white/70">
+                    <label class="flex items-start gap-2 cursor-pointer select-none">
+                        <input type="checkbox" name="tipe_potongan" id="edit_tipe_potongan" value="kontrak" onchange="updateEditCalc()" class="w-4 h-4 rounded text-amber-600 focus:ring-0 mt-0.5 cursor-pointer">
+                        <div>
+                            <span class="text-xs font-bold text-slate-800 block">Potongan Diambil dari Nilai Kontrak</span>
+                            <span class="text-[10px] text-slate-500 block leading-tight">Tidak dicentang: potongan dihitung dari DPP (setelah kena pajak). Centang ini jika potongan dihitung dari Nilai Kontrak (sebelum pajak).</span>
+                        </div>
+                    </label>
                 </div>
 
                 <div class="flex items-center justify-between pt-1">
@@ -1025,6 +1048,17 @@ foreach ($paket as $p) {
                 </div>
             </div>
 
+            <!-- Pilihan Dasar Potongan: Kontrak vs DPP -->
+            <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50">
+                <label class="flex items-start gap-2 cursor-pointer select-none">
+                    <input type="checkbox" id="quick_tipe_potongan" value="kontrak" onchange="updateQuickModalTotal()" class="w-4 h-4 rounded text-blue-600 focus:ring-0 mt-0.5 cursor-pointer">
+                    <div>
+                        <span class="text-xs font-bold text-slate-800 block">Potongan Diambil dari Nilai Kontrak</span>
+                        <span class="text-[11px] text-slate-500 block leading-tight">Tidak dicentang: potongan dihitung dari DPP (setelah kena pajak). Centang ini jika potongan dihitung dari Nilai Kontrak (sebelum pajak).</span>
+                    </div>
+                </label>
+            </div>
+
             <div class="p-2 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-between text-xs">
                 <span class="text-slate-600">Total Potongan Skema:</span>
                 <strong id="quick_lbl_total_persen" class="font-mono text-blue-700 font-bold">15%</strong>
@@ -1242,6 +1276,15 @@ function onSkemaSelectChange(prefix, sel) {
     if (chkAdmin) chkAdmin.checked = adaAdmin;
     if (inputAdmin) inputAdmin.value = adminVal;
     toggleAdminCheck(prefix);
+
+    const tipePotongan = opt.getAttribute('data-tipe') || 'dpp';
+    const chkTipe = document.getElementById(prefix + '_tipe_potongan');
+    if (chkTipe) {
+        chkTipe.checked = (tipePotongan === 'kontrak');
+    }
+
+    if (prefix === 'tambah') updateTambahCalc();
+    else updateEditCalc();
 }
 
 /**
@@ -1259,6 +1302,10 @@ function openQuickAddSkema(prefix = 'tambah') {
     document.getElementById('quick_ada_admin').checked = chkAdmin ? chkAdmin.checked : true;
     document.getElementById('quick_persen_admin').value = valAdmin ? valAdmin.value : 2;
     document.getElementById('quick_nama_skema').value = '';
+
+    const chkTipe = document.getElementById(prefix + '_tipe_potongan');
+    const quickTipe = document.getElementById('quick_tipe_potongan');
+    if (quickTipe) quickTipe.checked = chkTipe ? chkTipe.checked : false;
 
     toggleQuickModalFields();
     updateQuickModalTotal();
@@ -1309,6 +1356,8 @@ function handleQuickTambahSkema(e) {
     const valP = parseFloat(document.getElementById('quick_persen_pasal').value) || 0;
     const chkA = document.getElementById('quick_ada_admin').checked ? 1 : 0;
     const valA = parseFloat(document.getElementById('quick_persen_admin').value) || 0;
+    const chkK = document.getElementById('quick_tipe_potongan');
+    const valTipe = (chkK && chkK.checked) ? 'kontrak' : 'dpp';
 
     btn.disabled = true;
     btn.innerHTML = '<ion-icon name="sync-outline" class="animate-spin text-sm"></ion-icon> <span>Menyimpan...</span>';
@@ -1319,6 +1368,7 @@ function handleQuickTambahSkema(e) {
     formData.append('persen_pasal', valP);
     formData.append('ada_admin', chkA);
     formData.append('persen_admin', valA);
+    formData.append('tipe_potongan', valTipe);
 
     fetch('<?= APP_URL ?>/paket/ajaxStoreSkema', {
         method: 'POST',
@@ -1341,6 +1391,7 @@ function handleQuickTambahSkema(e) {
                     opt.setAttribute('data-pasal', sk.persen_pasal);
                     opt.setAttribute('data-ada-admin', sk.ada_admin);
                     opt.setAttribute('data-admin', sk.persen_admin);
+                    opt.setAttribute('data-tipe', sk.tipe_potongan || 'dpp');
                     sel.appendChild(opt);
                 }
             });
@@ -1382,8 +1433,12 @@ function updateTambahCalc() {
 
     const acuan = (paguNego > 0) ? paguNego : pagu;
     const dpp = acuan > 0 ? Math.round(acuan / 1.11) : 0;
-    const pasal = Math.round(dpp * (persenPasal / 100));
-    const admin = Math.round(dpp * (persenAdmin / 100));
+    const chkKontrak = document.getElementById('tambah_tipe_potongan');
+    const isKontrak = chkKontrak ? chkKontrak.checked : false;
+    const basis = isKontrak ? acuan : dpp;
+
+    const pasal = Math.round(basis * (persenPasal / 100));
+    const admin = Math.round(basis * (persenAdmin / 100));
     const totalPasal = pasal + admin;
     const totalPersen = Math.round((persenPasal + persenAdmin) * 100) / 100;
 
@@ -1418,8 +1473,12 @@ function updateEditCalc() {
 
     const acuan = (paguNego > 0) ? paguNego : pagu;
     const dpp = acuan > 0 ? Math.round(acuan / 1.11) : 0;
-    const pasal = Math.round(dpp * (persenPasal / 100));
-    const admin = Math.round(dpp * (persenAdmin / 100));
+    const chkKontrak = document.getElementById('edit_tipe_potongan');
+    const isKontrak = chkKontrak ? chkKontrak.checked : false;
+    const basis = isKontrak ? acuan : dpp;
+
+    const pasal = Math.round(basis * (persenPasal / 100));
+    const admin = Math.round(basis * (persenAdmin / 100));
     const totalPasal = pasal + admin;
     const totalPersen = Math.round((persenPasal + persenAdmin) * 100) / 100;
 
@@ -1482,6 +1541,9 @@ function openEditPaketModal(p) {
     if (chkAdmin) chkAdmin.checked = (persenAdmin > 0);
     document.getElementById('edit_persen_admin').value = persenAdmin > 0 ? persenAdmin : 2;
     toggleAdminCheck('edit');
+
+    const chkEditTipe = document.getElementById('edit_tipe_potongan');
+    if (chkEditTipe) chkEditTipe.checked = (p.tipe_potongan === 'kontrak');
 
     updateEditCalc();
     window.ProModal.open('modalEditPaket');

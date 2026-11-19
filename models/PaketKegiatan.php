@@ -141,9 +141,11 @@ class PaketKegiatan {
             $persenPasal = isset($data['persen_pasal']) && $data['persen_pasal'] !== '' ? (float)$data['persen_pasal'] : 13.0;
             $persenAdmin = isset($data['persen_admin']) && $data['persen_admin'] !== '' ? (float)$data['persen_admin'] : 2.0;
 
+            $tipePotongan = in_array($data['tipe_potongan'] ?? '', ['kontrak', 'dpp']) ? $data['tipe_potongan'] : 'dpp';
             $dpp = calculateDPP($acuan);
-            $pasal = calculatePasal($dpp, $persenPasal);
-            $admin = calculateAdmin($dpp, $persenAdmin);
+            $basis = ($tipePotongan === 'kontrak') ? $acuan : $dpp;
+            $pasal = calculatePasal($basis, $persenPasal);
+            $admin = calculateAdmin($basis, $persenAdmin);
             $totalPasal = $pasal + $admin;
             
             $setorAwal = (isset($data['setor_awal']) && $data['setor_awal'] !== '' && $data['setor_awal'] !== null) ? (float)$data['setor_awal'] : null;
@@ -156,12 +158,12 @@ class PaketKegiatan {
             // Insert paket
             $stmt = $this->db->prepare("
                 INSERT INTO paket_kegiatan (
-                    kode_paket, nama_paket, nomor_sp, kab_kota, pagu, pagu_nego, dpp, pasal_13, admin_2, total_pasal,
+                    kode_paket, nama_paket, nomor_sp, kab_kota, pagu, pagu_nego, dpp, pasal_13, admin_2, total_pasal, tipe_potongan,
                     persen_pasal, persen_admin,
                     setor_awal, selisih, rab, status, progres_barang,
                     perusahaan_id, group_id, skema_id, perusahaan, penanggung_jawab
                 ) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
             $perusahaanName = null;
@@ -183,6 +185,7 @@ class PaketKegiatan {
                 $pasal,
                 $admin,
                 $totalPasal,
+                $tipePotongan,
                 $persenPasal,
                 $persenAdmin,
                 $setorAwal,
@@ -225,9 +228,11 @@ class PaketKegiatan {
             $persenPasal = isset($data['persen_pasal']) && $data['persen_pasal'] !== '' ? (float)$data['persen_pasal'] : 13.0;
             $persenAdmin = isset($data['persen_admin']) && $data['persen_admin'] !== '' ? (float)$data['persen_admin'] : 2.0;
 
+            $tipePotongan = in_array($data['tipe_potongan'] ?? '', ['kontrak', 'dpp']) ? $data['tipe_potongan'] : 'dpp';
             $dpp = calculateDPP($acuan);
-            $pasal = calculatePasal($dpp, $persenPasal);
-            $admin = calculateAdmin($dpp, $persenAdmin);
+            $basis = ($tipePotongan === 'kontrak') ? $acuan : $dpp;
+            $pasal = calculatePasal($basis, $persenPasal);
+            $admin = calculateAdmin($basis, $persenAdmin);
             $totalPasal = $pasal + $admin;
             
             $setorAwal = (isset($data['setor_awal']) && $data['setor_awal'] !== '' && $data['setor_awal'] !== null) ? (float)$data['setor_awal'] : null;
@@ -244,7 +249,7 @@ class PaketKegiatan {
             
             $stmt = $this->db->prepare("
                 UPDATE paket_kegiatan 
-                SET nama_paket = ?, nomor_sp = ?, kab_kota = ?, pagu = ?, pagu_nego = ?, dpp = ?, pasal_13 = ?, admin_2 = ?, total_pasal = ?,
+                SET nama_paket = ?, nomor_sp = ?, kab_kota = ?, pagu = ?, pagu_nego = ?, dpp = ?, pasal_13 = ?, admin_2 = ?, total_pasal = ?, tipe_potongan = ?,
                     persen_pasal = ?, persen_admin = ?,
                     setor_awal = ?, selisih = ?, rab = ?, status = ?, progres_barang = ?,
                     perusahaan_id = ?, group_id = ?, skema_id = ?, perusahaan = ?, penanggung_jawab = ?
@@ -261,6 +266,7 @@ class PaketKegiatan {
                 $pasal,
                 $admin,
                 $totalPasal,
+                $tipePotongan,
                 $persenPasal,
                 $persenAdmin,
                 $setorAwal,

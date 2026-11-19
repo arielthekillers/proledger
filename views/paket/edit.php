@@ -182,6 +182,17 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Pilihan Dasar Potongan: Kontrak vs DPP -->
+                    <div class="p-2.5 rounded-xl border border-slate-200 bg-white/70">
+                        <label class="flex items-start gap-2 cursor-pointer select-none">
+                            <input type="checkbox" name="tipe_potongan" id="tipe_potongan" value="kontrak" <?= (($paket['tipe_potongan'] ?? 'dpp') === 'kontrak') ? 'checked' : '' ?> onchange="updateEditCalculations()" class="w-4 h-4 rounded text-blue-600 focus:ring-0 mt-0.5 cursor-pointer">
+                            <div>
+                                <span class="text-xs font-bold text-slate-800 block">Potongan Diambil dari Nilai Kontrak</span>
+                                <span class="text-[10px] text-slate-500 block leading-tight">Tidak dicentang: potongan dihitung dari DPP (setelah kena pajak). Centang ini jika potongan dihitung dari Nilai Kontrak (sebelum pajak).</span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Live Calculation Preview -->
@@ -263,8 +274,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const acuan = (paguNego > 0) ? paguNego : pagu;
         const dpp = acuan > 0 ? Math.round(acuan / 1.11) : 0;
-        const pasal = Math.round(dpp * (persenPasal / 100));
-        const admin = Math.round(dpp * (persenAdmin / 100));
+        const chkKontrak = document.getElementById('tipe_potongan');
+        const isKontrak = chkKontrak ? chkKontrak.checked : false;
+        const basis = isKontrak ? acuan : dpp;
+
+        const pasal = Math.round(basis * (persenPasal / 100));
+        const admin = Math.round(basis * (persenAdmin / 100));
         const totalPasal = pasal + admin;
         const totalPersen = Math.round((persenPasal + persenAdmin) * 100) / 100;
         

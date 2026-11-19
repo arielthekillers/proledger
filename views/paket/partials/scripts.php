@@ -880,6 +880,13 @@ function onSkemaSelectChange(prefix, sel) {
     if (chkAdmin) chkAdmin.checked = adaAdmin;
     if (inputAdmin) inputAdmin.value = adminVal;
     toggleAdminCheck(prefix);
+
+    const tipePotongan = opt.getAttribute('data-tipe') || 'dpp';
+    const chkTipe = document.getElementById(prefix + '_tipe_potongan');
+    if (chkTipe) {
+        chkTipe.checked = (tipePotongan === 'kontrak');
+    }
+    updateEditCalc();
 }
 
 function updateEditCalc() {
@@ -896,8 +903,12 @@ function updateEditCalc() {
 
     const acuan = (paguNego > 0) ? paguNego : pagu;
     const dpp = acuan > 0 ? Math.round(acuan / 1.11) : 0;
-    const pasal = Math.round(dpp * (persenPasal / 100));
-    const admin = Math.round(dpp * (persenAdmin / 100));
+    const chkKontrak = document.getElementById('edit_tipe_potongan');
+    const isKontrak = chkKontrak ? chkKontrak.checked : false;
+    const basis = isKontrak ? acuan : dpp;
+
+    const pasal = Math.round(basis * (persenPasal / 100));
+    const admin = Math.round(basis * (persenAdmin / 100));
     const totalPasal = pasal + admin;
     const totalPersen = Math.round((persenPasal + persenAdmin) * 100) / 100;
 
@@ -986,6 +997,10 @@ function openQuickAddSkema(prefix = 'edit') {
     document.getElementById('quick_persen_admin').value = valAdmin ? valAdmin.value : 2;
     document.getElementById('quick_nama_skema').value = '';
 
+    const chkTipe = document.getElementById(prefix + '_tipe_potongan');
+    const quickTipe = document.getElementById('quick_tipe_potongan');
+    if (quickTipe) quickTipe.checked = chkTipe ? chkTipe.checked : false;
+
     toggleQuickModalFields();
     updateQuickModalTotal();
     window.ProModal.open('modalQuickTambahSkema');
@@ -1032,6 +1047,8 @@ function handleQuickTambahSkema(e) {
     const valP = parseFloat(document.getElementById('quick_persen_pasal').value) || 0;
     const chkA = document.getElementById('quick_ada_admin').checked ? 1 : 0;
     const valA = parseFloat(document.getElementById('quick_persen_admin').value) || 0;
+    const chkK = document.getElementById('quick_tipe_potongan');
+    const valTipe = (chkK && chkK.checked) ? 'kontrak' : 'dpp';
 
     btn.disabled = true;
     btn.innerHTML = '<ion-icon name="sync-outline" class="animate-spin text-sm"></ion-icon> <span>Menyimpan...</span>';
@@ -1042,6 +1059,7 @@ function handleQuickTambahSkema(e) {
     formData.append('persen_pasal', valP);
     formData.append('ada_admin', chkA);
     formData.append('persen_admin', valA);
+    formData.append('tipe_potongan', valTipe);
 
     fetch('<?= APP_URL ?>/paket/ajaxStoreSkema', {
         method: 'POST',
@@ -1063,6 +1081,7 @@ function handleQuickTambahSkema(e) {
                 opt.setAttribute('data-pasal', sk.persen_pasal);
                 opt.setAttribute('data-ada-admin', sk.ada_admin);
                 opt.setAttribute('data-admin', sk.persen_admin);
+                opt.setAttribute('data-tipe', sk.tipe_potongan || 'dpp');
                 sel.appendChild(opt);
                 sel.value = sk.id;
                 onSkemaSelectChange('edit', sel);

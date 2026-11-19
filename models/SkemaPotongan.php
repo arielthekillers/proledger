@@ -42,9 +42,10 @@ class SkemaPotongan {
      * Buat skema potongan baru
      */
     public function create($data) {
+        $tipePotongan = in_array($data['tipe_potongan'] ?? '', ['kontrak', 'dpp']) ? $data['tipe_potongan'] : 'dpp';
         $stmt = $this->db->prepare("
-            INSERT INTO skema_potongan (perusahaan_id, nama_skema, ada_pasal, persen_pasal, ada_admin, persen_admin)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO skema_potongan (perusahaan_id, nama_skema, ada_pasal, persen_pasal, ada_admin, persen_admin, tipe_potongan)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $data['perusahaan_id'] ?? null,
@@ -52,7 +53,8 @@ class SkemaPotongan {
             !empty($data['ada_pasal']) ? 1 : 0,
             (float)($data['persen_pasal'] ?? 0),
             !empty($data['ada_admin']) ? 1 : 0,
-            (float)($data['persen_admin'] ?? 0)
+            (float)($data['persen_admin'] ?? 0),
+            $tipePotongan
         ]);
         return $this->db->lastInsertId();
     }

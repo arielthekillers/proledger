@@ -1,5 +1,5 @@
 -- ProLedger Production Database Dump
--- Generated on 2026-11-19 22:17:57
+-- Generated on 2026-11-19 22:27:42
 -- Target: MySQL / MariaDB (Coolify / Docker / VPS)
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -90,6 +90,7 @@ CREATE TABLE `skema_potongan` (
   `persen_pasal` decimal(5,2) DEFAULT 13.00,
   `ada_admin` tinyint(1) DEFAULT 1,
   `persen_admin` decimal(5,2) DEFAULT 2.00,
+  `tipe_potongan` enum('dpp','kontrak') NOT NULL DEFAULT 'dpp',
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
@@ -97,9 +98,9 @@ CREATE TABLE `skema_potongan` (
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `skema_potongan`
-INSERT INTO `skema_potongan` (`id`, `perusahaan_id`, `nama_skema`, `ada_pasal`, `persen_pasal`, `ada_admin`, `persen_admin`, `created_at`, `updated_at`) VALUES
-('4', '4', 'Skema 1', '1', '13.00', '1', '2.00', '2026-11-18 00:24:37', '2026-11-18 00:24:37'),
-('5', '4', 'Skema 2', '1', '10.00', '1', '0.00', '2026-11-19 23:04:37', '2026-11-19 23:04:37');
+INSERT INTO `skema_potongan` (`id`, `perusahaan_id`, `nama_skema`, `ada_pasal`, `persen_pasal`, `ada_admin`, `persen_admin`, `tipe_potongan`, `created_at`, `updated_at`) VALUES
+('4', '4', 'Skema 1', '1', '13.00', '1', '2.00', 'dpp', '2026-11-18 00:24:37', '2026-11-18 00:24:37'),
+('5', '4', 'Skema 2', '1', '10.00', '1', '0.00', 'dpp', '2026-11-19 23:04:37', '2026-11-19 23:04:37');
 
 -- --------------------------------------------------------
 -- Table structure for `lokasi_penerima`
@@ -231,6 +232,7 @@ CREATE TABLE `paket_kegiatan` (
   `persen_admin` decimal(5,2) NOT NULL DEFAULT 2.00,
   `admin_2` decimal(15,2) DEFAULT NULL,
   `total_pasal` decimal(15,2) DEFAULT NULL,
+  `tipe_potongan` enum('dpp','kontrak') NOT NULL DEFAULT 'dpp',
   `setor_awal` decimal(15,2) DEFAULT NULL,
   `selisih` decimal(15,2) DEFAULT NULL,
   `rab` decimal(15,2) DEFAULT 0.00,
@@ -248,8 +250,8 @@ CREATE TABLE `paket_kegiatan` (
 ) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `paket_kegiatan`
-INSERT INTO `paket_kegiatan` (`id`, `kode_paket`, `nama_paket`, `nomor_sp`, `kab_kota`, `perusahaan_id`, `group_id`, `skema_id`, `perusahaan`, `penanggung_jawab`, `pagu`, `pagu_nego`, `dpp`, `persen_pasal`, `pasal_13`, `persen_admin`, `admin_2`, `total_pasal`, `setor_awal`, `selisih`, `rab`, `status`, `progres_barang`, `created_at`, `updated_at`) VALUES
-('62', 'XW9J5', 'Belanja Modal Alat Pendukung Pencarian', 'EP-01M1ZS80DH32WZR9NZ8JCWCA44', NULL, '4', '1', '4', 'test', NULL, '15000000.00', NULL, '13513514.00', '13.00', '1756757.00', '2.00', '270270.00', '2027027.00', NULL, NULL, '0.00', 'Proses', 'Belanja', '2026-11-18 00:26:15', '2026-11-19 23:06:28');
+INSERT INTO `paket_kegiatan` (`id`, `kode_paket`, `nama_paket`, `nomor_sp`, `kab_kota`, `perusahaan_id`, `group_id`, `skema_id`, `perusahaan`, `penanggung_jawab`, `pagu`, `pagu_nego`, `dpp`, `persen_pasal`, `pasal_13`, `persen_admin`, `admin_2`, `total_pasal`, `tipe_potongan`, `setor_awal`, `selisih`, `rab`, `status`, `progres_barang`, `created_at`, `updated_at`) VALUES
+('62', 'XW9J5', 'Belanja Modal Alat Pendukung Pencarian', 'EP-01M1ZS80DH32WZR9NZ8JCWCA44', NULL, '4', '1', '4', 'test', NULL, '15000000.00', NULL, '13513514.00', '13.00', '1756757.00', '2.00', '270270.00', '2027027.00', 'dpp', NULL, NULL, '0.00', 'Proses', 'Belanja', '2026-11-18 00:26:15', '2026-11-19 23:06:28');
 
 -- --------------------------------------------------------
 -- Table structure for `paket_items`

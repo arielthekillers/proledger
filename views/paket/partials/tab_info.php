@@ -45,18 +45,18 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3 pt-1">
                         <div class="p-3 rounded-xl bg-white border border-slate-100 shadow-2xs">
-                            <div class="text-[11px] text-slate-500 font-medium">Potongan Pasal (<?= (float)$persenPasal ?>%)</div>
+                            <div class="text-[11px] text-slate-500 font-medium">Potongan Pasal (<?= (float)$persenPasal ?>% <?= $basisLabel ?>)</div>
                             <div class="font-bold text-slate-800 font-mono text-sm mt-0.5"><?= formatRupiah($pasalVal) ?></div>
                         </div>
                         <div class="p-3 rounded-xl bg-white border border-slate-100 shadow-2xs">
-                            <div class="text-[11px] text-slate-500 font-medium">Admin (<?= (float)$persenAdmin ?>%)</div>
+                            <div class="text-[11px] text-slate-500 font-medium">Admin (<?= (float)$persenAdmin ?>% <?= $basisLabel ?>)</div>
                             <div class="font-bold text-slate-800 font-mono text-sm mt-0.5">
                                 <?= ($persenAdmin > 0) ? formatRupiah($adminVal) : '<span class="text-slate-400">-</span>' ?>
                             </div>
                         </div>
                     </div>
                     <div class="flex items-center justify-between text-xs pt-3 border-t border-slate-200/60">
-                        <span class="text-amber-900 font-bold">Total Pasal (<?= (float)$totalPersen ?>% dari DPP):</span>
+                        <span class="text-amber-900 font-bold">Total Pasal (<?= (float)$totalPersen ?>% dari <?= $basisLabel ?>):</span>
                         <span class="font-extrabold text-amber-700 font-mono text-lg"><?= formatRupiah($totalPasal) ?></span>
                     </div>
                 </div>
