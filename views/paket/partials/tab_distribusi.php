@@ -28,20 +28,19 @@
             <table class="w-full text-left text-xs" id="distribusiTable">
                 <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200/90 tracking-wider">
                     <tr>
-                        <th class="py-2 px-3 w-8 text-center">NO</th>
-                        <th class="py-2 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
-                        <th class="py-2 px-3 min-w-[150px]">KOMPONEN BARANG</th>
-                        <th class="py-2 px-2.5 text-center min-w-[70px]">JUMLAH</th>
-                        <th class="py-2 px-3 min-w-[140px]">RUTE PENGIRIMAN</th>
-                        <th class="py-2 px-3 min-w-[150px]">STATUS PEMESANAN</th>
-                        <th class="py-2 px-3 min-w-[150px]">STATUS PENERIMAAN</th>
-                        <th class="py-2 px-2.5 text-right w-12">AKSI</th>
+                        <th class="py-2.5 px-3 w-8 text-center">NO</th>
+                        <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
+                        <th class="py-2.5 px-3 min-w-[150px]">KOMPONEN BARANG</th>
+                        <th class="py-2.5 px-2.5 text-center min-w-[70px]">JUMLAH</th>
+                        <th class="py-2.5 px-3 min-w-[170px]">STATUS BARANG</th>
+                        <th class="py-2.5 px-3 min-w-[160px]">STATUS DISTRIBUSI</th>
+                        <th class="py-2.5 px-2.5 text-right w-12">AKSI</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     <?php if (empty($distribusiList)): ?>
                         <tr>
-                            <td colspan="8" class="py-8 text-center text-slate-400">
+                            <td colspan="7" class="py-8 text-center text-slate-400">
                                 <div class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl text-slate-300">
                                     <ion-icon name="navigate-outline"></ion-icon>
                                 </div>
@@ -58,26 +57,26 @@
                         <?php $no = 1; foreach ($distribusiList as $dist): ?>
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <!-- No -->
-                                <td class="py-1.5 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold">
+                                <td class="py-2 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold align-top pt-3">
                                     <?= $no++ ?>
                                 </td>
 
-                                <!-- Tujuan Penerima (Bersih tanpa info kategori / kab-kota / PIC yang berulang) -->
-                                <td class="py-2.5 px-3">
+                                <!-- Tujuan Penerima -->
+                                <td class="py-2.5 px-3 align-top">
                                     <span class="font-bold text-slate-800 text-xs block">
                                         <?= htmlspecialchars($dist['nama_tujuan']) ?>
                                     </span>
                                 </td>
 
-                                <!-- Komponen Barang (Bersih tanpa deskripsi teks spesifikasi panjang) -->
-                                <td class="py-2.5 px-3">
+                                <!-- Komponen Barang -->
+                                <td class="py-2.5 px-3 align-top">
                                     <span class="font-semibold text-slate-800 text-xs block">
                                         <?= htmlspecialchars($dist['nama_komponen'] ?: '-') ?>
                                     </span>
                                 </td>
 
                                 <!-- Satuan & Jumlah -->
-                                <td class="py-2.5 px-2.5 text-center whitespace-nowrap bg-indigo-50/20">
+                                <td class="py-2.5 px-2.5 text-center whitespace-nowrap bg-indigo-50/20 align-top">
                                     <span class="font-mono font-bold text-slate-900 text-xs">
                                         <?= (float)$dist['jumlah'] ?>
                                     </span>
@@ -86,106 +85,110 @@
                                     </span>
                                 </td>
 
-                                <!-- Rute Pengiriman (Interaktif - Klik untuk Popup) -->
-                                <td class="py-2.5 px-3 whitespace-nowrap">
-                                    <?php $rute = $dist['rute_pengiriman'] ?? 'kantor'; ?>
+                                <!-- 1. STATUS BARANG (Belum Dipesan vs Sudah Dipesan) -->
+                                <td class="py-2 px-3 align-top">
+                                    <?php 
+                                    $isOrdered = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
+                                    $namaBarangShow = !empty($dist['nama_barang']) ? $dist['nama_barang'] : $dist['nama_komponen'];
+                                    $ekspedisiShow = !empty($dist['ekspedisi']) ? $dist['ekspedisi'] : ($dist['kurir_ekspedisi'] ?? '');
+                                    $resiShow = $dist['no_resi'] ?? '';
+                                    $hargaShow = isset($dist['harga_satuan']) && $dist['harga_satuan'] !== '' && $dist['harga_satuan'] !== null ? (float)$dist['harga_satuan'] : null;
+                                    ?>
+                                    
                                     <?php if ($role === 'admin' || $role === 'user'): ?>
                                         <button type="button" 
-                                                onclick='openModalUpdateRute(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all hover:scale-[1.02] shadow-2xs cursor-pointer group <?= ($rute === 'kantor') ? 'bg-blue-50 text-blue-700 border border-blue-200/90 hover:bg-blue-100' : (($rute === 'gudang') ? 'bg-amber-50 text-amber-700 border border-amber-200/90 hover:bg-amber-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-200/90 hover:bg-emerald-100') ?>"
-                                                title="Klik untuk mengubah rute pengiriman">
-                                            <?php if ($rute === 'kantor'): ?>
-                                                <ion-icon name="home-outline" class="text-sm shrink-0"></ion-icon>
-                                                <span>Ke Rumah / Kantor</span>
-                                            <?php elseif ($rute === 'gudang'): ?>
-                                                <ion-icon name="business-outline" class="text-sm shrink-0"></ion-icon>
-                                                <span>Ke Gudang Transit</span>
+                                                onclick='openModalUpdateStatusBarang(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all hover:scale-[1.02] shadow-2xs cursor-pointer group <?= $isOrdered ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200' ?>"
+                                                title="Klik untuk ubah status barang & data pemesanan">
+                                            <?php if ($isOrdered): ?>
+                                                <ion-icon name="bag-check-outline" class="text-sm shrink-0 text-emerald-600"></ion-icon>
+                                                <span>Sudah dipesan</span>
                                             <?php else: ?>
-                                                <ion-icon name="paper-plane-outline" class="text-sm shrink-0"></ion-icon>
-                                                <span>Langsung ke Tujuan</span>
-                                            <?php endif; ?>
-                                            <ion-icon name="chevron-down-outline" class="text-[10px] opacity-40 group-hover:opacity-100 transition-opacity ml-0.5"></ion-icon>
-                                        </button>
-                                    <?php else: ?>
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold <?= ($rute === 'kantor') ? 'bg-blue-50 text-blue-700 border border-blue-200/90' : (($rute === 'gudang') ? 'bg-amber-50 text-amber-700 border border-amber-200/90' : 'bg-emerald-50 text-emerald-700 border border-emerald-200/90') ?>">
-                                            <span><?= ($rute === 'kantor') ? 'Ke Rumah / Kantor' : (($rute === 'gudang') ? 'Ke Gudang Transit' : 'Langsung ke Tujuan') ?></span>
-                                        </span>
-                                    <?php endif; ?>
-                                </td>
-
-                                <!-- Status Pemesanan Logistik (Interaktif - Klik untuk Popup) -->
-                                <td class="py-2 px-3 whitespace-nowrap">
-                                    <?php $spm = $dist['status_pemesanan'] ?? 'Belum Dipesan'; ?>
-                                    <?php if ($role === 'admin' || $role === 'user'): ?>
-                                        <button type="button" 
-                                                onclick='openModalUpdatePemesanan(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all hover:scale-[1.02] shadow-2xs cursor-pointer group <?= ($spm === 'Tiba di Transit') ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100' : (($spm === 'Sudah Dipesan') ? 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100' : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200') ?>"
-                                                title="Klik untuk update status pemesanan & resi">
-                                            <?php if ($spm === 'Tiba di Transit'): ?>
-                                                <ion-icon name="cube-outline" class="text-sm shrink-0"></ion-icon>
-                                                <span>Tiba di Transit</span>
-                                            <?php elseif ($spm === 'Sudah Dipesan'): ?>
-                                                <ion-icon name="bag-check-outline" class="text-sm shrink-0"></ion-icon>
-                                                <span>Sudah Dipesan</span>
-                                            <?php else: ?>
-                                                <ion-icon name="time-outline" class="text-sm shrink-0"></ion-icon>
+                                                <ion-icon name="time-outline" class="text-sm shrink-0 text-slate-500"></ion-icon>
                                                 <span>Belum Dipesan</span>
                                             <?php endif; ?>
                                             <ion-icon name="create-outline" class="text-[10px] opacity-40 group-hover:opacity-100 transition-opacity ml-0.5"></ion-icon>
                                         </button>
                                     <?php else: ?>
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold <?= ($spm === 'Tiba di Transit') ? 'bg-indigo-50 text-indigo-700' : (($spm === 'Sudah Dipesan') ? 'bg-sky-50 text-sky-700' : 'bg-slate-100 text-slate-600') ?>">
-                                            <span><?= htmlspecialchars($spm) ?></span>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold <?= $isOrdered ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' ?>">
+                                            <span><?= $isOrdered ? 'Sudah dipesan' : 'Belum Dipesan' ?></span>
                                         </span>
                                     <?php endif; ?>
 
-                                    <?php if (!empty($dist['kurir_ekspedisi']) || !empty($dist['no_resi'])): ?>
-                                        <div class="text-[10px] text-slate-400 font-mono mt-0.5 truncate max-w-[150px]" title="<?= htmlspecialchars(($dist['kurir_ekspedisi'] ? $dist['kurir_ekspedisi'] . ': ' : '') . $dist['no_resi']) ?>">
-                                            <?= htmlspecialchars(($dist['kurir_ekspedisi'] ? $dist['kurir_ekspedisi'] . ' ' : '') . ($dist['no_resi'] ?: '')) ?>
-                                        </div>
-                                    <?php endif; ?>
-                                </td>
-
-                                <!-- Status Penerimaan di Lokasi (Interaktif - Klik untuk Popup) -->
-                                <td class="py-2 px-3 whitespace-nowrap">
-                                    <?php 
-                                    $spn = $dist['status_penerimaan'] ?? (($dist['status'] === 'Diterima') ? 'Diterima di Tujuan' : 'Menunggu Barang');
-                                    ?>
-                                    <?php if ($role === 'admin' || $role === 'user'): ?>
-                                        <button type="button" 
-                                                onclick='openModalUpdatePenerimaan(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all hover:scale-[1.02] shadow-2xs cursor-pointer group <?= ($spn === 'Diterima di Tujuan') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' : (($spn === 'Dalam Pengantaran ke Tujuan') ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100' : (($spn === 'Siap Disalurkan / Diambil') ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100' : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200')) ?>"
-                                                title="Klik untuk update status penerimaan & BAST">
-                                            <?php if ($spn === 'Diterima di Tujuan'): ?>
-                                                <ion-icon name="checkmark-done-circle" class="text-sm text-emerald-600 shrink-0"></ion-icon>
-                                                <span>Diterima di Tujuan</span>
-                                            <?php elseif ($spn === 'Dalam Pengantaran ke Tujuan'): ?>
-                                                <ion-icon name="paper-plane-outline" class="text-sm shrink-0"></ion-icon>
-                                                <span>Dalam Pengantaran</span>
-                                            <?php elseif ($spn === 'Siap Disalurkan / Diambil'): ?>
-                                                <ion-icon name="cube-outline" class="text-sm shrink-0"></ion-icon>
-                                                <span>Siap Salur / Ambil</span>
-                                            <?php else: ?>
-                                                <ion-icon name="hourglass-outline" class="text-sm shrink-0"></ion-icon>
-                                                <span>Menunggu Barang</span>
+                                    <!-- Informasi Rincian jika Sudah Dipesan -->
+                                    <?php if ($isOrdered): ?>
+                                        <div class="mt-1.5 space-y-0.5 text-[10px] leading-tight">
+                                            <?php if (!empty($namaBarangShow) && $namaBarangShow !== $dist['nama_komponen']): ?>
+                                                <div class="text-slate-700 font-semibold truncate max-w-[170px]" title="<?= htmlspecialchars($namaBarangShow) ?>">
+                                                    <?= htmlspecialchars($namaBarangShow) ?>
+                                                </div>
                                             <?php endif; ?>
-                                            <ion-icon name="create-outline" class="text-[10px] opacity-40 group-hover:opacity-100 transition-opacity ml-0.5"></ion-icon>
-                                        </button>
-                                    <?php else: ?>
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold <?= ($spn === 'Diterima di Tujuan') ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' ?>">
-                                            <span><?= htmlspecialchars($spn) ?></span>
-                                        </span>
-                                    <?php endif; ?>
-
-                                    <?php if (!empty($dist['tanggal_terima']) && $spn === 'Diterima di Tujuan'): ?>
-                                        <div class="text-[10px] text-emerald-600 font-mono mt-0.5">
-                                            Tiba: <?= date('d/m/Y', strtotime($dist['tanggal_terima'])) ?>
+                                            <?php if ($hargaShow !== null): ?>
+                                                <div class="text-slate-500 font-mono">
+                                                    @ Rp <?= number_format($hargaShow, 0, ',', '.') ?>
+                                                </div>
+                                            <?php endif; ?>
+                                            <?php if (!empty($ekspedisiShow) || !empty($resiShow)): ?>
+                                                <div class="text-slate-400 font-mono truncate max-w-[170px]" title="<?= htmlspecialchars(trim(($ekspedisiShow ?: '') . ' ' . ($resiShow ?: ''))) ?>">
+                                                    <span class="font-medium text-slate-600"><?= htmlspecialchars($ekspedisiShow ?: 'Kurir') ?>:</span> <?= htmlspecialchars($resiShow ?: '-') ?>
+                                                </div>
+                                            <?php endif; ?>
+                                            <?php if (!empty($dist['link_pembelian'])): ?>
+                                                <div class="pt-0.5">
+                                                    <a href="<?= htmlspecialchars($dist['link_pembelian']) ?>" target="_blank" rel="noopener noreferrer" 
+                                                       class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 hover:underline">
+                                                        <ion-icon name="link-outline"></ion-icon>
+                                                        <span>Link Pesanan</span>
+                                                    </a>
+                                                </div>
+                                            <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Aksi (Hanya Tombol Hapus - Fitur Edit Distribusi Dihapus) -->
-                                <td class="py-2 px-2.5 text-right whitespace-nowrap">
+                                <!-- 2. STATUS DISTRIBUSI (Hanya muncul/bisa diubah jika Sudah Dipesan) -->
+                                <td class="py-2 px-3 align-top whitespace-nowrap">
+                                    <?php if (!$isOrdered): ?>
+                                        <!-- Locked / Disabled jika Belum Dipesan -->
+                                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200/80 cursor-not-allowed select-none opacity-80"
+                                             title="Pesan barang terlebih dahulu untuk mengubah status distribusi">
+                                            <ion-icon name="lock-closed-outline" class="text-xs"></ion-icon>
+                                            <span>Belum Dipesan</span>
+                                        </div>
+                                    <?php else: ?>
+                                        <?php 
+                                        $sDist = $dist['status_distribusi'] ?? '';
+                                        ?>
+                                        <?php if ($role === 'admin' || $role === 'user'): ?>
+                                            <button type="button" 
+                                                    onclick='openModalUpdateStatusDistribusi(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all hover:scale-[1.02] shadow-2xs cursor-pointer group <?= ($sDist === 'Tiba di Tujuan') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' : (($sDist === 'Tiba di Gudang') ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100' : (($sDist === 'Tiba dirumah/kantor' || $sDist === 'Tiba di Rumah/Kantor') ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')) ?>"
+                                                    title="Klik untuk ubah status distribusi">
+                                                <?php if ($sDist === 'Tiba di Tujuan'): ?>
+                                                    <ion-icon name="checkmark-done-circle" class="text-sm text-emerald-600 shrink-0"></ion-icon>
+                                                    <span>Tiba di Tujuan</span>
+                                                <?php elseif ($sDist === 'Tiba di Gudang'): ?>
+                                                    <ion-icon name="business-outline" class="text-sm shrink-0 text-amber-600"></ion-icon>
+                                                    <span>Tiba di Gudang</span>
+                                                <?php elseif ($sDist === 'Tiba dirumah/kantor' || $sDist === 'Tiba di Rumah/Kantor'): ?>
+                                                    <ion-icon name="home-outline" class="text-sm shrink-0 text-blue-600"></ion-icon>
+                                                    <span>Tiba dirumah/kantor</span>
+                                                <?php else: ?>
+                                                    <ion-icon name="paper-plane-outline" class="text-sm shrink-0 text-sky-600"></ion-icon>
+                                                    <span>Pilih Status</span>
+                                                <?php endif; ?>
+                                                <ion-icon name="create-outline" class="text-[10px] opacity-40 group-hover:opacity-100 transition-opacity ml-0.5"></ion-icon>
+                                            </button>
+                                        <?php else: ?>
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold <?= ($sDist === 'Tiba di Tujuan') ? 'bg-emerald-50 text-emerald-700' : (($sDist === 'Tiba di Gudang') ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700') ?>">
+                                                <span><?= htmlspecialchars($sDist ?: 'Dalam Pengiriman') ?></span>
+                                            </span>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </td>
+
+                                <!-- Aksi -->
+                                <td class="py-2 px-2.5 text-right whitespace-nowrap align-top pt-2.5">
                                     <?php if ($role === 'admin' || $role === 'user'): ?>
                                         <div class="flex items-center justify-end">
                                             <a href="<?= APP_URL ?>/paket/deleteDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/<?= $dist['id'] ?>" 
@@ -215,7 +218,7 @@
                             <td class="py-2 px-2.5 text-center font-mono text-xs text-indigo-700 bg-indigo-50/60 font-extrabold">
                                 <?= (float)($distribusiSummary['total_qty_dialokasikan'] ?? 0) ?> Unit
                             </td>
-                            <td colspan="4" class="py-2 px-3 text-slate-400 text-[10px] font-normal">
+                            <td colspan="3" class="py-2 px-3 text-slate-400 text-[10px] font-normal">
                                 (Tersebar ke <?= (int)($distribusiSummary['total_tujuan'] ?? 0) ?> titik penerima)
                             </td>
                         </tr>

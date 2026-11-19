@@ -574,214 +574,181 @@
 </div>
 
 <!-- ========================================== -->
-<!-- MODAL UPDATE RUTE PENGIRIMAN               -->
+<!-- MODAL UPDATE STATUS BARANG                 -->
 <!-- ========================================== -->
-<div id="modalUpdateRute" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+<div id="modalUpdateStatusBarang" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[90vh] flex flex-col">
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-sm shadow-xs">
+                    <ion-icon name="bag-check-outline"></ion-icon>
+                </div>
+                <h3 class="font-bold text-slate-800 text-xs">Update Status Barang</h3>
+            </div>
+            <button type="button" data-modal-close="modalUpdateStatusBarang" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+        <form id="formUpdateStatusBarang" onsubmit="submitUpdateStatusBarang(event)" class="p-5 space-y-4 overflow-y-auto flex-1">
+            <input type="hidden" id="status_barang_dist_id" name="dist_id">
+            
+            <!-- Context Info Box -->
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
+                <div class="text-slate-400 text-[10px] font-medium uppercase tracking-wider">Tujuan Penerima:</div>
+                <div class="font-bold text-slate-800 mt-0.5" id="status_barang_modal_tujuan">-</div>
+                <div class="text-slate-600 text-[11px] mt-0.5" id="status_barang_modal_item">-</div>
+            </div>
+
+            <!-- Radio Pilihan Status Barang -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-2">Pilih Status Barang <span class="text-red-500">*</span></label>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:border-slate-400 cursor-pointer transition-all bg-white has-[:checked]:border-slate-600 has-[:checked]:bg-slate-50">
+                        <input type="radio" name="status_barang" value="Belum Dipesan" id="opt_status_belum_pesan" onchange="toggleStatusBarangInputs()" class="text-slate-600 focus:ring-slate-500">
+                        <div>
+                            <div class="font-bold text-slate-800 text-xs">Belum Dipesan</div>
+                            <div class="text-[10px] text-slate-400">Barang belum diorder</div>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:border-emerald-400 cursor-pointer transition-all bg-white has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/50">
+                        <input type="radio" name="status_barang" value="Sudah Dipesan" id="opt_status_sudah_pesan" onchange="toggleStatusBarangInputs()" class="text-emerald-600 focus:ring-emerald-500">
+                        <div>
+                            <div class="font-bold text-emerald-800 text-xs">Sudah dipesan</div>
+                            <div class="text-[10px] text-emerald-600">Lengkapi data pesanan</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Form Rincian Pemesanan (HANYA MUNCUL JIKA SUDAH DIPESAN) -->
+            <div id="section_detail_pesanan" class="space-y-3 pt-3 border-t border-slate-100 hidden">
+                <div class="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                    <ion-icon name="receipt-outline" class="text-emerald-600"></ion-icon>
+                    <span>Rincian Pembelian Barang</span>
+                </div>
+
+                <!-- Nama Barang -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Barang <span class="text-red-500">*</span></label>
+                    <input type="text" id="status_barang_nama" name="nama_barang" placeholder="Nama barang yang dipesan..."
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-semibold text-slate-800 focus:bg-white transition-all">
+                </div>
+
+                <!-- Harga Satuan -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Harga Satuan (Rp)</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2 text-xs font-bold text-slate-400">Rp</span>
+                        <input type="text" id="status_barang_harga" name="harga_satuan" oninput="formatRupiahInput(this)" placeholder="0"
+                               class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-bold text-slate-800 focus:bg-white transition-all">
+                    </div>
+                </div>
+
+                <!-- Ekspedisi & No. Resi -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ekspedisi</label>
+                        <input type="text" id="status_barang_ekspedisi" name="ekspedisi" placeholder="Contoh: JNE, J&T, SiCepat"
+                               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs focus:bg-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">No. Resi</label>
+                        <input type="text" id="status_barang_resi" name="no_resi" placeholder="No. resi pengiriman"
+                               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono focus:bg-white transition-all">
+                    </div>
+                </div>
+
+                <!-- Link (opsional) -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Link (Opsional)</label>
+                    <input type="url" id="status_barang_link" name="link_pembelian" placeholder="https://..."
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono focus:bg-white transition-all">
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                <button type="button" data-modal-close="modalUpdateStatusBarang" class="px-3.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs transition-colors">
+                    Batal
+                </button>
+                <button type="submit" id="btnSubmitStatusBarang" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-xs shadow-xs transition-colors flex items-center gap-1.5">
+                    <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
+                    <span>Simpan Status Barang</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL UPDATE STATUS DISTRIBUSI             -->
+<!-- ========================================== -->
+<div id="modalUpdateStatusDistribusi" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
     <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden">
         <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm shadow-xs">
-                    <ion-icon name="paper-plane-outline"></ion-icon>
+                    <ion-icon name="navigate-outline"></ion-icon>
                 </div>
-                <h3 class="font-bold text-slate-800 text-xs">Update Rute Pengiriman</h3>
+                <h3 class="font-bold text-slate-800 text-xs">Update Status Distribusi</h3>
             </div>
-            <button type="button" data-modal-close="modalUpdateRute" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg">
+            <button type="button" data-modal-close="modalUpdateStatusDistribusi" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg">
                 <ion-icon name="close-outline" class="text-lg"></ion-icon>
             </button>
         </div>
-        <form id="formUpdateRute" onsubmit="submitUpdateRute(event)" class="p-5 space-y-4">
-            <input type="hidden" id="rute_dist_id" name="dist_id">
+        <form id="formUpdateStatusDistribusi" onsubmit="submitUpdateStatusDistribusi(event)" class="p-5 space-y-4">
+            <input type="hidden" id="status_distribusi_dist_id" name="dist_id">
+            
             <!-- Context Info Box -->
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
-                <div class="text-slate-400 text-[10px] font-medium uppercase tracking-wider">Tujuan & Komponen:</div>
-                <div class="font-bold text-slate-800 mt-0.5" id="rute_modal_tujuan">-</div>
-                <div class="text-slate-600 text-[11px]" id="rute_modal_item">-</div>
+                <div class="text-slate-400 text-[10px] font-medium uppercase tracking-wider">Tujuan Penerima:</div>
+                <div class="font-bold text-slate-800 mt-0.5" id="status_distribusi_modal_tujuan">-</div>
+                <div class="text-slate-600 text-[11px] mt-0.5" id="status_distribusi_modal_item">-</div>
             </div>
 
-            <!-- Radio Options -->
+            <!-- Radio Options Distribusi -->
             <div class="space-y-2">
-                <label class="block text-xs font-semibold text-slate-700">Pilih Rute Pengiriman:</label>
+                <label class="block text-xs font-semibold text-slate-700">Pilih Status Distribusi:</label>
                 
                 <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-blue-400 cursor-pointer transition-all bg-white has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/50">
-                    <input type="radio" name="rute_pengiriman" value="kantor" id="rute_opt_kantor" class="text-blue-600 focus:ring-blue-500">
+                    <input type="radio" name="status_distribusi" value="Tiba dirumah/kantor" id="dist_opt_kantor" class="text-blue-600 focus:ring-blue-500">
                     <div class="flex-1">
                         <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                             <ion-icon name="home-outline" class="text-blue-600"></ion-icon>
-                            <span>Ke Rumah / Kantor</span>
+                            <span>Tiba dirumah/kantor</span>
                         </div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">Transit penerimaan barang di rumah atau kantor pelaksana</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Barang telah tiba dan diterima di rumah atau kantor</div>
                     </div>
                 </label>
 
                 <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-amber-400 cursor-pointer transition-all bg-white has-[:checked]:border-amber-600 has-[:checked]:bg-amber-50/50">
-                    <input type="radio" name="rute_pengiriman" value="gudang" id="rute_opt_gudang" class="text-amber-600 focus:ring-amber-500">
+                    <input type="radio" name="status_distribusi" value="Tiba di Gudang" id="dist_opt_gudang" class="text-amber-600 focus:ring-amber-500">
                     <div class="flex-1">
                         <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                             <ion-icon name="business-outline" class="text-amber-600"></ion-icon>
-                            <span>Ke Gudang Transit</span>
+                            <span>Tiba di Gudang</span>
                         </div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">Disimpan sementara di gudang logistik sebelum disalurkan</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Barang telah tiba dan tersimpan di gudang transit</div>
                     </div>
                 </label>
 
                 <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-emerald-400 cursor-pointer transition-all bg-white has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/50">
-                    <input type="radio" name="rute_pengiriman" value="langsung" id="rute_opt_langsung" class="text-emerald-600 focus:ring-emerald-500">
+                    <input type="radio" name="status_distribusi" value="Tiba di Tujuan" id="dist_opt_tujuan" class="text-emerald-600 focus:ring-emerald-500">
                     <div class="flex-1">
                         <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                            <ion-icon name="paper-plane-outline" class="text-emerald-600"></ion-icon>
-                            <span>Langsung ke Tujuan</span>
+                            <ion-icon name="checkmark-done-circle-outline" class="text-emerald-600"></ion-icon>
+                            <span>Tiba di Tujuan</span>
                         </div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">Dikirim langsung dari supplier ke alamat sekolah/instansi</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Barang telah sampai di lokasi akhir tujuan (BAST siap dicetak)</div>
                     </div>
                 </label>
             </div>
 
             <div class="pt-2 border-t border-slate-100 flex justify-end gap-2">
-                <button type="button" data-modal-close="modalUpdateRute" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs transition-colors">
+                <button type="button" data-modal-close="modalUpdateStatusDistribusi" class="px-3.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs transition-colors">
                     Batal
                 </button>
-                <button type="submit" id="btnSubmitRute" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs shadow-xs transition-colors flex items-center gap-1.5">
-                    <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
-                    <span>Simpan Rute</span>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- ========================================== -->
-<!-- MODAL UPDATE STATUS PEMESANAN              -->
-<!-- ========================================== -->
-<div id="modalUpdatePemesanan" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
-    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden">
-        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-lg bg-sky-600 text-white flex items-center justify-center text-sm shadow-xs">
-                    <ion-icon name="bag-check-outline"></ion-icon>
-                </div>
-                <h3 class="font-bold text-slate-800 text-xs">Update Status Pemesanan</h3>
-            </div>
-            <button type="button" data-modal-close="modalUpdatePemesanan" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg">
-                <ion-icon name="close-outline" class="text-lg"></ion-icon>
-            </button>
-        </div>
-        <form id="formUpdatePemesanan" onsubmit="submitUpdatePemesanan(event)" class="p-5 space-y-3.5">
-            <input type="hidden" id="pemesanan_dist_id" name="dist_id">
-            <!-- Context Info Box -->
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
-                <div class="text-slate-400 text-[10px] font-medium uppercase tracking-wider">Tujuan & Komponen:</div>
-                <div class="font-bold text-slate-800 mt-0.5" id="pemesanan_modal_tujuan">-</div>
-                <div class="text-slate-600 text-[11px]" id="pemesanan_modal_item">-</div>
-            </div>
-
-            <!-- Status Pemesanan Dropdown -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Status Pemesanan <span class="text-red-500">*</span></label>
-                <select id="pemesanan_status" name="status_pemesanan" required
-                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-sky-500 text-xs font-semibold text-slate-800 focus:bg-white transition-all cursor-pointer">
-                    <option value="Belum Dipesan">Belum Dipesan</option>
-                    <option value="Sudah Dipesan">Sudah Dipesan</option>
-                    <option value="Tiba di Transit">Tiba di Transit</option>
-                </select>
-            </div>
-
-            <!-- Tanggal Pesan -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Pesan / Pembelian</label>
-                <input type="date" id="pemesanan_tanggal" name="tanggal_pesan"
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-sky-500 text-xs focus:bg-white transition-all">
-            </div>
-
-            <!-- Kurir & No Resi Grid -->
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Kurir / Ekspedisi</label>
-                    <input type="text" id="pemesanan_kurir" name="kurir_ekspedisi" placeholder="Contoh: JNE Cargo, J&T"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-sky-500 text-xs focus:bg-white transition-all">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">No. Resi / Tracking</label>
-                    <input type="text" id="pemesanan_resi" name="no_resi" placeholder="No. resi pengiriman"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-sky-500 text-xs font-mono focus:bg-white transition-all">
-                </div>
-            </div>
-
-            <!-- Tautan Pembelian -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Tautan Pembelian / Invoice (Opsional)</label>
-                <input type="url" id="pemesanan_link" name="link_pembelian" placeholder="https://..."
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-sky-500 text-xs font-mono focus:bg-white transition-all">
-            </div>
-
-            <div class="pt-2 border-t border-slate-100 flex justify-end gap-2">
-                <button type="button" data-modal-close="modalUpdatePemesanan" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs transition-colors">
-                    Batal
-                </button>
-                <button type="submit" id="btnSubmitPemesanan" class="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg text-xs shadow-xs transition-colors flex items-center gap-1.5">
-                    <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
-                    <span>Simpan Status</span>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- ========================================== -->
-<!-- MODAL UPDATE STATUS PENERIMAAN             -->
-<!-- ========================================== -->
-<div id="modalUpdatePenerimaan" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
-    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden">
-        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-sm shadow-xs">
-                    <ion-icon name="checkmark-done-circle-outline"></ion-icon>
-                </div>
-                <h3 class="font-bold text-slate-800 text-xs">Update Status Penerimaan di Lokasi</h3>
-            </div>
-            <button type="button" data-modal-close="modalUpdatePenerimaan" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg">
-                <ion-icon name="close-outline" class="text-lg"></ion-icon>
-            </button>
-        </div>
-        <form id="formUpdatePenerimaan" onsubmit="submitUpdatePenerimaan(event)" class="p-5 space-y-3.5">
-            <input type="hidden" id="penerimaan_dist_id" name="dist_id">
-            <!-- Context Info Box -->
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
-                <div class="text-slate-400 text-[10px] font-medium uppercase tracking-wider">Tujuan & Komponen:</div>
-                <div class="font-bold text-slate-800 mt-0.5" id="penerimaan_modal_tujuan">-</div>
-                <div class="text-slate-600 text-[11px]" id="penerimaan_modal_item">-</div>
-            </div>
-
-            <!-- Status Penerimaan Dropdown -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Status Penerimaan di Tujuan <span class="text-red-500">*</span></label>
-                <select id="penerimaan_status" name="status_penerimaan" required onchange="onStatusPenerimaanChange(this.value)"
-                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-semibold text-slate-800 focus:bg-white transition-all cursor-pointer">
-                    <option value="Menunggu Barang">Menunggu Barang</option>
-                    <option value="Dalam Pengantaran ke Tujuan">Dalam Pengantaran ke Tujuan</option>
-                    <option value="Siap Disalurkan / Diambil">Siap Disalurkan / Diambil</option>
-                    <option value="Diterima di Tujuan">Diterima di Tujuan (BAST Siap Cetak)</option>
-                </select>
-            </div>
-
-            <!-- Tanggal Terima di Lokasi -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Terima di Lokasi</label>
-                <input type="date" id="penerimaan_tanggal" name="tanggal_terima"
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs focus:bg-white transition-all">
-            </div>
-
-            <!-- Catatan Serah Terima -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan Serah Terima / Kondisi Barang (Opsional)</label>
-                <textarea id="penerimaan_catatan" name="catatan" rows="2" placeholder="Catatan kondisi serah terima barang..."
-                          class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs focus:bg-white transition-all leading-relaxed"></textarea>
-            </div>
-
-            <div class="pt-2 border-t border-slate-100 flex justify-end gap-2">
-                <button type="button" data-modal-close="modalUpdatePenerimaan" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs transition-colors">
-                    Batal
-                </button>
-                <button type="submit" id="btnSubmitPenerimaan" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-xs shadow-xs transition-colors flex items-center gap-1.5">
+                <button type="submit" id="btnSubmitStatusDistribusi" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs shadow-xs transition-colors flex items-center gap-1.5">
                     <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
                     <span>Simpan Status</span>
                 </button>

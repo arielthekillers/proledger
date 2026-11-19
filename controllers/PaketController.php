@@ -786,7 +786,87 @@ class PaketController {
     }
 
     /**
-     * AJAX/POST: Update Rute Pengiriman Distribusi
+     * AJAX/POST: Update Status Barang (Belum Dipesan vs Sudah Dipesan beserta detail pembelian)
+     */
+    public function updateStatusBarang($idOrKode, $distribusiId) {
+        $paket = $this->getAccessiblePaket($idOrKode, true);
+
+        $statusBarang = trim($_POST['status_barang'] ?? 'Belum Dipesan');
+        $data = [
+            'status_barang' => $statusBarang,
+            'nama_barang' => trim($_POST['nama_barang'] ?? ''),
+            'harga_satuan' => isset($_POST['harga_satuan']) && $_POST['harga_satuan'] !== '' ? parseRupiah($_POST['harga_satuan']) : null,
+            'ekspedisi' => trim($_POST['ekspedisi'] ?? ''),
+            'no_resi' => trim($_POST['no_resi'] ?? ''),
+            'link_pembelian' => trim($_POST['link_pembelian'] ?? '')
+        ];
+
+        try {
+            $this->distribusiModel->updateStatusBarang($distribusiId, $data);
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+                echo json_encode(['success' => true, 'message' => 'Status barang berhasil diperbarui!']);
+                exit;
+            }
+            flash('success', 'Status barang berhasil diperbarui!');
+        } catch (Exception $e) {
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+                echo json_encode(['success' => false, 'message' => 'Gagal memperbarui status barang: ' . $e->getMessage()]);
+                exit;
+            }
+            flash('error', 'Gagal memperbarui status barang: ' . $e->getMessage());
+        }
+
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+    }
+
+    /**
+     * AJAX/POST: Update Status Distribusi (Tiba dirumah/kantor, Tiba di Gudang, Tiba di Tujuan)
+     */
+    public function updateStatusDistribusi($idOrKode, $distribusiId) {
+        $paket = $this->getAccessiblePaket($idOrKode, true);
+        $dist = $this->distribusiModel->getById($distribusiId);
+
+        if (!$dist) {
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+                echo json_encode(['success' => false, 'message' => 'Data alokasi distribusi tidak ditemukan.']);
+                exit;
+            }
+            flash('error', 'Data alokasi distribusi tidak ditemukan.');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+        }
+
+        // Validasi: Status Barang harus 'Sudah Dipesan'
+        if (($dist['status_barang'] ?? '') !== 'Sudah Dipesan') {
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+                echo json_encode(['success' => false, 'message' => 'Barang belum dipesan! Status distribusi hanya dapat diubah jika status barang sudah "Sudah Dipesan".']);
+                exit;
+            }
+            flash('error', 'Barang belum dipesan! Status distribusi hanya dapat diubah jika status barang sudah "Sudah Dipesan".');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+        }
+
+        $statusDistribusi = trim($_POST['status_distribusi'] ?? 'Tiba dirumah/kantor');
+
+        try {
+            $this->distribusiModel->updateStatusDistribusi($distribusiId, $statusDistribusi);
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+                echo json_encode(['success' => true, 'message' => 'Status distribusi berhasil diperbarui!']);
+                exit;
+            }
+            flash('success', 'Status distribusi berhasil diperbarui!');
+        } catch (Exception $e) {
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+                echo json_encode(['success' => false, 'message' => 'Gagal memperbarui status distribusi: ' . $e->getMessage()]);
+                exit;
+            }
+            flash('error', 'Gagal memperbarui status distribusi: ' . $e->getMessage());
+        }
+
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+    }
+
+    /**
+     * AJAX/POST: Update Rute Pengiriman Distribusi (Legacy/Fallback)
      */
     public function updateRuteDistribusi($idOrKode, $distribusiId) {
         $paket = $this->getAccessiblePaket($idOrKode, true);
@@ -978,22 +1058,21 @@ class PaketController {
             'KOMPONEN BARANG',
             'JUMLAH (QTY)',
             'SATUAN',
-            'RUTE PENGIRIMAN',
-            'STATUS PEMESANAN',
-            'TANGGAL PESAN',
-            'KURIR / EKSPEDISI',
+            'STATUS BARANG',
+            'NAMA BARANG PESANAN',
+            'HARGA SATUAN (RP)',
+            'EKSPEDISI',
             'NO. RESI / SURAT JALAN',
-            'STATUS PENERIMAAN DI LOKASI',
-            'TANGGAL TERIMA',
-            'CATATAN PENERIMAAN'
+            'LINK PEMBELIAN',
+            'STATUS DISTRIBUSI'
         ]);
 
         $no = 1;
         $totalQty = 0;
         foreach ($distribusiList as $d) {
-            $ruteLabel = ($d['rute_pengiriman'] === 'kantor') ? 'Ke Rumah / Kantor' : (($d['rute_pengiriman'] === 'gudang') ? 'Ke Gudang Transit' : 'Langsung ke Tujuan');
             $qty = (float)$d['jumlah'];
             $totalQty += $qty;
+            $isOrdered = (($d['status_barang'] ?? '') === 'Sudah Dipesan');
 
             fputcsv($output, [
                 $no++,
@@ -1002,19 +1081,18 @@ class PaketController {
                 $d['nama_komponen'] ?: '-',
                 $qty,
                 $d['satuan'] ?: 'Unit',
-                $ruteLabel,
-                $d['status_pemesanan'] ?: 'Belum Dipesan',
-                $d['tanggal_pesan'] ?: '-',
-                $d['kurir_ekspedisi'] ?: '-',
-                $d['no_resi'] ?: '-',
-                $d['status_penerimaan'] ?: 'Menunggu Barang',
-                $d['tanggal_terima'] ?: '-',
-                $d['catatan'] ?: '-'
+                $isOrdered ? 'Sudah Dipesan' : 'Belum Dipesan',
+                $isOrdered ? ($d['nama_barang'] ?: ($d['nama_komponen'] ?: '-')) : '-',
+                ($isOrdered && !empty($d['harga_satuan'])) ? number_format((float)$d['harga_satuan'], 0, ',', '.') : '-',
+                $isOrdered ? ($d['ekspedisi'] ?: ($d['kurir_ekspedisi'] ?: '-')) : '-',
+                $isOrdered ? ($d['no_resi'] ?: '-') : '-',
+                $isOrdered ? ($d['link_pembelian'] ?: '-') : '-',
+                $isOrdered ? ($d['status_distribusi'] ?: 'Dalam Pengiriman') : 'Belum Dipesan'
             ]);
         }
 
         fputcsv($output, []);
-        fputcsv($output, ['', 'TOTAL BARANG DIALOKASIKAN', '', '', $totalQty, '', '', '', '', '', '', '', '', '']);
+        fputcsv($output, ['', 'TOTAL BARANG DIALOKASIKAN', '', '', $totalQty, '', '', '', '', '', '', '', '']);
 
         fclose($output);
         exit;

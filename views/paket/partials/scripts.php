@@ -593,39 +593,72 @@ function openDistribusiPerItemModal(item) {
     window.ProModal.open('modalTambahDistribusi');
 }
 /**
- * Update Rute Pengiriman Pop Up
+ * Update Status Barang Pop Up (Belum Dipesan vs Sudah Dipesan)
  */
-function openModalUpdateRute(dist) {
+function openModalUpdateStatusBarang(dist) {
     if (!dist) return;
-    document.getElementById('rute_dist_id').value = dist.id;
-    document.getElementById('rute_modal_tujuan').textContent = dist.nama_tujuan || '-';
-    document.getElementById('rute_modal_item').textContent = (dist.nama_komponen || '-') + ' (' + (parseFloat(dist.jumlah) || 1) + ' ' + (dist.satuan || 'Unit') + ')';
+    document.getElementById('status_barang_dist_id').value = dist.id;
+    document.getElementById('status_barang_modal_tujuan').textContent = dist.nama_tujuan || '-';
+    
+    const qtyText = (parseFloat(dist.jumlah) || 1) + ' ' + (dist.satuan || 'Unit');
+    document.getElementById('status_barang_modal_item').textContent = (dist.nama_komponen || '-') + ' (' + qtyText + ')';
 
-    const rute = (dist.rute_pengiriman || 'kantor').toLowerCase();
-    const optKantor = document.getElementById('rute_opt_kantor');
-    const optGudang = document.getElementById('rute_opt_gudang');
-    const optLangsung = document.getElementById('rute_opt_langsung');
+    const isSudah = (dist.status_barang === 'Sudah Dipesan');
+    const optBelum = document.getElementById('opt_status_belum_pesan');
+    const optSudah = document.getElementById('opt_status_sudah_pesan');
 
-    if (optKantor) optKantor.checked = (rute === 'kantor');
-    if (optGudang) optGudang.checked = (rute === 'gudang');
-    if (optLangsung) optLangsung.checked = (rute === 'langsung');
+    if (isSudah) {
+        if (optSudah) optSudah.checked = true;
+    } else {
+        if (optBelum) optBelum.checked = true;
+    }
 
-    window.ProModal.open('modalUpdateRute');
+    document.getElementById('status_barang_nama').value = dist.nama_barang || dist.nama_komponen || '';
+    
+    const hargaVal = (dist.harga_satuan !== null && dist.harga_satuan !== undefined && dist.harga_satuan !== '') 
+        ? dist.harga_satuan 
+        : (dist.item_harga_satuan || '');
+    const hargaInput = document.getElementById('status_barang_harga');
+    if (hargaInput) {
+        hargaInput.value = hargaVal ? parseInt(hargaVal, 10).toLocaleString('id-ID') : '';
+    }
+
+    document.getElementById('status_barang_ekspedisi').value = dist.ekspedisi || dist.kurir_ekspedisi || '';
+    document.getElementById('status_barang_resi').value = dist.no_resi || '';
+    document.getElementById('status_barang_link').value = dist.link_pembelian || '';
+
+    toggleStatusBarangInputs();
+
+    window.ProModal.open('modalUpdateStatusBarang');
 }
 
-function submitUpdateRute(e) {
+function toggleStatusBarangInputs() {
+    const optSudah = document.getElementById('opt_status_sudah_pesan');
+    const section = document.getElementById('section_detail_pesanan');
+    const namaInput = document.getElementById('status_barang_nama');
+
+    if (optSudah && optSudah.checked) {
+        if (section) section.classList.remove('hidden');
+        if (namaInput) namaInput.required = true;
+    } else {
+        if (section) section.classList.add('hidden');
+        if (namaInput) namaInput.required = false;
+    }
+}
+
+function submitUpdateStatusBarang(e) {
     e.preventDefault();
-    const distId = document.getElementById('rute_dist_id').value;
-    const form = document.getElementById('formUpdateRute');
+    const distId = document.getElementById('status_barang_dist_id').value;
+    const form = document.getElementById('formUpdateStatusBarang');
     const formData = new FormData(form);
-    const btn = document.getElementById('btnSubmitRute');
+    const btn = document.getElementById('btnSubmitStatusBarang');
 
     if (btn) {
         btn.disabled = true;
         btn.innerHTML = '<span class="inline-block animate-spin mr-1">⌛</span> Menyimpan...';
     }
 
-    fetch('<?= APP_URL ?>/paket/updateRuteDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId, {
+    fetch('<?= APP_URL ?>/paket/updateStatusBarang/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId, {
         method: 'POST',
         body: formData,
         headers: {
@@ -635,56 +668,67 @@ function submitUpdateRute(e) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            window.ProToast?.show?.(data.message || 'Rute berhasil disimpan!', 'success');
+            window.ProToast?.show?.(data.message || 'Status barang berhasil disimpan!', 'success');
             window.location.hash = 'distribusi';
             window.location.reload();
         } else {
-            alert(data.message || 'Gagal menyimpan rute.');
+            alert(data.message || 'Gagal menyimpan status barang.');
             if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = '<ion-icon name="checkmark-outline" class="text-sm"></ion-icon><span>Simpan Rute</span>';
+                btn.innerHTML = '<ion-icon name="checkmark-outline" class="text-sm"></ion-icon><span>Simpan Status Barang</span>';
             }
         }
     })
     .catch(err => {
         console.error(err);
-        form.action = '<?= APP_URL ?>/paket/updateRuteDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId;
+        form.action = '<?= APP_URL ?>/paket/updateStatusBarang/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId;
         form.method = 'POST';
         form.submit();
     });
 }
 
 /**
- * Update Status Pemesanan Pop Up
+ * Update Status Distribusi Pop Up (Tiba dirumah/kantor, Tiba di Gudang, Tiba di Tujuan)
  */
-function openModalUpdatePemesanan(dist) {
+function openModalUpdateStatusDistribusi(dist) {
     if (!dist) return;
-    document.getElementById('pemesanan_dist_id').value = dist.id;
-    document.getElementById('pemesanan_modal_tujuan').textContent = dist.nama_tujuan || '-';
-    document.getElementById('pemesanan_modal_item').textContent = (dist.nama_komponen || '-') + ' (' + (parseFloat(dist.jumlah) || 1) + ' ' + (dist.satuan || 'Unit') + ')';
 
-    document.getElementById('pemesanan_status').value = dist.status_pemesanan || 'Belum Dipesan';
-    document.getElementById('pemesanan_tanggal').value = dist.tanggal_pesan || '';
-    document.getElementById('pemesanan_kurir').value = dist.kurir_ekspedisi || '';
-    document.getElementById('pemesanan_resi').value = dist.no_resi || '';
-    document.getElementById('pemesanan_link').value = dist.link_pembelian || '';
+    if (dist.status_barang !== 'Sudah Dipesan') {
+        window.ProToast?.show?.('Pesan barang terlebih dahulu sebelum mengatur status distribusi!', 'warning');
+        return;
+    }
 
-    window.ProModal.open('modalUpdatePemesanan');
+    document.getElementById('status_distribusi_dist_id').value = dist.id;
+    document.getElementById('status_distribusi_modal_tujuan').textContent = dist.nama_tujuan || '-';
+    
+    const qtyText = (parseFloat(dist.jumlah) || 1) + ' ' + (dist.satuan || 'Unit');
+    document.getElementById('status_distribusi_modal_item').textContent = (dist.nama_komponen || '-') + ' (' + qtyText + ')';
+
+    const sDist = dist.status_distribusi || 'Tiba dirumah/kantor';
+    const optKantor = document.getElementById('dist_opt_kantor');
+    const optGudang = document.getElementById('dist_opt_gudang');
+    const optTujuan = document.getElementById('dist_opt_tujuan');
+
+    if (optKantor) optKantor.checked = (sDist === 'Tiba dirumah/kantor' || sDist === 'Tiba di Rumah/Kantor' || sDist === 'kantor');
+    if (optGudang) optGudang.checked = (sDist === 'Tiba di Gudang' || sDist === 'gudang');
+    if (optTujuan) optTujuan.checked = (sDist === 'Tiba di Tujuan');
+
+    window.ProModal.open('modalUpdateStatusDistribusi');
 }
 
-function submitUpdatePemesanan(e) {
+function submitUpdateStatusDistribusi(e) {
     e.preventDefault();
-    const distId = document.getElementById('pemesanan_dist_id').value;
-    const form = document.getElementById('formUpdatePemesanan');
+    const distId = document.getElementById('status_distribusi_dist_id').value;
+    const form = document.getElementById('formUpdateStatusDistribusi');
     const formData = new FormData(form);
-    const btn = document.getElementById('btnSubmitPemesanan');
+    const btn = document.getElementById('btnSubmitStatusDistribusi');
 
     if (btn) {
         btn.disabled = true;
         btn.innerHTML = '<span class="inline-block animate-spin mr-1">⌛</span> Menyimpan...';
     }
 
-    fetch('<?= APP_URL ?>/paket/updatePemesananDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId, {
+    fetch('<?= APP_URL ?>/paket/updateStatusDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId, {
         method: 'POST',
         body: formData,
         headers: {
@@ -694,11 +738,11 @@ function submitUpdatePemesanan(e) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            window.ProToast?.show?.(data.message || 'Status pemesanan berhasil diperbarui!', 'success');
+            window.ProToast?.show?.(data.message || 'Status distribusi berhasil disimpan!', 'success');
             window.location.hash = 'distribusi';
             window.location.reload();
         } else {
-            alert(data.message || 'Gagal menyimpan status pemesanan.');
+            alert(data.message || 'Gagal menyimpan status distribusi.');
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = '<ion-icon name="checkmark-outline" class="text-sm"></ion-icon><span>Simpan Status</span>';
@@ -707,77 +751,7 @@ function submitUpdatePemesanan(e) {
     })
     .catch(err => {
         console.error(err);
-        form.action = '<?= APP_URL ?>/paket/updatePemesananDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId;
-        form.method = 'POST';
-        form.submit();
-    });
-}
-
-/**
- * Update Status Penerimaan Pop Up
- */
-function openModalUpdatePenerimaan(dist) {
-    if (!dist) return;
-    document.getElementById('penerimaan_dist_id').value = dist.id;
-    document.getElementById('penerimaan_modal_tujuan').textContent = dist.nama_tujuan || '-';
-    document.getElementById('penerimaan_modal_item').textContent = (dist.nama_komponen || '-') + ' (' + (parseFloat(dist.jumlah) || 1) + ' ' + (dist.satuan || 'Unit') + ')';
-
-    const statusPem = dist.status_penerimaan || 'Menunggu Barang';
-    document.getElementById('penerimaan_status').value = statusPem;
-    document.getElementById('penerimaan_tanggal').value = dist.tanggal_terima || '';
-    document.getElementById('penerimaan_catatan').value = dist.catatan || '';
-
-    if (statusPem === 'Diterima di Tujuan' && !dist.tanggal_terima) {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('penerimaan_tanggal').value = today;
-    }
-
-    window.ProModal.open('modalUpdatePenerimaan');
-}
-
-function onStatusPenerimaanChange(val) {
-    const tglInput = document.getElementById('penerimaan_tanggal');
-    if (val === 'Diterima di Tujuan' && tglInput && !tglInput.value) {
-        tglInput.value = new Date().toISOString().split('T')[0];
-    }
-}
-
-function submitUpdatePenerimaan(e) {
-    e.preventDefault();
-    const distId = document.getElementById('penerimaan_dist_id').value;
-    const form = document.getElementById('formUpdatePenerimaan');
-    const formData = new FormData(form);
-    const btn = document.getElementById('btnSubmitPenerimaan');
-
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<span class="inline-block animate-spin mr-1">⌛</span> Menyimpan...';
-    }
-
-    fetch('<?= APP_URL ?>/paket/updatePenerimaanDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            window.ProToast?.show?.(data.message || 'Status penerimaan berhasil diperbarui!', 'success');
-            window.location.hash = 'distribusi';
-            window.location.reload();
-        } else {
-            alert(data.message || 'Gagal menyimpan status penerimaan.');
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = '<ion-icon name="checkmark-outline" class="text-sm"></ion-icon><span>Simpan Status</span>';
-            }
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        form.action = '<?= APP_URL ?>/paket/updatePenerimaanDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId;
+        form.action = '<?= APP_URL ?>/paket/updateStatusDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId;
         form.method = 'POST';
         form.submit();
     });
