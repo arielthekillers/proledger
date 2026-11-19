@@ -206,41 +206,6 @@
                 <span class="font-extrabold font-mono text-blue-800 text-sm" id="tambah_item_preview_total">Rp 0</span>
             </div>
 
-            <!-- Link Acuan & Pembanding (Sama Lebar) -->
-            <div class="pt-2 border-t border-slate-100 space-y-2.5">
-                <label class="block text-xs font-bold text-slate-700">Tautan Katalog & Harga Pembanding (Opsional)</label>
-
-                <!-- Link 1 (Asli) -->
-                <div>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-bold">Asli:</span>
-                        <input type="url" name="link_asli" id="tambah_item_link_asli"
-                               class="w-full pl-12 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-[11px] focus:bg-white font-mono"
-                               placeholder="https://katalog.inaproc.id/... (Tautan Katalog Acuan)">
-                    </div>
-                </div>
-
-                <!-- Link 2 (P1) -->
-                <div>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600 text-xs font-bold">P1:</span>
-                        <input type="url" name="link_pembanding_1" id="tambah_item_link_p1"
-                               class="w-full pl-12 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-[11px] focus:bg-white font-mono"
-                               placeholder="https://... (Tautan Harga Pembanding 1)">
-                    </div>
-                </div>
-
-                <!-- Link 3 (P2) -->
-                <div>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-purple-600 text-xs font-bold">P2:</span>
-                        <input type="url" name="link_pembanding_2" id="tambah_item_link_p2"
-                               class="w-full pl-12 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-purple-500 text-[11px] focus:bg-white font-mono"
-                               placeholder="https://... (Tautan Harga Pembanding 2)">
-                    </div>
-                </div>
-            </div>
-
             <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 shrink-0">
                 <button type="button" data-modal-close="modalTambahItem" 
                         class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs transition-colors">
@@ -369,41 +334,6 @@
                     <span>Total Estimasi Harga Item:</span>
                 </span>
                 <span class="font-extrabold font-mono text-amber-800 text-sm" id="edit_item_preview_total">Rp 0</span>
-            </div>
-
-            <!-- Link Acuan & Pembanding (Sama Lebar) -->
-            <div class="pt-2 border-t border-slate-100 space-y-2.5">
-                <label class="block text-xs font-bold text-slate-700">Tautan Katalog & Harga Pembanding (Opsional)</label>
-
-                <!-- Link 1 (Asli) -->
-                <div>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-bold">Asli:</span>
-                        <input type="url" name="link_asli" id="edit_item_link_asli"
-                               class="w-full pl-12 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-[11px] focus:bg-white font-mono"
-                               placeholder="https://katalog.inaproc.id/... (Tautan Katalog Acuan)">
-                    </div>
-                </div>
-
-                <!-- Link 2 (P1) -->
-                <div>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600 text-xs font-bold">P1:</span>
-                        <input type="url" name="link_pembanding_1" id="edit_item_link_p1"
-                               class="w-full pl-12 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-[11px] focus:bg-white font-mono"
-                               placeholder="https://... (Tautan Harga Pembanding 1)">
-                    </div>
-                </div>
-
-                <!-- Link 3 (P2) -->
-                <div>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-purple-600 text-xs font-bold">P2:</span>
-                        <input type="url" name="link_pembanding_2" id="edit_item_link_p2"
-                               class="w-full pl-12 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-purple-500 text-[11px] focus:bg-white font-mono"
-                               placeholder="https://... (Tautan Harga Pembanding 2)">
-                    </div>
-                </div>
             </div>
 
             <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 shrink-0">

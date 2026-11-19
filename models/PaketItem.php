@@ -47,9 +47,8 @@ class PaketItem {
 
         $stmt = $this->db->prepare("
             INSERT INTO paket_items (
-                paket_id, komponen, spesifikasi, satuan, jumlah, harga_satuan, total_harga,
-                link_asli, link_pembanding_1, link_pembanding_2
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                paket_id, komponen, spesifikasi, satuan, jumlah, harga_satuan, total_harga
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
@@ -59,10 +58,7 @@ class PaketItem {
             !empty($data['satuan']) ? trim($data['satuan']) : 'Unit',
             $jumlah,
             $hargaSatuan,
-            $totalHarga,
-            !empty($data['link_asli']) ? trim($data['link_asli']) : null,
-            !empty($data['link_pembanding_1']) ? trim($data['link_pembanding_1']) : null,
-            !empty($data['link_pembanding_2']) ? trim($data['link_pembanding_2']) : null
+            $totalHarga
         ]);
         
         return $this->db->lastInsertId();
@@ -83,10 +79,7 @@ class PaketItem {
                 satuan = ?,
                 jumlah = ?,
                 harga_satuan = ?,
-                total_harga = ?,
-                link_asli = ?,
-                link_pembanding_1 = ?,
-                link_pembanding_2 = ?
+                total_harga = ?
             WHERE id = ?
         ");
         
@@ -97,9 +90,6 @@ class PaketItem {
             $jumlah,
             $hargaSatuan,
             $totalHarga,
-            !empty($data['link_asli']) ? trim($data['link_asli']) : null,
-            !empty($data['link_pembanding_1']) ? trim($data['link_pembanding_1']) : null,
-            !empty($data['link_pembanding_2']) ? trim($data['link_pembanding_2']) : null,
             (int)$id
         ]);
     }

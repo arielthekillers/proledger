@@ -1,5 +1,5 @@
 -- ProLedger Production Database Dump
--- Generated on 2026-11-19 18:21:53
+-- Generated on 2026-11-19 22:17:57
 -- Target: MySQL / MariaDB (Coolify / Docker / VPS)
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -94,11 +94,12 @@ CREATE TABLE `skema_potongan` (
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_perusahaan` (`perusahaan_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `skema_potongan`
 INSERT INTO `skema_potongan` (`id`, `perusahaan_id`, `nama_skema`, `ada_pasal`, `persen_pasal`, `ada_admin`, `persen_admin`, `created_at`, `updated_at`) VALUES
-('4', '4', 'Skema 1', '1', '13.00', '1', '2.00', '2026-11-18 00:24:37', '2026-11-18 00:24:37');
+('4', '4', 'Skema 1', '1', '13.00', '1', '2.00', '2026-11-18 00:24:37', '2026-11-18 00:24:37'),
+('5', '4', 'Skema 2', '1', '10.00', '1', '0.00', '2026-11-19 23:04:37', '2026-11-19 23:04:37');
 
 -- --------------------------------------------------------
 -- Table structure for `lokasi_penerima`
@@ -248,7 +249,7 @@ CREATE TABLE `paket_kegiatan` (
 
 -- Dumping data for table `paket_kegiatan`
 INSERT INTO `paket_kegiatan` (`id`, `kode_paket`, `nama_paket`, `nomor_sp`, `kab_kota`, `perusahaan_id`, `group_id`, `skema_id`, `perusahaan`, `penanggung_jawab`, `pagu`, `pagu_nego`, `dpp`, `persen_pasal`, `pasal_13`, `persen_admin`, `admin_2`, `total_pasal`, `setor_awal`, `selisih`, `rab`, `status`, `progres_barang`, `created_at`, `updated_at`) VALUES
-('62', 'XW9J5', 'Belanja Modal Alat Pendukung Pencarian', 'EP-01M1ZS80DH32WZR9NZ8JCWCA44', 'Kota Bontang', '4', '1', '4', 'test', NULL, '15000000.00', NULL, '13513514.00', '13.00', '1756757.00', '2.00', '270270.00', '2027027.00', NULL, NULL, '0.00', 'Proses', 'Belum', '2026-11-18 00:26:15', '2026-11-18 20:33:13');
+('62', 'XW9J5', 'Belanja Modal Alat Pendukung Pencarian', 'EP-01M1ZS80DH32WZR9NZ8JCWCA44', NULL, '4', '1', '4', 'test', NULL, '15000000.00', NULL, '13513514.00', '13.00', '1756757.00', '2.00', '270270.00', '2027027.00', NULL, NULL, '0.00', 'Proses', 'Belanja', '2026-11-18 00:26:15', '2026-11-19 23:06:28');
 
 -- --------------------------------------------------------
 -- Table structure for `paket_items`
@@ -263,9 +264,6 @@ CREATE TABLE `paket_items` (
   `jumlah` decimal(12,2) NOT NULL DEFAULT 1.00,
   `harga_satuan` decimal(15,2) NOT NULL DEFAULT 0.00,
   `total_harga` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `link_asli` text DEFAULT NULL,
-  `link_pembanding_1` text DEFAULT NULL,
-  `link_pembanding_2` text DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
@@ -273,10 +271,10 @@ CREATE TABLE `paket_items` (
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `paket_items`
-INSERT INTO `paket_items` (`id`, `paket_id`, `komponen`, `spesifikasi`, `satuan`, `jumlah`, `harga_satuan`, `total_harga`, `link_asli`, `link_pembanding_1`, `link_pembanding_2`, `created_at`, `updated_at`) VALUES
-('1', '62', 'Tenda Lipat', 'Uk. 3x3 (setara), Rangka besi hollow, Tanpa dinding', 'Unit', '4.00', '1689905.00', '6759620.00', 'https://katalog.inaproc.id/pijar-timur/tenda-lipat-3x3', 'https://katalog.inaproc.id/berkah-pendi/tenda-kerucut-3x3-meter', 'https://katalog.inaproc.id/asta-karya/tenda-kerucut-3x3', '2026-11-18 15:47:41', '2026-11-18 15:47:41'),
-('2', '62', 'Tenda Camping', 'Double layer dan bahan waterproof , Kapasitas 4-5 Orang', 'Unit', '4.00', '3167494.00', '12669976.00', 'https://katalog.inaproc.id/pijar-timur/tenda-camping-4-5-orang', 'https://katalog.inaproc.id/solusi-klik/tenda-camping-rosy-4-5-orang-adventure', 'https://katalog.inaproc.id/solusi-klik-tanjung-pura/tenda-camping-rosy-4-5-orang-adventure', '2026-11-18 15:47:41', '2026-11-18 15:47:41'),
-('3', '62', 'Tenda 4x6', 'Tenda 4x6', 'Buah', '6.00', '5302453.00', '31814718.00', 'https://katalog.inaproc.id/pijar-timur/tenda-regu-4x6', 'https://katalog.inaproc.id/zonasurvey-indonesia/tenda-4x6-meter', 'https://katalog.inaproc.id/bhinneka-sejahtera/tenda-siaga-ukuran-4x6', '2026-11-18 15:47:41', '2026-11-18 15:47:41');
+INSERT INTO `paket_items` (`id`, `paket_id`, `komponen`, `spesifikasi`, `satuan`, `jumlah`, `harga_satuan`, `total_harga`, `created_at`, `updated_at`) VALUES
+('1', '62', 'Tenda Lipat', 'Uk. 3x3 (setara), Rangka besi hollow, Tanpa dinding', 'Unit', '4.00', '1689905.00', '6759620.00', '2026-11-18 15:47:41', '2026-11-18 15:47:41'),
+('2', '62', 'Tenda Camping', 'Double layer dan bahan waterproof , Kapasitas 4-5 Orang', 'Unit', '4.00', '3167494.00', '12669976.00', '2026-11-18 15:47:41', '2026-11-18 15:47:41'),
+('3', '62', 'Tenda 4x6', 'Tenda 4x6', 'Buah', '6.00', '5302453.00', '31814718.00', '2026-11-18 15:47:41', '2026-11-18 15:47:41');
 
 -- --------------------------------------------------------
 -- Table structure for `paket_distribusi`
@@ -311,7 +309,7 @@ CREATE TABLE `paket_distribusi` (
   KEY `idx_distribusi_paket` (`paket_id`),
   KEY `idx_distribusi_item` (`item_id`),
   KEY `idx_distribusi_lokasi` (`lokasi_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `paket_distribusi`
 INSERT INTO `paket_distribusi` (`id`, `paket_id`, `item_id`, `lokasi_id`, `nama_tujuan`, `kategori`, `jumlah`, `rute_pengiriman`, `status_pemesanan`, `tanggal_pesan`, `link_pembelian`, `kurir_ekspedisi`, `nama_pic`, `no_kontak`, `alamat`, `kab_kota`, `status`, `status_penerimaan`, `tanggal_kirim`, `tanggal_terima`, `no_resi`, `catatan`, `created_at`, `updated_at`) VALUES
@@ -320,7 +318,8 @@ INSERT INTO `paket_distribusi` (`id`, `paket_id`, `item_id`, `lokasi_id`, `nama_
 ('4', '62', '3', NULL, 'SMAN 1 LONG MESANGAT', 'Sekolah', '1.00', 'kantor', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
 ('5', '62', '3', NULL, 'SMAN 1 MUARA ANCALONG', 'Sekolah', '1.00', 'kantor', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
 ('6', '62', '3', NULL, 'SMAN 1 KARANGAN', 'Sekolah', '2.00', 'gudang', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 21:26:30'),
-('9', '62', '2', '18', 'SMAN 2 BONTANG', 'Sekolah', '4.00', 'kantor', 'Belum Dipesan', NULL, NULL, NULL, 'Kepala Sekolah SMAN 2 Bontang', '081234567890', 'Bontang, Kalimantan Timur', 'Kota Bontang', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-18 20:51:39', '2026-11-18 21:24:31');
+('10', '62', '2', '2', 'SMKN 2 BONTANG', 'Sekolah', '2.00', 'kantor', 'Belum Dipesan', NULL, NULL, NULL, 'Nurwahidah, S.Pd, M.Pd', '081258348205', 'Jl. Cumi - Cumi No. 1 Kel. Tanjung Laut Indah Kec. Bontang Selatan', 'Kota Bontang', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-19 22:53:21', '2026-11-19 22:53:21'),
+('11', '62', '2', '1', 'SMKN 1 BONTANG', 'Sekolah', '2.00', 'kantor', 'Belum Dipesan', NULL, NULL, NULL, 'Muhammad Sultan, S.Ag., M.Pd.I', '081347071619', 'Jl. Ciptomangunkusumo No. 2, Kel. Gn Elai Kec. Bontang Utara', 'Kota Bontang', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-19 22:53:38', '2026-11-19 22:53:38');
 
 -- --------------------------------------------------------
 -- Table structure for `paket_dokumen`

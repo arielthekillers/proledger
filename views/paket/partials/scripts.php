@@ -153,9 +153,6 @@ function openTambahItemModal() {
     document.getElementById('tambah_item_jumlah').value = '1';
     document.getElementById('tambah_item_harga').value = '';
     document.getElementById('tambah_item_preview_total').textContent = 'Rp 0';
-    document.getElementById('tambah_item_link_asli').value = '';
-    document.getElementById('tambah_item_link_p1').value = '';
-    document.getElementById('tambah_item_link_p2').value = '';
 
     window.ProModal.open('modalTambahItem');
 }
@@ -204,10 +201,6 @@ function openEditItemModal(item) {
 
     const harga = parseInt(item.harga_satuan, 10) || 0;
     document.getElementById('edit_item_harga').value = harga > 0 ? harga.toLocaleString('id-ID') : '';
-
-    document.getElementById('edit_item_link_asli').value = item.link_asli || '';
-    document.getElementById('edit_item_link_p1').value = item.link_pembanding_1 || '';
-    document.getElementById('edit_item_link_p2').value = item.link_pembanding_2 || '';
 
     document.getElementById('editItemSubtitle').textContent = 'Mengubah: ' + (item.komponen || '');
 

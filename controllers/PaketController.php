@@ -487,10 +487,7 @@ class PaketController {
                 'satuan' => trim($_POST['satuan'] ?? 'Unit'),
                 'jumlah' => $jumlah,
                 'harga_satuan' => $hargaSatuan,
-                'total_harga' => $totalHarga,
-                'link_asli' => trim($_POST['link_asli'] ?? ''),
-                'link_pembanding_1' => trim($_POST['link_pembanding_1'] ?? ''),
-                'link_pembanding_2' => trim($_POST['link_pembanding_2'] ?? '')
+                'total_harga' => $totalHarga
             ]);
 
             flash('success', 'Item spesifikasi berhasil ditambahkan!');
@@ -539,10 +536,7 @@ class PaketController {
                 'satuan' => trim($_POST['satuan'] ?? 'Unit'),
                 'jumlah' => $jumlah,
                 'harga_satuan' => $hargaSatuan,
-                'total_harga' => $totalHarga,
-                'link_asli' => trim($_POST['link_asli'] ?? ''),
-                'link_pembanding_1' => trim($_POST['link_pembanding_1'] ?? ''),
-                'link_pembanding_2' => trim($_POST['link_pembanding_2'] ?? '')
+                'total_harga' => $totalHarga
             ]);
 
             flash('success', 'Item spesifikasi berhasil diperbarui!');

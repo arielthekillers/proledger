@@ -33,7 +33,6 @@
                         <th class="py-2 px-2.5 text-center">JUMLAH</th>
                         <th class="py-2 px-3 text-right">HARGA SATUAN</th>
                         <th class="py-2 px-3 text-right">TOTAL</th>
-                        <th class="py-2 px-3 text-center min-w-[160px]">LINK KATALOG & PEMBANDING</th>
                         <th class="py-2 px-3 text-center min-w-[120px]">DISTRIBUSI</th>
                         <th class="py-2 px-3 text-right min-w-[70px]">AKSI</th>
                     </tr>
@@ -41,7 +40,7 @@
                 <tbody class="divide-y divide-slate-100">
                     <?php if (empty($items)): ?>
                         <tr>
-                            <td colspan="10" class="py-8 text-center text-slate-400">
+                            <td colspan="9" class="py-8 text-center text-slate-400">
                                 <div class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl text-slate-300">
                                     <ion-icon name="cube-outline"></ion-icon>
                                 </div>
@@ -94,43 +93,6 @@
                                 <!-- Total Harga -->
                                 <td class="py-1.5 px-3 text-right font-mono font-bold text-slate-900 text-xs bg-slate-50/50 whitespace-nowrap">
                                     <?= formatRupiah($item['total_harga']) ?>
-                                </td>
-
-                                <!-- Link Acuan & Pembanding -->
-                                <td class="py-1.5 px-3 text-center whitespace-nowrap">
-                                    <div class="flex items-center justify-center gap-1 flex-wrap">
-                                        <!-- Link Asli -->
-                                        <?php if (!empty($item['link_asli'])): ?>
-                                            <a href="<?= htmlspecialchars($item['link_asli']) ?>" target="_blank" rel="noopener noreferrer"
-                                               class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200/80 hover:bg-blue-100 text-[10px] font-semibold transition-colors"
-                                               title="Buka Link Asli: <?= htmlspecialchars($item['link_asli']) ?>">
-                                                <ion-icon name="link-outline"></ion-icon>
-                                                <span>Asli</span>
-                                            </a>
-                                        <?php else: ?>
-                                            <span class="text-slate-300 text-[11px]">-</span>
-                                        <?php endif; ?>
-
-                                        <!-- Link Pembanding 1 -->
-                                        <?php if (!empty($item['link_pembanding_1'])): ?>
-                                            <a href="<?= htmlspecialchars($item['link_pembanding_1']) ?>" target="_blank" rel="noopener noreferrer"
-                                               class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200/80 hover:bg-emerald-100 text-[10px] font-semibold transition-colors"
-                                               title="Pembanding 1: <?= htmlspecialchars($item['link_pembanding_1']) ?>">
-                                                <ion-icon name="git-compare-outline"></ion-icon>
-                                                <span>P1</span>
-                                            </a>
-                                        <?php endif; ?>
-
-                                        <!-- Link Pembanding 2 -->
-                                        <?php if (!empty($item['link_pembanding_2'])): ?>
-                                            <a href="<?= htmlspecialchars($item['link_pembanding_2']) ?>" target="_blank" rel="noopener noreferrer"
-                                               class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200/80 hover:bg-purple-100 text-[10px] font-semibold transition-colors"
-                                               title="Pembanding 2: <?= htmlspecialchars($item['link_pembanding_2']) ?>">
-                                                <ion-icon name="git-compare-outline"></ion-icon>
-                                                <span>P2</span>
-                                            </a>
-                                        <?php endif; ?>
-                                    </div>
                                 </td>
 
                                 <!-- Distribusi -->
@@ -217,7 +179,7 @@
                             <td class="py-2 px-3 text-right font-mono text-xs sm:text-sm text-blue-700 bg-blue-50/50">
                                 <?= formatRupiah($itemSummary['grand_total']) ?>
                             </td>
-                            <td colspan="3" class="py-2 px-3 text-slate-400 text-[10px] font-normal">
+                            <td colspan="2" class="py-2 px-3 text-slate-400 text-[10px] font-normal">
                                 (<?= count($items) ?> item terdaftar)
                             </td>
                         </tr>
