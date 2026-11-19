@@ -15,13 +15,27 @@ class PaketKegiatan {
      * Get all paket kegiatan with filters
      */
     public function getAll($filters = []) {
-        // Updated to JOIN perusahaan
-        $sql = "SELECT pk.*, p.nama as perusahaan_nama, p.email as perusahaan_email 
+        // Updated to JOIN perusahaan and paket_group
+        $sql = "SELECT pk.*, p.nama as perusahaan_nama, p.email as perusahaan_email,
+                       pg.nama_group, pg.kode_group 
                 FROM paket_kegiatan pk
                 LEFT JOIN perusahaan p ON pk.perusahaan_id = p.id
+                LEFT JOIN paket_group pg ON pk.group_id = pg.id
                 WHERE 1=1";
         $params = [];
         
+        // Filter by perusahaan_id (Single Active Company Architecture)
+        if (!empty($filters['perusahaan_id'])) {
+            $sql .= " AND pk.perusahaan_id = ?";
+            $params[] = $filters['perusahaan_id'];
+        }
+
+        // Filter by group_id
+        if (!empty($filters['group_id'])) {
+            $sql .= " AND pk.group_id = ?";
+            $params[] = $filters['group_id'];
+        }
+
         // Filter by status (simple value)
         if (!empty($filters['status'])) {
             $sql .= " AND pk.status = ?";
@@ -65,16 +79,39 @@ class PaketKegiatan {
     }
     
     /**
-     * Get paket by ID with pemodal
+     * Generate unique 5-character alphanumeric code (letters & numbers)
      */
-    public function getById($id) {
+    public function generateUniqueKode() {
+        $chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $max = strlen($chars) - 1;
+        $checkStmt = $this->db->prepare("SELECT COUNT(*) FROM paket_kegiatan WHERE kode_paket = ?");
+        
+        do {
+            $code = '';
+            for ($i = 0; $i < 5; $i++) {
+                $code .= $chars[random_int(0, $max)];
+            }
+            $checkStmt->execute([$code]);
+            $exists = $checkStmt->fetchColumn() > 0;
+        } while ($exists);
+        
+        return $code;
+    }
+
+    /**
+     * Get paket by ID or 5-digit Kode
+     */
+    public function getById($idOrKode) {
         $stmt = $this->db->prepare("
-            SELECT pk.*, p.nama as perusahaan_nama, p.email as perusahaan_email, p.telepon as perusahaan_telepon 
+            SELECT pk.*, p.nama as perusahaan_nama, p.email as perusahaan_email, p.telepon as perusahaan_telepon,
+                   pg.nama_group, pg.kode_group 
             FROM paket_kegiatan pk
             LEFT JOIN perusahaan p ON pk.perusahaan_id = p.id
-            WHERE pk.id = ?
+            LEFT JOIN paket_group pg ON pk.group_id = pg.id
+            WHERE pk.kode_paket = ? OR pk.id = ?
+            LIMIT 1
         ");
-        $stmt->execute([$id]);
+        $stmt->execute([$idOrKode, is_numeric($idOrKode) ? (int)$idOrKode : 0]);
         $paket = $stmt->fetch();
         
         if ($paket) {
@@ -84,7 +121,7 @@ class PaketKegiatan {
             }
             
             // Get pemodal
-            $paket['pemodal'] = $this->getPemodal($id);
+            $paket['pemodal'] = [];
         }
         
         return $paket;
@@ -96,16 +133,36 @@ class PaketKegiatan {
     public function create($data) {
         try {
             $this->db->beginTransaction();
+
+            $pagu = (float)($data['pagu'] ?? 0);
+            $paguNego = (!empty($data['pagu_nego']) && (float)$data['pagu_nego'] > 0) ? (float)$data['pagu_nego'] : null;
+            $acuan = $paguNego !== null ? $paguNego : $pagu;
+
+            $persenPasal = isset($data['persen_pasal']) && $data['persen_pasal'] !== '' ? (float)$data['persen_pasal'] : 13.0;
+            $persenAdmin = isset($data['persen_admin']) && $data['persen_admin'] !== '' ? (float)$data['persen_admin'] : 2.0;
+
+            $dpp = calculateDPP($acuan);
+            $pasal = calculatePasal($dpp, $persenPasal);
+            $admin = calculateAdmin($dpp, $persenAdmin);
+            $totalPasal = $pasal + $admin;
             
-            // Insert paket (using perusahaan_id)
+            $setorAwal = (isset($data['setor_awal']) && $data['setor_awal'] !== '' && $data['setor_awal'] !== null) ? (float)$data['setor_awal'] : null;
+            $selisih = $setorAwal !== null ? round($setorAwal - $totalPasal) : null;
+            $rab = !empty($data['rab']) ? (float)$data['rab'] : 0;
+            
+            // Inisiasi 5 digit kode huruf & angka acak
+            $kodePaket = !empty($data['kode_paket']) ? strtoupper($data['kode_paket']) : $this->generateUniqueKode();
+
+            // Insert paket
             $stmt = $this->db->prepare("
-                INSERT INTO paket_kegiatan (nama_paket, pagu, rab, jumlah_pemodal, status, perusahaan_id, perusahaan) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO paket_kegiatan (
+                    kode_paket, nama_paket, nomor_sp, kab_kota, pagu, pagu_nego, dpp, pasal_13, admin_2, total_pasal,
+                    persen_pasal, persen_admin,
+                    setor_awal, selisih, rab, status, progres_barang,
+                    perusahaan_id, group_id, skema_id, perusahaan, penanggung_jawab
+                ) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
-            
-            // Keep the old 'perusahaan' column populated just in case, but use ID primarily
-            // We need to fetch the name if we only have ID, OR just leave it empty/null if we fully switch
-            // Logic: User selects ID.
             
             $perusahaanName = null;
             if(!empty($data['perusahaan_id'])) {
@@ -116,29 +173,37 @@ class PaketKegiatan {
             }
             
             $stmt->execute([
+                $kodePaket,
                 $data['nama_paket'],
-                $data['pagu'],
-                $data['rab'],
-                $data['jumlah_pemodal'],
-                $data['status'] ?? 'Kontrak',
-                $data['perusahaan_id'],
-                $perusahaanName // Legacy column
+                !empty($data['nomor_sp']) ? trim($data['nomor_sp']) : null,
+                !empty($data['kab_kota']) ? trim($data['kab_kota']) : null,
+                $pagu,
+                $paguNego,
+                $dpp,
+                $pasal,
+                $admin,
+                $totalPasal,
+                $persenPasal,
+                $persenAdmin,
+                $setorAwal,
+                $selisih,
+                $rab,
+                $data['status'] ?? 'Proses',
+                $data['progres_barang'] ?? 'Belum',
+                $data['perusahaan_id'] ?? null,
+                !empty($data['group_id']) ? (int)$data['group_id'] : null,
+                !empty($data['skema_id']) ? (int)$data['skema_id'] : null,
+                $perusahaanName, // Legacy column
+                $data['penanggung_jawab'] ?? null
             ]);
             
             $paket_id = $this->db->lastInsertId();
             
-            // Add pemodal
-            if (isset($data['pemodal']) && is_array($data['pemodal'])) {
-                foreach ($data['pemodal'] as $user_id) {
-                    $this->addPemodal($paket_id, $user_id);
-                }
-            }
-            
-            // Calculate modal
-            $this->calculateModal($paket_id);
-            
             $this->db->commit();
-            return $paket_id;
+            return [
+                'id' => $paket_id,
+                'kode_paket' => $kodePaket
+            ];
             
         } catch (Exception $e) {
             $this->db->rollBack();
@@ -149,9 +214,25 @@ class PaketKegiatan {
     /**
      * Update paket
      */
-    public function update($id, $data) {
+    public function update($idOrKode, $data) {
         try {
             $this->db->beginTransaction();
+
+            $pagu = (float)($data['pagu'] ?? 0);
+            $paguNego = (!empty($data['pagu_nego']) && (float)$data['pagu_nego'] > 0) ? (float)$data['pagu_nego'] : null;
+            $acuan = $paguNego !== null ? $paguNego : $pagu;
+
+            $persenPasal = isset($data['persen_pasal']) && $data['persen_pasal'] !== '' ? (float)$data['persen_pasal'] : 13.0;
+            $persenAdmin = isset($data['persen_admin']) && $data['persen_admin'] !== '' ? (float)$data['persen_admin'] : 2.0;
+
+            $dpp = calculateDPP($acuan);
+            $pasal = calculatePasal($dpp, $persenPasal);
+            $admin = calculateAdmin($dpp, $persenAdmin);
+            $totalPasal = $pasal + $admin;
+            
+            $setorAwal = (isset($data['setor_awal']) && $data['setor_awal'] !== '' && $data['setor_awal'] !== null) ? (float)$data['setor_awal'] : null;
+            $selisih = $setorAwal !== null ? round($setorAwal - $totalPasal) : null;
+            $rab = !empty($data['rab']) ? (float)$data['rab'] : 0;
             
             $perusahaanName = null;
             if(!empty($data['perusahaan_id'])) {
@@ -163,32 +244,38 @@ class PaketKegiatan {
             
             $stmt = $this->db->prepare("
                 UPDATE paket_kegiatan 
-                SET nama_paket = ?, pagu = ?, rab = ?, jumlah_pemodal = ?, 
-                    status = ?, perusahaan_id = ?, perusahaan = ?
-                WHERE id = ?
+                SET nama_paket = ?, nomor_sp = ?, kab_kota = ?, pagu = ?, pagu_nego = ?, dpp = ?, pasal_13 = ?, admin_2 = ?, total_pasal = ?,
+                    persen_pasal = ?, persen_admin = ?,
+                    setor_awal = ?, selisih = ?, rab = ?, status = ?, progres_barang = ?,
+                    perusahaan_id = ?, group_id = ?, skema_id = ?, perusahaan = ?, penanggung_jawab = ?
+                WHERE kode_paket = ? OR id = ?
             ");
             
             $stmt->execute([
                 $data['nama_paket'],
-                $data['pagu'],
-                $data['rab'],
-                $data['jumlah_pemodal'],
-                $data['status'] ?? 'Kontrak',
-                $data['perusahaan_id'],
+                !empty($data['nomor_sp']) ? trim($data['nomor_sp']) : null,
+                !empty($data['kab_kota']) ? trim($data['kab_kota']) : null,
+                $pagu,
+                $paguNego,
+                $dpp,
+                $pasal,
+                $admin,
+                $totalPasal,
+                $persenPasal,
+                $persenAdmin,
+                $setorAwal,
+                $selisih,
+                $rab,
+                $data['status'] ?? 'Proses',
+                $data['progres_barang'] ?? 'Belum',
+                $data['perusahaan_id'] ?? null,
+                !empty($data['group_id']) ? (int)$data['group_id'] : null,
+                !empty($data['skema_id']) ? (int)$data['skema_id'] : null,
                 $perusahaanName,
-                $id
+                $data['penanggung_jawab'] ?? null,
+                $idOrKode,
+                is_numeric($idOrKode) ? (int)$idOrKode : 0
             ]);
-            
-            // Update pemodal
-            if (isset($data['pemodal']) && is_array($data['pemodal'])) {
-                $this->removeAllPemodal($id);
-                foreach ($data['pemodal'] as $user_id) {
-                    $this->addPemodal($id, $user_id);
-                }
-            }
-            
-            // Recalculate modal
-            $this->calculateModal($id);
             
             $this->db->commit();
             return true;
@@ -200,115 +287,57 @@ class PaketKegiatan {
     }
     
     /**
-     * Delete paket
+     * Delete paket secara berantai (Cascade Delete):
+     * 1. Hapus semua alokasi distribusi paket
+     * 2. Hapus semua item barang / spesifikasi paket
+     * 3. Hapus berkas fisik dokumen di server lalu hapus data paket_dokumen
+     * 4. Hapus paket kegiatan
      */
-    public function delete($id) {
-        $stmt = $this->db->prepare("DELETE FROM paket_kegiatan WHERE id = ?");
-        return $stmt->execute([$id]);
-    }
-    
-    /**
-     * Get pemodal for a paket
-     */
-    public function getPemodal($paket_id) {
-        $stmt = $this->db->prepare("
-            SELECT u.*, pp.created_at as joined_at
-            FROM users u
-            JOIN paket_pemodal pp ON u.id = pp.user_id
-            WHERE pp.paket_id = ?
-            ORDER BY u.nama ASC
-        ");
-        $stmt->execute([$paket_id]);
-        return $stmt->fetchAll();
-    }
-    
-    /**
-     * Add pemodal to paket
-     */
-    public function addPemodal($paket_id, $user_id) {
-        $stmt = $this->db->prepare("
-            INSERT IGNORE INTO paket_pemodal (paket_id, user_id) 
-            VALUES (?, ?)
-        ");
-        return $stmt->execute([$paket_id, $user_id]);
-    }
-    
-    /**
-     * Remove all pemodal from paket
-     */
-    public function removeAllPemodal($paket_id) {
-        $stmt = $this->db->prepare("DELETE FROM paket_pemodal WHERE paket_id = ?");
-        return $stmt->execute([$paket_id]);
-    }
-    
-    /**
-     * Calculate modal for all pemodal in a paket
-     */
-    public function calculateModal($paket_id) {
-        $paket = $this->getById($paket_id);
+    public function delete($idOrKode) {
+        $paket = $this->getById($idOrKode);
         if (!$paket) return false;
-        
-        $pagu = $paket['pagu'];
-        $rab = $paket['rab'];
-        $jumlah_pemodal = $paket['jumlah_pemodal'];
-        
-        // Calculate per person
-        $modal_pasal = calculateModalPasal($pagu, $jumlah_pemodal);
-        $modal_belanja = calculateModalBelanja($rab, $jumlah_pemodal);
-        $total_modal = $modal_pasal + $modal_belanja;
-        
-        $stmt = $this->db->prepare("DELETE FROM modal_detail WHERE paket_id = ?");
-        $stmt->execute([$paket_id]);
-        
-        $stmt = $this->db->prepare("
-            INSERT INTO modal_detail (paket_id, user_id, modal_pasal, modal_belanja, total_modal)
-            VALUES (?, ?, ?, ?, ?)
-        ");
-        
-        foreach ($paket['pemodal'] as $pemodal) {
-            $stmt->execute([
-                $paket_id,
-                $pemodal['id'],
-                $modal_pasal,
-                $modal_belanja,
-                $total_modal
-            ]);
+        $paketId = (int)$paket['id'];
+
+        try {
+            $this->db->beginTransaction();
+
+            // 1. Hapus seluruh alokasi distribusi
+            $stmtDist = $this->db->prepare("DELETE FROM paket_distribusi WHERE paket_id = ?");
+            $stmtDist->execute([$paketId]);
+
+            // 2. Hapus seluruh item barang spesifikasi
+            $stmtItem = $this->db->prepare("DELETE FROM paket_items WHERE paket_id = ?");
+            $stmtItem->execute([$paketId]);
+
+            // 3. Ambil berkas fisik dokumen untuk dihapus dari disk
+            $stmtDocs = $this->db->prepare("SELECT file_path FROM paket_dokumen WHERE paket_id = ?");
+            $stmtDocs->execute([$paketId]);
+            $docs = $stmtDocs->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($docs as $doc) {
+                if (!empty($doc['file_path'])) {
+                    $physicalFile = PUBLIC_PATH . '/' . ltrim($doc['file_path'], '/');
+                    if (file_exists($physicalFile) && is_file($physicalFile)) {
+                        @unlink($physicalFile);
+                    }
+                }
+            }
+
+            // Hapus data dokumen di database
+            $stmtDelDocs = $this->db->prepare("DELETE FROM paket_dokumen WHERE paket_id = ?");
+            $stmtDelDocs->execute([$paketId]);
+
+            // 4. Hapus paket kegiatan
+            $stmt = $this->db->prepare("DELETE FROM paket_kegiatan WHERE id = ?");
+            $res = $stmt->execute([$paketId]);
+
+            $this->db->commit();
+            return $res;
+        } catch (Exception $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
         }
-        
-        return true;
-    }
-    
-    public function getSummary($paket_id) {
-        $stmt = $this->db->prepare("
-            SELECT SUM(total_modal) as total_modal
-            FROM modal_detail
-            WHERE paket_id = ?
-        ");
-        $stmt->execute([$paket_id]);
-        $modal = $stmt->fetch();
-        
-        $stmt = $this->db->prepare("
-            SELECT 
-                SUM(CASE WHEN tipe = 'masuk' THEN jumlah ELSE 0 END) as total_masuk,
-                SUM(CASE WHEN tipe = 'keluar' THEN jumlah ELSE 0 END) as total_keluar
-            FROM transaksi
-            WHERE paket_id = ?
-        ");
-        $stmt->execute([$paket_id]);
-        $transaksi = $stmt->fetch();
-        
-        $total_modal = $modal['total_modal'] ?? 0;
-        $total_masuk = $transaksi['total_masuk'] ?? 0;
-        $total_keluar = $transaksi['total_keluar'] ?? 0;
-        $saldo = $total_masuk - $total_keluar;
-        $laba_rugi = $saldo - $total_modal;
-        
-        return [
-            'total_modal' => $total_modal,
-            'total_masuk' => $total_masuk,
-            'total_keluar' => $total_keluar,
-            'saldo' => $saldo,
-            'laba_rugi' => $laba_rugi
-        ];
     }
 }

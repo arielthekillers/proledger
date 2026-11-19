@@ -12,12 +12,59 @@ function formatRupiah($amount) {
 }
 
 /**
- * Hitung modal pasal per orang
- * Formula: (Pagu × 13%) ÷ Jumlah Pemodal
+ * Hitung DPP (Dasar Pengenaan Pajak) setelah dikurangi PPN 11%
+ * Formula: Nilai Acuan / 1.11
  */
-function calculateModalPasal($pagu, $jumlah_pemodal) {
+function calculateDPP($nilaiAcuan) {
+    if ($nilaiAcuan <= 0) return 0;
+    return round($nilaiAcuan / 1.11);
+}
+
+/**
+ * Hitung Nilai Pasal dari DPP dengan persentase fleksibel (default 13%)
+ */
+function calculatePasal($dpp, $persen = 13) {
+    if ($dpp <= 0 || $persen <= 0) return 0;
+    return round($dpp * ($persen / 100));
+}
+
+/**
+ * Backward compatibility alias untuk calculatePasal13
+ */
+function calculatePasal13($dpp, $persen = 13) {
+    return calculatePasal($dpp, $persen);
+}
+
+/**
+ * Hitung Biaya Admin dari DPP dengan persentase fleksibel (default 2%)
+ */
+function calculateAdmin($dpp, $persen = 2) {
+    if ($dpp <= 0 || $persen <= 0) return 0;
+    return round($dpp * ($persen / 100));
+}
+
+/**
+ * Backward compatibility alias untuk calculateAdmin2
+ */
+function calculateAdmin2($dpp, $persen = 2) {
+    return calculateAdmin($dpp, $persen);
+}
+
+/**
+ * Hitung Total Pasal (Pasal + Admin dari DPP)
+ */
+function calculateTotalPasal($dpp, $persenPasal = 13, $persenAdmin = 2) {
+    return calculatePasal($dpp, $persenPasal) + calculateAdmin($dpp, $persenAdmin);
+}
+
+/**
+ * Hitung modal pasal per orang
+ * Formula: Total Pasal ÷ Jumlah Pemodal
+ */
+function calculateModalPasal($dpp, $jumlah_pemodal) {
     if ($jumlah_pemodal == 0) return 0;
-    return ($pagu * MODAL_PASAL_PERCENTAGE) / $jumlah_pemodal;
+    $totalPasal = calculateTotalPasal($dpp);
+    return round($totalPasal / $jumlah_pemodal);
 }
 
 /**
@@ -32,8 +79,8 @@ function calculateModalBelanja($rab, $jumlah_pemodal) {
 /**
  * Hitung total modal per orang
  */
-function calculateTotalModal($pagu, $rab, $jumlah_pemodal) {
-    $modal_pasal = calculateModalPasal($pagu, $jumlah_pemodal);
+function calculateTotalModal($dpp, $rab, $jumlah_pemodal) {
+    $modal_pasal = calculateModalPasal($dpp, $jumlah_pemodal);
     $modal_belanja = calculateModalBelanja($rab, $jumlah_pemodal);
     return $modal_pasal + $modal_belanja;
 }
@@ -114,17 +161,81 @@ function formatTanggal($date) {
 }
 
 /**
- * Get status badge HTML
+ * Get status badge HTML (Pencairan / Status Proyek)
  */
 function getStatusBadge($status) {
+    $norm = strtoupper(trim($status ?? ''));
+    if ($norm === 'CAIR' || $norm === 'SELESAI') {
+        return '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white shadow-2xs">CAIR</span>';
+    } elseif ($norm === 'PROSES') {
+        return '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-700 text-white shadow-2xs">PROSES</span>';
+    } elseif ($norm === 'BELUM') {
+        return '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-600 text-white shadow-2xs">BELUM</span>';
+    }
+    
     $colors = [
-        'Kontrak' => 'text-blue-600 bg-blue-100',
-        'Pemesanan' => 'text-amber-600 bg-amber-100',
-        'Distribusi' => 'text-purple-600 bg-purple-100',
-        'Selesai' => 'text-emerald-600 bg-emerald-100'
+        'Kontrak' => 'text-blue-700 bg-blue-100 border border-blue-200',
+        'Pemesanan' => 'text-amber-700 bg-amber-100 border border-amber-200',
+        'Distribusi' => 'text-purple-700 bg-purple-100 border border-purple-200',
+        'Selesai' => 'text-emerald-700 bg-emerald-100 border border-emerald-200'
     ];
-    $class = $colors[$status] ?? 'text-slate-600 bg-slate-100';
-    return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' . $class . '">' . htmlspecialchars($status) . '</span>';
+    $class = $colors[$status] ?? 'text-slate-600 bg-slate-100 border border-slate-200';
+    return '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ' . $class . '">' . htmlspecialchars($status) . '</span>';
+}
+
+/**
+ * Get progres barang badge HTML (Sesuai Spreadsheet: BELUM, BELANJA, DISTRIBUSI, SELESAI)
+ */
+function getProgresBarangBadge($progres) {
+    $norm = strtoupper(trim($progres ?? 'BELUM'));
+    switch ($norm) {
+        case 'DISTRIBUSI':
+            return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-500 tracking-wider">DISTRIBUSI</span>';
+        case 'BELANJA':
+            return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-500 tracking-wider">BELANJA</span>';
+        case 'BELUM':
+            return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-50 text-rose-700 border border-rose-500 tracking-wider">BELUM</span>';
+        case 'SELESAI':
+            return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-50 text-teal-700 border border-teal-500 tracking-wider">SELESAI</span>';
+        default:
+            return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-50 text-slate-700 border border-slate-300 tracking-wider">' . htmlspecialchars(strtoupper($progres)) . '</span>';
+    }
+}
+
+/**
+ * Get penanggung jawab badge HTML (Warna pastel khas tim)
+ */
+function getPenanggungJawabBadge($nama) {
+    if (empty($nama)) {
+        return '<span class="text-slate-300 text-[11px] italic">-</span>';
+    }
+    
+    $cleanName = strtoupper(trim($nama));
+    
+    // Check multiple names (e.g. "RAHMAN, RIFKI")
+    if (strpos($cleanName, ',') !== false) {
+        $parts = explode(',', $cleanName);
+        $html = '<div class="flex flex-wrap gap-1">';
+        foreach ($parts as $p) {
+            $html .= getPenanggungJawabBadge(trim($p));
+        }
+        $html .= '</div>';
+        return $html;
+    }
+    
+    $palettes = [
+        'RAHMAN' => 'bg-emerald-50 text-emerald-800 border-emerald-200',
+        'RIFKI' => 'bg-rose-50 text-rose-800 border-rose-200',
+        'DARMAN' => 'bg-slate-100 text-slate-800 border-slate-300',
+        'SULIS' => 'bg-purple-50 text-purple-800 border-purple-200',
+        'RIZAL' => 'bg-amber-50 text-amber-900 border-amber-200',
+        'ASHARI' => 'bg-cyan-50 text-cyan-900 border-cyan-200',
+        'BUDI' => 'bg-blue-50 text-blue-800 border-blue-200',
+        'ANDI' => 'bg-indigo-50 text-indigo-800 border-indigo-200',
+    ];
+    
+    $class = $palettes[$cleanName] ?? 'bg-slate-50 text-slate-800 border-slate-200';
+    return '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ' . $class . ' tracking-wide">' . htmlspecialchars($cleanName) . '</span>';
 }
 
 /**
@@ -159,4 +270,52 @@ function verifyCSRFToken($token) {
 function csrfField() {
     $token = generateCSRFToken();
     return '<input type="hidden" name="csrf_token" value="' . $token . '">';
+}
+
+/**
+ * Dapatkan data perusahaan aktif saat ini, dan pastikan selalu ada 1 perusahaan aktif
+ * jika sistem memiliki minimal 1 perusahaan (single active company architecture).
+ */
+function getActivePerusahaan() {
+    if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
+        return null;
+    }
+
+    require_once MODEL_PATH . '/Perusahaan.php';
+    $perusahaanModel = new Perusahaan();
+    $role = $_SESSION['admin_role'] ?? 'user';
+    $userId = $_SESSION['admin_id'] ?? 0;
+    
+    $companies = ($role === 'admin') 
+        ? $perusahaanModel->getAll() 
+        : $perusahaanModel->getByUser($userId);
+
+    if (empty($companies)) {
+        unset($_SESSION['active_perusahaan_id']);
+        unset($_SESSION['active_perusahaan_nama']);
+        return null;
+    }
+
+    $activeId = $_SESSION['active_perusahaan_id'] ?? null;
+    $activeComp = null;
+
+    if (!empty($activeId)) {
+        foreach ($companies as $c) {
+            if ($c['id'] == $activeId) {
+                $activeComp = $c;
+                break;
+            }
+        }
+    }
+
+    // Jika belum ada perusahaan aktif yang valid, otomatis tetapkan perusahaan pertama
+    if (!$activeComp) {
+        $activeComp = $companies[0];
+        $_SESSION['active_perusahaan_id'] = $activeComp['id'];
+        $_SESSION['active_perusahaan_nama'] = $activeComp['nama'];
+    } else {
+        $_SESSION['active_perusahaan_nama'] = $activeComp['nama'];
+    }
+
+    return $activeComp;
 }

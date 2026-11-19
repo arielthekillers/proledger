@@ -1,0 +1,12 @@
+# Block direct execution of PHP and script files in uploads directory
+<FilesMatch "\.(php|php3|php4|php5|php7|php8|phtml|pl|py|cgi|sh|bash)$">
+    Require all denied
+</FilesMatch>
+
+# Prevent directory indexing
+Options -Indexes -ExecCGI
+
+# Force download / inline for safe MIME types
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>

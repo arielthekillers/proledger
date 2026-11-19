@@ -10,17 +10,13 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/functions.php';
 
 // Parse URL
-$url = $_SERVER['REQUEST_URI'];
+$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '';
 $basePath = parse_url(APP_URL, PHP_URL_PATH) ?? '';
-$url = str_replace($basePath, '', $url);
-$url = trim($url, '/');
-$url = filter_var($url, FILTER_SANITIZE_URL);
-$url = explode('/', $url);
-
-// Remove query string
-if (strpos($url[0], '?') !== false) {
-    $url[0] = substr($url[0], 0, strpos($url[0], '?'));
+if (!empty($basePath) && strpos($requestPath, $basePath) === 0) {
+    $requestPath = substr($requestPath, strlen($basePath));
 }
+$requestPath = trim($requestPath, '/');
+$url = !empty($requestPath) ? explode('/', $requestPath) : [];
 
 // Route Mapping
 $controllerName = '';
@@ -28,7 +24,19 @@ $action = '';
 $params = [];
 
 // Custom Routes
+if (in_array(strtolower($url[0] ?? ''), ['rekap', 'transaksi', 'pemodal'])) {
+    // Obsolete modules removed
+    http_response_code(404);
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Modul Dihapus</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-100 flex items-center justify-center min-h-screen text-center p-4"><div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md"><div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400 text-2xl font-bold">404</div><h1 class="text-xl font-bold text-slate-800 mb-2">Modul Tidak Tersedia</h1><p class="text-sm text-slate-500 mb-6">Modul ini sudah tidak digunakan lagi dan telah dihapus dari sistem.</p><a href="' . APP_URL . '/" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow">Kembali ke Halaman Utama</a></div></body></html>';
+    exit;
+}
+
 if (empty($url[0])) {
+    // Check if user is logged in as admin
+    if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true && ($_SESSION['admin_role'] ?? '') === 'admin') {
+        header('Location: ' . APP_URL . '/user');
+        exit;
+    }
     // Home -> Dashboard
     $controllerName = 'DashboardController';
     $action = 'index';
@@ -38,6 +46,13 @@ if (empty($url[0])) {
         $action = 'authenticate';
     } else {
         $action = 'login';
+    }
+} elseif ($url[0] === 'register') {
+    $controllerName = 'AuthController';
+    if (($url[1] ?? '') === 'store' || ($url[1] ?? '') === 'save') {
+        $action = 'registerStore';
+    } else {
+        $action = 'register';
     }
 } elseif ($url[0] === 'logout') {
     $controllerName = 'AuthController';

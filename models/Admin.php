@@ -1,7 +1,7 @@
 <?php
 /**
  * ProLedger - Admin Model
- * Model untuk autentikasi sistem
+ * Model untuk autentikasi dan manajemen pengguna sistem
  */
 
 class Admin {
@@ -39,15 +39,14 @@ class Admin {
     }
 
     /**
-     * Create login access
+     * Create login access (for legacy pemodal/perusahaan generator)
      */
     public function createLoginAccess($role, $referenceId, $name, $email, $password) {
-        // Hash password
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         
         $stmt = $this->db->prepare("
-            INSERT INTO admins (role, reference_id, name, email, password) 
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO admins (role, reference_id, name, email, password, status) 
+            VALUES (?, ?, ?, ?, ?, 'active')
         ");
         
         return $stmt->execute([
@@ -57,6 +56,141 @@ class Admin {
             $email,
             $hashedPassword
         ]);
+    }
+
+    /**
+     * Register a new user (self-registration)
+     */
+    public function register($name, $email, $phone, $password, $role = 'user') {
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        
+        $stmt = $this->db->prepare("
+            INSERT INTO admins (name, email, phone, password, role, status)
+            VALUES (?, ?, ?, ?, ?, 'pending')
+        ");
+        
+        return $stmt->execute([
+            $name,
+            $email,
+            $phone ?: null,
+            $hashedPassword,
+            $role
+        ]);
+    }
+
+    /**
+     * Admin create new user directly
+     */
+    public function create($data) {
+        $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
+        $status = $data['status'] ?? 'active';
+        $role = $data['role'] ?? 'user';
+        $phone = $data['phone'] ?? null;
+        
+        $stmt = $this->db->prepare("
+            INSERT INTO admins (name, email, phone, password, role, status, reference_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+        
+        return $stmt->execute([
+            $data['name'],
+            $data['email'],
+            $phone,
+            $hashedPassword,
+            $role,
+            $status,
+            $data['reference_id'] ?? null
+        ]);
+    }
+
+    /**
+     * Update user details
+     */
+    public function update($id, $data) {
+        $fields = ["name = ?", "email = ?", "phone = ?", "role = ?", "status = ?"];
+        $params = [
+            $data['name'],
+            $data['email'],
+            $data['phone'] ?? null,
+            $data['role'],
+            $data['status']
+        ];
+
+        if (!empty($data['password'])) {
+            $fields[] = "password = ?";
+            $params[] = password_hash($data['password'], PASSWORD_DEFAULT);
+        }
+
+        $params[] = $id;
+
+        $sql = "UPDATE admins SET " . implode(", ", $fields) . " WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($params);
+    }
+
+    /**
+     * Update status only (approve / reject / activate / deactivate)
+     */
+    public function updateStatus($id, $status) {
+        $stmt = $this->db->prepare("UPDATE admins SET status = ? WHERE id = ?");
+        return $stmt->execute([$status, $id]);
+    }
+
+    /**
+     * Update password
+     */
+    public function updatePassword($id, $newPassword) {
+        $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+        $stmt = $this->db->prepare("UPDATE admins SET password = ? WHERE id = ?");
+        return $stmt->execute([$hash, $id]);
+    }
+
+    /**
+     * Delete user
+     */
+    public function delete($id) {
+        $stmt = $this->db->prepare("DELETE FROM admins WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * Get pending registrations count
+     */
+    public function getPendingCount() {
+        $stmt = $this->db->query("SELECT COUNT(*) FROM admins WHERE status = 'pending'");
+        return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * Get all users with optional filters
+     */
+    public function getAll($filter = []) {
+        $sql = "SELECT id, name, email, phone, role, status, reference_id, created_at, updated_at FROM admins WHERE 1=1";
+        $params = [];
+
+        if (!empty($filter['status'])) {
+            $sql .= " AND status = ?";
+            $params[] = $filter['status'];
+        }
+
+        if (!empty($filter['role'])) {
+            $sql .= " AND role = ?";
+            $params[] = $filter['role'];
+        }
+
+        if (!empty($filter['search'])) {
+            $sql .= " AND (name LIKE ? OR email LIKE ? OR phone LIKE ?)";
+            $searchTerm = '%' . $filter['search'] . '%';
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+
+        $sql .= " ORDER BY CASE WHEN status = 'pending' THEN 0 ELSE 1 END, created_at DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
     
     /**

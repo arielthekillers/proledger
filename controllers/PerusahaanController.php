@@ -1,4 +1,9 @@
 <?php
+/**
+ * ProLedger - Perusahaan Controller
+ * Mengelola data perusahaan mitra dan pergantian perusahaan aktif (switch)
+ */
+
 require_once MODEL_PATH . '/Perusahaan.php';
 
 class PerusahaanController {
@@ -7,9 +12,14 @@ class PerusahaanController {
     private $adminModel;
     
     public function __construct() {
-        // Enforce Admin Only
-        if (($_SESSION['admin_role'] ?? 'admin') !== 'admin') {
-            header('Location: ' . APP_URL);
+        if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+            header('Location: ' . APP_URL . '/login');
+            exit;
+        }
+
+        // Admin hanya mengelola manajemen pengguna
+        if (($_SESSION['admin_role'] ?? 'user') === 'admin') {
+            header('Location: ' . APP_URL . '/user');
             exit;
         }
 
@@ -18,16 +28,32 @@ class PerusahaanController {
         $this->adminModel = new Admin();
     }
     
+    /**
+     * Tampilkan daftar perusahaan
+     */
     public function index() {
-        $perusahaan = $this->perusahaanModel->getAll();
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = $_SESSION['admin_id'] ?? 0;
+
+        if ($role === 'admin') {
+            $perusahaan = $this->perusahaanModel->getAll();
+        } else {
+            $perusahaan = $this->perusahaanModel->getByUser($userId);
+        }
+
         $data = [
             'title' => 'Daftar Perusahaan',
             'active' => 'perusahaan',
-            'perusahaan' => $perusahaan
+            'perusahaan' => $perusahaan,
+            'role' => $role,
+            'activeCompanyId' => $_SESSION['active_perusahaan_id'] ?? null
         ];
         $this->view('perusahaan/index', $data);
     }
     
+    /**
+     * Form tambah perusahaan
+     */
     public function create() {
         $data = [
             'title' => 'Tambah Perusahaan',
@@ -36,36 +62,80 @@ class PerusahaanController {
         $this->view('perusahaan/create', $data);
     }
     
+    /**
+     * Simpan perusahaan baru
+     */
     public function store() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Verify CSRF
-            if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-                flash('error', 'Invalid CSRF token');
-                redirect('/perusahaan/create');
-                return;
-            }
-
-            $data = [
-                'nama' => $_POST['nama'],
-                'email' => $_POST['email'],
-                'telepon' => $_POST['telepon'],
-                'alamat' => $_POST['alamat']
-            ];
-            
-            $this->perusahaanModel->create($data);
-            
-            flash('success', 'Perusahaan berhasil ditambahkan');
-            header('Location: ' . APP_URL . '/perusahaan');
-            exit;
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('/perusahaan');
+            return;
         }
+
+        // Verify CSRF
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Token keamanan CSRF tidak valid.');
+            redirect('/perusahaan/create');
+            return;
+        }
+
+        $nama = trim($_POST['nama'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $telepon = trim($_POST['telepon'] ?? '');
+        $alamat = trim($_POST['alamat'] ?? '');
+        $website = trim($_POST['website'] ?? '');
+        $keterangan = trim($_POST['keterangan'] ?? '');
+
+        if (empty($nama)) {
+            flash('error', 'Nama perusahaan wajib diisi.');
+            redirect('/perusahaan/create');
+            return;
+        }
+
+        $userId = $_SESSION['admin_id'] ?? null;
+
+        $data = [
+            'user_id' => $userId,
+            'nama' => $nama,
+            'email' => $email ?: null,
+            'telepon' => $telepon ?: null,
+            'alamat' => $alamat ?: null,
+            'website' => $website ?: null,
+            'keterangan' => $keterangan ?: null
+        ];
+        
+        $newId = $this->perusahaanModel->create($data);
+
+        // Otomatis aktifkan perusahaan jika belum ada perusahaan aktif
+        if (empty($_SESSION['active_perusahaan_id'])) {
+            $_SESSION['active_perusahaan_id'] = $newId;
+            $_SESSION['active_perusahaan_nama'] = $nama;
+        }
+        
+        flash('success', "Perusahaan <strong>{$nama}</strong> berhasil ditambahkan!");
+        header('Location: ' . APP_URL . '/perusahaan');
+        exit;
     }
     
+    /**
+     * Form edit perusahaan
+     */
     public function edit($id) {
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = $_SESSION['admin_id'] ?? 0;
+
         $perusahaan = $this->perusahaanModel->getById($id);
         if (!$perusahaan) {
-            header('Location: ' . APP_URL . '/perusahaan');
-            exit;
+            flash('error', 'Perusahaan tidak ditemukan.');
+            redirect('/perusahaan');
+            return;
         }
+
+        if (!$this->perusahaanModel->isOwnerOrAdmin($id, $userId, $role)) {
+            flash('error', 'Anda tidak memiliki hak akses untuk mengedit perusahaan ini.');
+            redirect('/perusahaan');
+            return;
+        }
+
         $data = [
             'title' => 'Edit Perusahaan',
             'active' => 'perusahaan',
@@ -74,30 +144,72 @@ class PerusahaanController {
         $this->view('perusahaan/edit', $data);
     }
     
+    /**
+     * Simpan perubahan perusahaan
+     */
     public function update($id) {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-             // Verify CSRF
-             if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-                flash('error', 'Invalid CSRF token');
-                redirect('/perusahaan/edit/' . $id);
-                return;
-            }
-
-            $data = [
-                'nama' => $_POST['nama'],
-                'email' => $_POST['email'],
-                'telepon' => $_POST['telepon'],
-                'alamat' => $_POST['alamat']
-            ];
-            
-            $this->perusahaanModel->update($id, $data);
-            flash('success', 'Data perusahaan berhasil diperbarui');
-            header('Location: ' . APP_URL . '/perusahaan');
-            exit;
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('/perusahaan');
+            return;
         }
+
+        // Verify CSRF
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Token keamanan CSRF tidak valid.');
+            redirect('/perusahaan/edit/' . $id);
+            return;
+        }
+
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = $_SESSION['admin_id'] ?? 0;
+
+        if (!$this->perusahaanModel->isOwnerOrAdmin($id, $userId, $role)) {
+            flash('error', 'Anda tidak memiliki hak akses untuk mengubah perusahaan ini.');
+            redirect('/perusahaan');
+            return;
+        }
+
+        $nama = trim($_POST['nama'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $telepon = trim($_POST['telepon'] ?? '');
+        $alamat = trim($_POST['alamat'] ?? '');
+        $website = trim($_POST['website'] ?? '');
+        $keterangan = trim($_POST['keterangan'] ?? '');
+
+        if (empty($nama)) {
+            flash('error', 'Nama perusahaan wajib diisi.');
+            redirect('/perusahaan/edit/' . $id);
+            return;
+        }
+
+        $data = [
+            'nama' => $nama,
+            'email' => $email ?: null,
+            'telepon' => $telepon ?: null,
+            'alamat' => $alamat ?: null,
+            'website' => $website ?: null,
+            'keterangan' => $keterangan ?: null
+        ];
+        
+        $this->perusahaanModel->update($id, $data);
+
+        // Update active company name in session if matches
+        if (($SESSION['active_perusahaan_id'] ?? null) == $id) {
+            $_SESSION['active_perusahaan_nama'] = $nama;
+        }
+
+        flash('success', 'Data perusahaan berhasil diperbarui!');
+        header('Location: ' . APP_URL . '/perusahaan');
+        exit;
     }
     
+    /**
+     * Detail perusahaan & proyek
+     */
     public function detail($id) {
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = $_SESSION['admin_id'] ?? 0;
+
         $perusahaan = $this->perusahaanModel->getById($id);
         if (!$perusahaan) {
             flash('error', 'Perusahaan tidak ditemukan');
@@ -105,28 +217,71 @@ class PerusahaanController {
             return;
         }
 
-        $paket = $this->perusahaanModel->getPaketByPerusahaan($id);
-        
-        // Check for existing login access
-        $loginAccess = $this->adminModel->findByReference('perusahaan', $id);
+        if (!$this->perusahaanModel->isOwnerOrAdmin($id, $userId, $role)) {
+            flash('error', 'Anda tidak memiliki akses ke perusahaan ini.');
+            redirect('/perusahaan');
+            return;
+        }
+
+        require_once HELPER_PATH . '/Uploader.php';
+
+        // Check for existing login access (admin only)
+        $loginAccess = ($role === 'admin') ? $this->adminModel->findByReference('perusahaan', $id) : null;
         
         $data = [
             'title' => $perusahaan['nama'],
             'active' => 'perusahaan',
             'perusahaan' => $perusahaan,
-            'paket' => $paket,
-            'login_access' => $loginAccess
+            'login_access' => $loginAccess,
+            'role' => $role
         ];
         $this->view('perusahaan/detail', $data);
     }
 
+    /**
+     * Switch perusahaan aktif (Single Active Company)
+     */
+    public function switch($id = null) {
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = $_SESSION['admin_id'] ?? 0;
+
+        if (!empty($id)) {
+            $comp = $this->perusahaanModel->getById($id);
+            if ($comp && $this->perusahaanModel->isOwnerOrAdmin($id, $userId, $role)) {
+                $_SESSION['active_perusahaan_id'] = $comp['id'];
+                $_SESSION['active_perusahaan_nama'] = $comp['nama'];
+                flash('success', 'Beralih ke perusahaan: <strong>' . htmlspecialchars($comp['nama']) . '</strong>');
+            } else {
+                flash('error', 'Perusahaan tidak ditemukan atau tidak dapat diakses.');
+            }
+        }
+
+        // Pastikan selalu ada 1 perusahaan aktif jika tersedia
+        getActivePerusahaan();
+
+        $redirectUrl = $_SERVER['HTTP_REFERER'] ?? (APP_URL . '/');
+        if (strpos($redirectUrl, '/perusahaan/switch') !== false) {
+            $redirectUrl = APP_URL . '/';
+        }
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    /**
+     * Buat akses login terpisah untuk perusahaan (Admin Only)
+     */
     public function generateAccess($id) {
+        if (($_SESSION['admin_role'] ?? 'admin') !== 'admin') {
+            flash('error', 'Hanya Administrator yang dapat membuat akses login.');
+            redirect('/perusahaan/detail/' . $id);
+            return;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect('/perusahaan/detail/' . $id);
             return;
         }
         
-        // Verify CSRF
         if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
             flash('error', 'Invalid CSRF token');
             redirect('/perusahaan/detail/' . $id);
@@ -140,14 +295,12 @@ class PerusahaanController {
             return;
         }
 
-        // Check if access already exists
         if ($this->adminModel->findByReference('perusahaan', $id)) {
             flash('error', 'Akses login sudah ada.');
             redirect('/perusahaan/detail/' . $id);
             return;
         }
         
-        // Check if email already used
         if ($this->adminModel->findByEmail($perusahaan['email'])) {
             flash('error', 'Email sudah digunakan untuk akses lain.');
             redirect('/perusahaan/detail/' . $id);
@@ -155,7 +308,6 @@ class PerusahaanController {
         }
 
         try {
-            // Generate Random Password
             $password = bin2hex(random_bytes(4)); // 8 chars
             
             $this->adminModel->createLoginAccess(
@@ -167,7 +319,6 @@ class PerusahaanController {
             );
             
             flash('success', "Akses berhasil dibuat! Password: <strong>{$password}</strong> (Silakan simpan ini)");
-            
         } catch (Exception $e) {
             flash('error', 'Gagal membuat akses: ' . $e->getMessage());
         }
@@ -175,9 +326,34 @@ class PerusahaanController {
         redirect('/perusahaan/detail/' . $id);
     }
 
+    /**
+     * Hapus perusahaan
+     */
     public function delete($id) {
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = $_SESSION['admin_id'] ?? 0;
+
+        if (!$this->perusahaanModel->isOwnerOrAdmin($id, $userId, $role)) {
+            flash('error', 'Anda tidak memiliki hak akses untuk menghapus perusahaan ini.');
+            redirect('/perusahaan');
+            return;
+        }
+
+        $packets = $this->perusahaanModel->getPaketByPerusahaan($id);
+        if (!empty($packets)) {
+            flash('error', 'Perusahaan tidak dapat dihapus karena masih memiliki ' . count($packets) . ' paket kegiatan terkait.');
+            redirect('/perusahaan');
+            return;
+        }
+
         $this->perusahaanModel->delete($id);
-        flash('success', 'Perusahaan berhasil dihapus');
+
+        if (($SESSION['active_perusahaan_id'] ?? null) == $id) {
+            unset($_SESSION['active_perusahaan_id']);
+            unset($_SESSION['active_perusahaan_nama']);
+        }
+
+        flash('success', 'Perusahaan berhasil dihapus.');
         header('Location: ' . APP_URL . '/perusahaan');
         exit;
     }

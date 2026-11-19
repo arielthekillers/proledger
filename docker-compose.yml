@@ -1,0 +1,46 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: proledger_app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:80"
+    environment:
+      APP_NAME: "${APP_NAME:-ProLedger}"
+      APP_ENV: "${APP_ENV:-production}"
+      APP_DEBUG: "${APP_DEBUG:-false}"
+      APP_URL: "${APP_URL:-http://localhost:8000}"
+      DB_HOST: "${DB_HOST:-db}"
+      DB_PORT: "${DB_PORT:-3306}"
+      DB_DATABASE: "${DB_DATABASE:-proledger}"
+      DB_USERNAME: "${DB_USERNAME:-proledger_user}"
+      DB_PASSWORD: "${DB_PASSWORD:-SecretPass123!}"
+    volumes:
+      - proledger_uploads:/var/www/html/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:11.4
+    container_name: proledger_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:-RootSecretPass123!}"
+      MYSQL_DATABASE: "${DB_DATABASE:-proledger}"
+      MYSQL_USER: "${DB_USERNAME:-proledger_user}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-SecretPass123!}"
+    volumes:
+      - proledger_db_data:/var/lib/mysql
+      - ./database/proledger_production.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  proledger_uploads:
+  proledger_db_data:

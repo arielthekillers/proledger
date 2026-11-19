@@ -7,7 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="<?= APP_URL ?>/css/app.min.css">
+    <?php if (defined('APP_ENV') && APP_ENV === 'local'): ?>
+        <script src="https://cdn.tailwindcss.com"></script>
+    <?php endif; ?>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -22,18 +25,32 @@
                     <ion-icon name="wallet"></ion-icon>
                 </div>
                 <h1 class="text-2xl font-bold text-slate-800">ProLedger</h1>
-                <p class="text-slate-500 text-sm">System Login</p>
+                <p class="text-slate-500 text-sm">Masuk ke Sistem</p>
             </div>
 
-            <?php if (isset($_SESSION['error'])): ?>
-                <div class="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg flex items-center gap-2">
-                    <ion-icon name="alert-circle" class="text-lg"></ion-icon>
-                    <?= $_SESSION['error'] ?>
-                    <?php unset($_SESSION['error']); ?>
+            <?php 
+            $errorMsg = flash('error') ?? ($_SESSION['error'] ?? null);
+            if (isset($_SESSION['error'])) unset($_SESSION['error']);
+            $successMsg = flash('success') ?? ($_SESSION['success'] ?? null);
+            if (isset($_SESSION['success'])) unset($_SESSION['success']);
+            ?>
+
+            <?php if ($errorMsg): ?>
+                <div class="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg flex items-start gap-2">
+                    <ion-icon name="alert-circle" class="text-lg shrink-0 mt-0.5"></ion-icon>
+                    <span><?= htmlspecialchars($errorMsg) ?></span>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($successMsg): ?>
+                <div class="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 rounded-lg flex items-start gap-2">
+                    <ion-icon name="checkmark-circle" class="text-lg shrink-0 mt-0.5"></ion-icon>
+                    <span><?= htmlspecialchars($successMsg) ?></span>
                 </div>
             <?php endif; ?>
 
             <form action="<?= APP_URL ?>/login/auth" method="POST" class="space-y-4">
+                <?= csrfField() ?>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
                     <div class="relative">
@@ -42,7 +59,7 @@
                         </span>
                         <input type="email" name="email" required 
                                class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                               placeholder="admin@sintesacorp.id">
+                               placeholder="nama@email.com">
                     </div>
                 </div>
 
@@ -65,6 +82,13 @@
                     </button>
                 </div>
             </form>
+
+            <div class="mt-6 pt-5 border-t border-slate-100 text-center">
+                <p class="text-sm text-slate-600">
+                    Belum punya akun? 
+                    <a href="<?= APP_URL ?>/register" class="text-blue-600 font-semibold hover:underline hover:text-blue-700">Daftar Akun</a>
+                </p>
+            </div>
         </div>
         
         <div class="bg-slate-50 px-8 py-4 border-t border-slate-100 text-center">

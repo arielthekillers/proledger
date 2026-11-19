@@ -3,6 +3,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
+        "build:css": "tailwindcss -i ./resources/css/app.css -o ./public/css/app.min.css --minify",
+        "watch:css": "tailwindcss -i ./resources/css/app.css -o ./public/css/app.min.css --watch",
         "dev": "vite"
     },
     "devDependencies": {

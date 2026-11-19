@@ -1,102 +1,77 @@
 <?php
 /**
  * ProLedger - Dashboard Controller
+ * Mengelola tampilan statistik utama dan ringkasan paket untuk perusahaan aktif
  */
 
 require_once MODEL_PATH . '/PaketKegiatan.php';
-require_once MODEL_PATH . '/User.php';
-require_once MODEL_PATH . '/Transaksi.php';
-require_once MODEL_PATH . '/ModalDetail.php';
+require_once MODEL_PATH . '/Perusahaan.php';
 
 class DashboardController {
     private $paketModel;
-    private $userModel;
-    private $transaksiModel;
-    private $modalModel;
+    private $perusahaanModel;
     
     public function __construct() {
         $this->paketModel = new PaketKegiatan();
-        $this->userModel = new User();
-        $this->transaksiModel = new Transaksi();
-        $this->modalModel = new ModalDetail();
+        $this->perusahaanModel = new Perusahaan();
     }
     
     public function index() {
-        // Prepare filters based on role
-        $role = $_SESSION['admin_role'] ?? 'admin';
-        $refId = $_SESSION['admin_ref_id'] ?? null;
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = $_SESSION['admin_id'] ?? null;
         
-        $paketFilters = [];
-        if ($role === 'pemodal') {
-            // Need to implement getByPemodal in PaketModel or filter here
-            // For now, let's filter the full list (inefficient but works for MVP)
-            // Or better, add method to model. Let's filter array for simplicity for now as model changes are risky without checking file.
-            // Actually, best to fetch all and filter in PHP since we don't have specific DB methods yet and users count is small.
+        // Admin hanya mengelola manajemen user, tidak mengelola proyek
+        if ($role === 'admin') {
+            header('Location: ' . APP_URL . '/user');
+            exit;
         }
 
-        // Get statistics
-        $allPaket = $this->paketModel->getAll(); // This returns array
-        
-        // Filter Pakets
-        if ($role === 'pemodal') {
-            $myPaketIds = $this->transaksiModel->getPaketIdsByPemodal($refId); // Need to check if this method exists or similar logic
-            // Alternative: Get from ModalDetail
-            $myInvestments = $this->modalModel->getByUser($refId);
-            $myPaketIds = array_column($myInvestments, 'paket_id');
-            
-            $allPaket = array_filter($allPaket, function($p) use ($myPaketIds) {
-                return in_array($p['id'], $myPaketIds);
-            });
-        } elseif ($role === 'perusahaan') {
-            $allPaket = array_filter($allPaket, function($p) use ($refId) {
-                return $p['perusahaan_id'] == $refId;
-            });
+        // 1. Ambil daftar perusahaan milik user
+        $userCompanies = $this->perusahaanModel->getByUser($userId);
+
+        // 2. Pastikan selalu tepat 1 perusahaan aktif terpilih (Single Active Company)
+        $activeCompany = getActivePerusahaan();
+        $activeCompanyId = $activeCompany ? $activeCompany['id'] : null;
+
+        // 3. Ambil paket kegiatan HANYA untuk 1 perusahaan aktif
+        if (!empty($activeCompanyId)) {
+            $allPaket = $this->paketModel->getAll(['perusahaan_id' => $activeCompanyId]);
+        } else {
+            $allPaket = [];
         }
         
         $paketAktif = array_filter($allPaket, function($p) {
-            return $p['status'] !== 'Selesai';
+            return ($p['status'] ?? '') !== 'Selesai';
         });
         
-        // Filter Users (Only admin sees all users)
-        $allUsers = ($role === 'admin') ? $this->userModel->getAll() : [];
+        // Hitung total nilai pagu dan total potongan pasal untuk perusahaan aktif
+        $totalPagu = 0;
+        $totalPasal = 0;
         
-        // Calculate totals
-        $totalModal = 0;
-        $totalMasuk = 0;
-        $totalKeluar = 0;
-        
-        foreach ($allPaket as $paket) {
-            $summary = $this->paketModel->getSummary($paket['id']);
-            
-            // For Pemodal, we might want to show THEIR share, but simpler to show Project totals they are involved in for now.
-            // Requirement says "see his own project", so project summary is acceptable.
-            
-            $totalModal += $summary['total_modal'];
-            $totalMasuk += $summary['total_masuk'];
-            $totalKeluar += $summary['total_keluar'];
+        foreach ($allPaket as $p) {
+            $hasNego = (!empty($p['pagu_nego']) && (float)$p['pagu_nego'] > 0);
+            $acuan = $hasNego ? (float)$p['pagu_nego'] : (float)$p['pagu'];
+            $totalPagu += $acuan;
+            $totalPasal += (!empty($p['total_pasal']) ? (float)$p['total_pasal'] : 0);
         }
         
-        $totalSaldo = $totalMasuk - $totalKeluar;
-        $totalLabaRugi = $totalSaldo - $totalModal;
+        $recentPaket = array_slice($allPaket, 0, 8);
         
-        // Get recent paket
-        $recentPaket = array_slice($allPaket, 0, 5);
-        
-        // Prepare data for view
         $data = [
             'title' => 'Dashboard',
             'active' => 'dashboard',
             'stats' => [
                 'total_paket' => count($allPaket),
                 'paket_aktif' => count($paketAktif),
-                'total_pemodal' => count($allUsers), // Hide for non-admin
-                'total_modal' => $totalModal,
-                'total_masuk' => $totalMasuk,
-                'total_keluar' => $totalKeluar,
-                'total_saldo' => $totalSaldo,
-                'total_laba_rugi' => $totalLabaRugi
+                'total_pagu' => $totalPagu,
+                'total_pasal' => $totalPasal,
+                'total_perusahaan' => count($userCompanies)
             ],
-            'recent_paket' => $recentPaket
+            'recent_paket' => $recentPaket,
+            'userCompanies' => $userCompanies,
+            'activeCompany' => $activeCompany,
+            'activeCompanyId' => $activeCompanyId,
+            'role' => $role
         ];
         
         $this->view('dashboard/index', $data);
