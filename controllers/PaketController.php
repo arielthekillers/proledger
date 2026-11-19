@@ -112,6 +112,7 @@ class PaketController {
         $data = [
             'title' => 'Paket Kegiatan',
             'active' => 'paket',
+            'activeTab' => $_GET['tab'] ?? 'info',
             'paket' => array_values($paket),
             'groups' => $groups,
             'skemas' => $skemas,
@@ -142,6 +143,7 @@ class PaketController {
         $data = [
             'title' => 'Tambah Paket Kegiatan',
             'active' => 'paket',
+            'activeTab' => $_GET['tab'] ?? 'info',
             'users' => [],
             'activeCompany' => $activeCompany,
             'groups' => $groups,
@@ -227,7 +229,8 @@ class PaketController {
 
         // Jika diakses menggunakan ID numerik, redirect ke kode 5-digit acak
         if (is_numeric($idOrKode) && !empty($paket['kode_paket'])) {
-            redirect('/paket/detail/' . $paket['kode_paket']);
+            $qs = !empty($_SERVER['QUERY_STRING']) ? ('?' . $_SERVER['QUERY_STRING']) : '';
+            redirect('/paket/detail/' . $paket['kode_paket'] . $qs);
             return;
         }
 
@@ -280,6 +283,7 @@ class PaketController {
         $data = [
             'title' => $paket['nama_paket'],
             'active' => 'paket',
+            'activeTab' => $_GET['tab'] ?? 'info',
             'paket' => $paket,
             'summary' => $summary,
             'items' => $items,
@@ -315,6 +319,7 @@ class PaketController {
         $data = [
             'title' => 'Edit Paket Kegiatan',
             'active' => 'paket',
+            'activeTab' => $_GET['tab'] ?? 'info',
             'paket' => $paket,
             'users' => [],
             'groups' => $groups,
@@ -469,14 +474,14 @@ class PaketController {
         $paket = $this->getAccessiblePaket($idOrKode);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#items');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=items#items');
             return;
         }
 
         $komponen = trim($_POST['komponen'] ?? '');
         if (empty($komponen)) {
             flash('error', 'Nama komponen barang wajib diisi.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#items');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=items#items');
             return;
         }
 
@@ -502,7 +507,7 @@ class PaketController {
             flash('error', 'Gagal menambahkan item: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#items');
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=items#items');
     }
 
     /**
@@ -512,21 +517,21 @@ class PaketController {
         $paket = $this->getAccessiblePaket($idOrKode);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#items');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=items#items');
             return;
         }
 
         $item = $this->itemModel->getById($itemId);
         if (!$item || $item['paket_id'] != $paket['id']) {
             flash('error', 'Item tidak ditemukan.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#items');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=items#items');
             return;
         }
 
         $komponen = trim($_POST['komponen'] ?? '');
         if (empty($komponen)) {
             flash('error', 'Nama komponen barang wajib diisi.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#items');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=items#items');
             return;
         }
 
@@ -551,7 +556,7 @@ class PaketController {
             flash('error', 'Gagal memperbarui item: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#items');
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=items#items');
     }
 
     /**
@@ -567,7 +572,7 @@ class PaketController {
             flash('error', 'Gagal menghapus item: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#items');
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=items#items');
     }
 
     /**
@@ -577,7 +582,7 @@ class PaketController {
         $paket = $this->getAccessiblePaket($idOrKode);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
             return;
         }
 
@@ -619,14 +624,14 @@ class PaketController {
 
         if (!$itemId || empty($namaTujuan)) {
             flash('error', 'Item komponen dan pilihan tujuan penerima wajib ditentukan.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#' . $redirectTab);
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
             return;
         }
 
         $item = $this->itemModel->getById($itemId);
         if (!$item || $item['paket_id'] != $paket['id']) {
             flash('error', 'Item komponen tidak ditemukan dalam paket ini.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#' . $redirectTab);
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
             return;
         }
 
@@ -638,19 +643,19 @@ class PaketController {
 
         if ($remainingQuota <= 0) {
             flash('error', 'Gagal: Seluruh kuota untuk item "' . $item['komponen'] . '" (' . $totalItemQty . ' ' . $item['satuan'] . ') sudah terdistribusi penuh. Tidak dapat menambah alokasi.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#' . $redirectTab);
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
             return;
         }
 
         if ($jumlah <= 0) {
             flash('error', 'Jumlah alokasi harus lebih besar dari 0.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#' . $redirectTab);
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
             return;
         }
 
         if ($jumlah > $remainingQuota) {
             flash('error', 'Gagal: Jumlah alokasi (' . $jumlah . ' ' . $item['satuan'] . ') melebihi sisa kuota yang tersedia (' . $remainingQuota . ' ' . $item['satuan'] . ').');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#' . $redirectTab);
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
             return;
         }
 
@@ -683,7 +688,7 @@ class PaketController {
             flash('error', 'Gagal menambahkan alokasi pengiriman: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#' . $redirectTab);
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
     }
 
     /**
@@ -693,7 +698,7 @@ class PaketController {
         $this->requireUser();
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            redirect('/paket/detail/' . $idOrKode . '#distribusi');
+            redirect('/paket/detail/' . $idOrKode . '?tab=distribusi#distribusi');
             return;
         }
 
@@ -707,7 +712,7 @@ class PaketController {
         $dist = $this->distribusiModel->getById($distribusiId);
         if (!$dist || $dist['paket_id'] != $paket['id']) {
             flash('error', 'Data alokasi tidak ditemukan.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
             return;
         }
 
@@ -717,7 +722,7 @@ class PaketController {
 
         if (!$itemId || empty($namaTujuan)) {
             flash('error', 'Item komponen dan nama tujuan penerima wajib diisi.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
             return;
         }
 
@@ -730,7 +735,7 @@ class PaketController {
             $maxAllowed = max(0, (float)$item['jumlah'] - $alreadyAllocatedOther);
             if ($jumlah > $maxAllowed) {
                 flash('error', 'Gagal: Jumlah alokasi (' . $jumlah . ' ' . $item['satuan'] . ') melebihi batas sisa kuota yang tersedia (' . $maxAllowed . ' ' . $item['satuan'] . ').');
-                redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+                redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
                 return;
             }
         }
@@ -765,7 +770,7 @@ class PaketController {
             flash('error', 'Gagal memperbarui alokasi pengiriman: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
     }
 
     /**
@@ -799,7 +804,7 @@ class PaketController {
             flash('error', 'Gagal memperbarui status barang: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
     }
 
     /**
@@ -815,7 +820,7 @@ class PaketController {
                 exit;
             }
             flash('error', 'Data alokasi distribusi tidak ditemukan.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
         }
 
         // Validasi: Status Barang harus 'Sudah Dipesan'
@@ -825,7 +830,7 @@ class PaketController {
                 exit;
             }
             flash('error', 'Barang belum dipesan! Status distribusi hanya dapat diubah jika status barang sudah "Sudah Dipesan".');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
         }
 
         $statusDistribusi = trim($_POST['status_distribusi'] ?? 'Tiba dirumah/kantor');
@@ -845,7 +850,7 @@ class PaketController {
             flash('error', 'Gagal memperbarui status distribusi: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
     }
 
     /**
@@ -860,7 +865,7 @@ class PaketController {
             $groupedList = $this->distribusiModel->getGroupedByTujuan($paket['id']);
             if (empty($groupedList)) {
                 flash('error', 'Belum ada data alokasi barang untuk mencetak BAST.');
-                redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#dokumen');
+                redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
                 return;
             }
             $bastDate = !empty($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d');
@@ -871,14 +876,14 @@ class PaketController {
         $namaTujuan = trim($_GET['tujuan'] ?? '');
         if (empty($namaTujuan)) {
             flash('error', 'Silakan pilih lokasi tujuan penerima untuk mencetak BAST.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
             return;
         }
 
         $items = $this->distribusiModel->getItemsByTujuan($paket['id'], $namaTujuan);
         if (empty($items)) {
             flash('error', 'Tidak ada data barang yang dialokasikan untuk tujuan: ' . htmlspecialchars($namaTujuan));
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
             return;
         }
 
@@ -913,7 +918,7 @@ class PaketController {
             flash('error', 'Gagal menghapus alokasi distribusi: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
     }
 
     /**
@@ -1077,13 +1082,13 @@ class PaketController {
         $paket = $this->getAccessiblePaket($idOrKode);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#dokumen');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
             return;
         }
 
         if (!isset($_FILES['file_dokumen']) || $_FILES['file_dokumen']['error'] !== UPLOAD_ERR_OK) {
             flash('error', 'Silakan pilih berkas dokumen yang valid untuk diupload.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#dokumen');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
             return;
         }
 
@@ -1102,7 +1107,7 @@ class PaketController {
 
         if (!$uploadResult['success']) {
             flash('error', $uploadResult['message']);
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#dokumen');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
             return;
         }
 
@@ -1129,7 +1134,7 @@ class PaketController {
             flash('error', 'Gagal menyimpan dokumen: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#dokumen');
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
     }
 
     /**
@@ -1141,14 +1146,14 @@ class PaketController {
         $doc = $this->dokumenModel->getById($dokumenId);
         if (!$doc || $doc['paket_id'] != $paket['id']) {
             flash('error', 'Dokumen tidak ditemukan.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#dokumen');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
             return;
         }
 
         $filePath = PUBLIC_PATH . '/' . ltrim($doc['file_path'], '/');
         if (!file_exists($filePath) || !is_file($filePath)) {
             flash('error', 'Berkas fisik dokumen tidak ditemukan di server.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#dokumen');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
             return;
         }
 
@@ -1187,7 +1192,7 @@ class PaketController {
             flash('error', 'Gagal menghapus dokumen: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#dokumen');
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
     }
     
     private function view($view, $data = []) {

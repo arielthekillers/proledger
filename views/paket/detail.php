@@ -23,6 +23,12 @@ $distribusiSummary = $distribusiSummary ?? ['total_baris' => 0, 'total_tujuan' =
 $groupedDistribusi = $groupedDistribusi ?? [];
 $dokumenList = $dokumenList ?? [];
 $lokasiList = $lokasiList ?? [];
+
+$activeTab = $activeTab ?? ($_GET['tab'] ?? 'info');
+$validTabs = ['info', 'items', 'distribusi', 'dokumen'];
+if (!in_array($activeTab, $validTabs)) {
+    $activeTab = 'info';
+}
 $groups = $groups ?? [];
 $skemas = $skemas ?? [];
 
@@ -123,18 +129,35 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
 <!-- ========================================== -->
 <!-- 2. TAB NAVIGATION (4 TABS)                 -->
 <!-- ========================================== -->
+<script>
+(function() {
+    var validTabs = ['info', 'items', 'distribusi', 'dokumen'];
+    var hash = (window.location.hash || '').replace('#', '');
+    var urlParams = new URLSearchParams(window.location.search);
+    var tabParam = urlParams.get('tab');
+    var active = (validTabs.indexOf(tabParam) !== -1) ? tabParam : ((validTabs.indexOf(hash) !== -1) ? hash : '<?= $activeTab ?>');
+    if (active && validTabs.indexOf(active) !== -1) {
+        var css = '';
+        validTabs.forEach(function(t) {
+            css += '#tabContent_' + t + ' { display: ' + (t === active ? 'block' : 'none') + ' !important; } ';
+        });
+        document.write('<style id="tab-preload-style">' + css + '</style>');
+    }
+})();
+</script>
+
 <div class="mb-5 border-b border-slate-200/90 bg-white px-2 rounded-t-xl">
     <nav class="flex space-x-2" aria-label="Tabs">
         <!-- Tab 1: Informasi Paket -->
         <button type="button" onclick="switchDetailTab('info')" id="tabBtn_info"
-                class="tab-btn py-3 px-4 text-xs font-bold border-b-2 border-blue-600 text-blue-600 flex items-center gap-2 transition-all">
+                class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'info') ? 'font-bold border-b-2 border-blue-600 text-blue-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
             <ion-icon name="information-circle-outline" class="text-base"></ion-icon>
             <span>Informasi Paket</span>
         </button>
 
         <!-- Tab 2: Item / Spesifikasi -->
         <button type="button" onclick="switchDetailTab('items')" id="tabBtn_items"
-                class="tab-btn py-3 px-4 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 flex items-center gap-2 transition-all">
+                class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'items') ? 'font-bold border-b-2 border-blue-600 text-blue-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
             <ion-icon name="list-outline" class="text-base"></ion-icon>
             <span>Item / Spesifikasi</span>
             <span id="tabBadge_itemsCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= !empty($items) ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600' ?>">
@@ -144,7 +167,7 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
 
         <!-- Tab 3: Distribusi -->
         <button type="button" onclick="switchDetailTab('distribusi')" id="tabBtn_distribusi"
-                class="tab-btn py-3 px-4 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 flex items-center gap-2 transition-all">
+                class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'distribusi') ? 'font-bold border-b-2 border-blue-600 text-blue-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
             <ion-icon name="navigate-outline" class="text-base"></ion-icon>
             <span>Distribusi</span>
             <span id="tabBadge_distribusiCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= !empty($distribusiList) ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600' ?>">
@@ -154,7 +177,7 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
 
         <!-- Tab 4: Dokumen BAST -->
         <button type="button" onclick="switchDetailTab('dokumen')" id="tabBtn_dokumen"
-                class="tab-btn py-3 px-4 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 flex items-center gap-2 transition-all">
+                class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'dokumen') ? 'font-bold border-b-2 border-blue-600 text-blue-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
             <ion-icon name="document-text-outline" class="text-base"></ion-icon>
             <span>Dokumen BAST</span>
             <span id="tabBadge_dokumenCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= !empty($groupedDistribusi) ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600' ?>">
@@ -163,6 +186,27 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
         </button>
     </nav>
 </div>
+<script>
+(function() {
+    var validTabs = ['info', 'items', 'distribusi', 'dokumen'];
+    var hash = (window.location.hash || '').replace('#', '');
+    var urlParams = new URLSearchParams(window.location.search);
+    var tabParam = urlParams.get('tab');
+    var active = (validTabs.indexOf(tabParam) !== -1) ? tabParam : ((validTabs.indexOf(hash) !== -1) ? hash : '<?= $activeTab ?>');
+    if (active && validTabs.indexOf(active) !== -1) {
+        validTabs.forEach(function(t) {
+            var btn = document.getElementById('tabBtn_' + t);
+            if (btn) {
+                if (t === active) {
+                    btn.className = 'tab-btn py-3 px-4 text-xs font-bold border-b-2 border-blue-600 text-blue-600 flex items-center gap-2 transition-all';
+                } else {
+                    btn.className = 'tab-btn py-3 px-4 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 flex items-center gap-2 transition-all';
+                }
+            }
+        });
+    }
+})();
+</script>
 
 <!-- ========================================== -->
 <!-- 3. TAB CONTENT PARTIALS                     -->

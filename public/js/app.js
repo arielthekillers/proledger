@@ -357,7 +357,7 @@ window.ProUploader = {
                     <div id="prouploader-progress-container" class="hidden space-y-2 pt-2">
                         <div class="flex items-center justify-between text-xs">
                             <span id="prouploader-status-text" class="font-semibold text-slate-700 flex items-center gap-1.5">
-                                <ion-icon name="sync-outline" class="animate-spin text-blue-600 text-sm"></ion-icon>
+                                <svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 inline-block text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                 <span>Mengunggah file...</span>
                             </span>
                             <span id="prouploader-percent-text" class="font-bold text-blue-600 font-mono">0%</span>
@@ -503,7 +503,7 @@ window.ProUploader = {
 
                 if (percent >= 100) {
                     document.getElementById('prouploader-status-text').innerHTML = `
-                        <ion-icon name="sync-outline" class="animate-spin text-blue-600 text-sm"></ion-icon>
+                        <svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 inline-block text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                         <span>Memproses ukuran Small, Medium, Large...</span>
                     `;
                 }
@@ -769,4 +769,36 @@ document.addEventListener('DOMContentLoaded', function () {
             window.ProModal.open(autoModal.id);
         }
     }
+
+    // 10. Auto-loading spinner animasi melingkar pada semua popup/modal saat simpan data
+    document.addEventListener('submit', function (e) {
+        if (e.defaultPrevented) return;
+        const form = e.target;
+        if (!form || !(form instanceof HTMLFormElement)) return;
+        const modal = form.closest('.app-modal');
+        if (!modal) return;
+
+        // Validasi HTML5 bawaan sebelum memicu loading spinner
+        if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+            return;
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]') || modal.querySelector('button[type="submit"]');
+        if (submitBtn && !submitBtn.dataset.noLoading) {
+            submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+            const currentWidth = submitBtn.offsetWidth;
+            if (currentWidth > 0) {
+                submitBtn.style.minWidth = currentWidth + 'px';
+            }
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-85', 'cursor-not-allowed');
+            submitBtn.innerHTML = `
+                <svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 inline-block text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Menyimpan...</span>
+            `;
+        }
+    });
 });

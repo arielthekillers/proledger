@@ -1,7 +1,7 @@
 <!-- ========================================== -->
 <!-- 4. TAB 2: ITEM / SPESIFIKASI               -->
 <!-- ========================================== -->
-<div id="tabContent_items" class="hidden space-y-4">
+<div id="tabContent_items" class="<?= ($activeTab === 'items') ? '' : 'hidden ' ?>space-y-4">
     <!-- Items Table Card (Langsung Tabel) -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100">

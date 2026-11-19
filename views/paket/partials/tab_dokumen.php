@@ -1,7 +1,7 @@
 <!-- ========================================== -->
 <!-- 5B. TAB 4: DOKUMEN & BAST                  -->
 <!-- ========================================== -->
-<div id="tabContent_dokumen" class="hidden space-y-4">
+<div id="tabContent_dokumen" class="<?= ($activeTab === 'dokumen') ? '' : 'hidden ' ?>space-y-4">
     <?php
     // Lookup BAST terupload per tujuan
     $uploadedBastByTujuan = [];

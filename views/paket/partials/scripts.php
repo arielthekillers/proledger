@@ -2,12 +2,20 @@
 <!-- 6. JAVASCRIPT LOGIC                        -->
 <!-- ========================================== -->
 <script>
+const SPINNER_SVG = '<svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 inline-block text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+
 /**
  * Tab Switcher (info, items, distribusi, dokumen)
  */
 function switchDetailTab(tabName) {
-    const tabs = ['info', 'items', 'distribusi', 'dokumen'];
-    tabs.forEach(t => {
+    const validTabs = ['info', 'items', 'distribusi', 'dokumen'];
+    if (!validTabs.includes(tabName)) tabName = 'info';
+
+    // Hapus style preload jika ada agar kontrol display kembali normal
+    const preload = document.getElementById('tab-preload-style');
+    if (preload) preload.remove();
+
+    validTabs.forEach(t => {
         const el = document.getElementById('tabContent_' + t);
         const btn = document.getElementById('tabBtn_' + t);
         if (t === tabName) {
@@ -23,14 +31,24 @@ function switchDetailTab(tabName) {
         }
     });
 
-    window.location.hash = tabName;
+    if (window.history && window.history.replaceState) {
+        const u = new URL(window.location.href);
+        u.searchParams.set('tab', tabName);
+        u.hash = tabName;
+        window.history.replaceState(null, '', u.toString());
+    } else {
+        window.location.hash = tabName;
+    }
 }
 
 // Check initial hash on load
 window.addEventListener('DOMContentLoaded', () => {
-    const h = window.location.hash.replace('#', '');
-    if (h === 'items' || h === 'distribusi' || h === 'dokumen') {
-        switchDetailTab(h);
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    const h = (window.location.hash || '').replace('#', '');
+    const target = (['info', 'items', 'distribusi', 'dokumen'].includes(tabParam)) ? tabParam : (['info', 'items', 'distribusi', 'dokumen'].includes(h) ? h : '');
+    if (target) {
+        switchDetailTab(target);
     }
 });
 
@@ -345,7 +363,7 @@ function handleQuickTambahTujuan(e) {
     if (!nama) return;
 
     btn.disabled = true;
-    btn.innerHTML = '<ion-icon name="sync-outline" class="animate-spin text-sm"></ion-icon> <span>Menyimpan...</span>';
+    btn.innerHTML = SPINNER_SVG + ' <span>Menyimpan...</span>';
 
     const formData = new FormData();
     formData.append('nama_lokasi', nama);
@@ -656,7 +674,7 @@ function submitUpdateStatusBarang(e) {
 
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="inline-block animate-spin mr-1">⌛</span> Menyimpan...';
+        btn.innerHTML = SPINNER_SVG + ' <span>Menyimpan...</span>';
     }
 
     fetch('<?= APP_URL ?>/paket/updateStatusBarang/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId, {
@@ -670,8 +688,10 @@ function submitUpdateStatusBarang(e) {
     .then(data => {
         if (data.success) {
             window.ProToast?.show?.(data.message || 'Status barang berhasil disimpan!', 'success');
-            window.location.hash = 'distribusi';
-            window.location.reload();
+            const targetUrl = new URL(window.location.href);
+            targetUrl.searchParams.set('tab', 'distribusi');
+            targetUrl.hash = 'distribusi';
+            window.location.href = targetUrl.toString();
         } else {
             alert(data.message || 'Gagal menyimpan status barang.');
             if (btn) {
@@ -682,7 +702,7 @@ function submitUpdateStatusBarang(e) {
     })
     .catch(err => {
         console.error(err);
-        form.action = '<?= APP_URL ?>/paket/updateStatusBarang/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId;
+        form.action = '<?= APP_URL ?>/paket/updateStatusBarang/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId + '?tab=distribusi#distribusi';
         form.method = 'POST';
         form.submit();
     });
@@ -726,7 +746,7 @@ function submitUpdateStatusDistribusi(e) {
 
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="inline-block animate-spin mr-1">⌛</span> Menyimpan...';
+        btn.innerHTML = SPINNER_SVG + ' <span>Menyimpan...</span>';
     }
 
     fetch('<?= APP_URL ?>/paket/updateStatusDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId, {
@@ -740,8 +760,10 @@ function submitUpdateStatusDistribusi(e) {
     .then(data => {
         if (data.success) {
             window.ProToast?.show?.(data.message || 'Status distribusi berhasil disimpan!', 'success');
-            window.location.hash = 'distribusi';
-            window.location.reload();
+            const targetUrl = new URL(window.location.href);
+            targetUrl.searchParams.set('tab', 'distribusi');
+            targetUrl.hash = 'distribusi';
+            window.location.href = targetUrl.toString();
         } else {
             alert(data.message || 'Gagal menyimpan status distribusi.');
             if (btn) {
@@ -752,7 +774,7 @@ function submitUpdateStatusDistribusi(e) {
     })
     .catch(err => {
         console.error(err);
-        form.action = '<?= APP_URL ?>/paket/updateStatusDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId;
+        form.action = '<?= APP_URL ?>/paket/updateStatusDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId + '?tab=distribusi#distribusi';
         form.method = 'POST';
         form.submit();
     });
@@ -920,7 +942,7 @@ function handleQuickTambahGroup(e) {
     if (!nama) return;
 
     btn.disabled = true;
-    btn.innerHTML = '<ion-icon name="sync-outline" class="animate-spin text-sm"></ion-icon> <span>Menyimpan...</span>';
+    btn.innerHTML = SPINNER_SVG + ' <span>Menyimpan...</span>';
 
     const formData = new FormData();
     formData.append('nama_group', nama);
@@ -1026,7 +1048,7 @@ function handleQuickTambahSkema(e) {
     const valTipe = (chkK && chkK.checked) ? 'kontrak' : 'dpp';
 
     btn.disabled = true;
-    btn.innerHTML = '<ion-icon name="sync-outline" class="animate-spin text-sm"></ion-icon> <span>Menyimpan...</span>';
+    btn.innerHTML = SPINNER_SVG + ' <span>Menyimpan...</span>';
 
     const formData = new FormData();
     formData.append('nama_skema', nama);

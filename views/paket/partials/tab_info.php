@@ -1,7 +1,7 @@
 <!-- ========================================== -->
 <!-- 3. TAB 1: INFORMASI PAKET                  -->
 <!-- ========================================== -->
-<div id="tabContent_info" class="space-y-6">
+<div id="tabContent_info" class="<?= ($activeTab === 'info') ? '' : 'hidden ' ?>space-y-6">
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             <!-- Left Column: Financial & Tax Calculation -->

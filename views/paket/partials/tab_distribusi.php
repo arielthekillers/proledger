@@ -1,7 +1,7 @@
 <!-- ========================================== -->
 <!-- 5. TAB 3: DISTRIBUSI BARANG                -->
 <!-- ========================================== -->
-<div id="tabContent_distribusi" class="hidden space-y-4">
+<div id="tabContent_distribusi" class="<?= ($activeTab === 'distribusi') ? '' : 'hidden ' ?>space-y-4">
     <!-- Distribusi Table Card (Ringkas, Bersih, Langsung Tabel) -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100">
