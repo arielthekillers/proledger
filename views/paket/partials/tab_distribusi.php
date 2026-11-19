@@ -28,13 +28,13 @@
             <table class="w-full text-left text-xs" id="distribusiTable">
                 <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200/90 tracking-wider">
                     <tr>
-                        <th class="py-2.5 px-3 w-8 text-center">NO</th>
-                        <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
-                        <th class="py-2.5 px-3 min-w-[150px]">KOMPONEN BARANG</th>
-                        <th class="py-2.5 px-2.5 text-center min-w-[70px]">JUMLAH</th>
-                        <th class="py-2.5 px-3 min-w-[170px]">STATUS BARANG</th>
-                        <th class="py-2.5 px-3 min-w-[160px]">STATUS DISTRIBUSI</th>
-                        <th class="py-2.5 px-2.5 text-right w-12">AKSI</th>
+                        <th class="py-2 px-3 w-8 text-center">NO</th>
+                        <th class="py-2 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
+                        <th class="py-2 px-3 min-w-[150px]">KOMPONEN BARANG</th>
+                        <th class="py-2 px-2.5 text-center min-w-[70px]">JUMLAH</th>
+                        <th class="py-2 px-3 min-w-[150px]">STATUS BARANG</th>
+                        <th class="py-2 px-3 min-w-[150px]">STATUS DISTRIBUSI</th>
+                        <th class="py-2 px-2.5 text-right w-12">AKSI</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -57,26 +57,26 @@
                         <?php $no = 1; foreach ($distribusiList as $dist): ?>
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <!-- No -->
-                                <td class="py-2 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold align-top pt-3">
+                                <td class="py-1.5 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold whitespace-nowrap">
                                     <?= $no++ ?>
                                 </td>
 
                                 <!-- Tujuan Penerima -->
-                                <td class="py-2.5 px-3 align-top">
+                                <td class="py-1.5 px-3">
                                     <span class="font-bold text-slate-800 text-xs block">
                                         <?= htmlspecialchars($dist['nama_tujuan']) ?>
                                     </span>
                                 </td>
 
                                 <!-- Komponen Barang -->
-                                <td class="py-2.5 px-3 align-top">
+                                <td class="py-1.5 px-3">
                                     <span class="font-semibold text-slate-800 text-xs block">
                                         <?= htmlspecialchars($dist['nama_komponen'] ?: '-') ?>
                                     </span>
                                 </td>
 
                                 <!-- Satuan & Jumlah -->
-                                <td class="py-2.5 px-2.5 text-center whitespace-nowrap bg-indigo-50/20 align-top">
+                                <td class="py-1.5 px-2.5 text-center whitespace-nowrap bg-indigo-50/20">
                                     <span class="font-mono font-bold text-slate-900 text-xs">
                                         <?= (float)$dist['jumlah'] ?>
                                     </span>
@@ -86,15 +86,10 @@
                                 </td>
 
                                 <!-- 1. STATUS BARANG (Belum Dipesan vs Sudah Dipesan) -->
-                                <td class="py-2 px-3 align-top">
+                                <td class="py-1.5 px-3 whitespace-nowrap">
                                     <?php 
                                     $isOrdered = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
-                                    $namaBarangShow = !empty($dist['nama_barang']) ? $dist['nama_barang'] : '';
-                                    $ekspedisiShow = !empty($dist['ekspedisi']) ? $dist['ekspedisi'] : '';
-                                    $resiShow = $dist['no_resi'] ?? '';
-                                    $hargaShow = isset($dist['harga_satuan']) && $dist['harga_satuan'] !== '' && $dist['harga_satuan'] !== null ? (float)$dist['harga_satuan'] : null;
                                     ?>
-                                    
                                     <?php if ($role === 'admin' || $role === 'user'): ?>
                                         <button type="button" 
                                                 onclick='openModalUpdateStatusBarang(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
@@ -114,47 +109,17 @@
                                             <span><?= $isOrdered ? 'Sudah dipesan' : 'Belum Dipesan' ?></span>
                                         </span>
                                     <?php endif; ?>
-
-                                    <!-- Informasi Rincian jika Sudah Dipesan -->
-                                    <?php if ($isOrdered): ?>
-                                        <div class="mt-1.5 space-y-0.5 text-[10px] leading-tight">
-                                            <?php if (!empty($namaBarangShow)): ?>
-                                                <div class="text-slate-700 font-semibold truncate max-w-[170px]" title="<?= htmlspecialchars($namaBarangShow) ?>">
-                                                    <?= htmlspecialchars($namaBarangShow) ?>
-                                                </div>
-                                            <?php endif; ?>
-                                            <?php if ($hargaShow !== null): ?>
-                                                <div class="text-emerald-700 font-mono font-semibold">
-                                                    Beli: Rp <?= number_format($hargaShow, 0, ',', '.') ?>
-                                                </div>
-                                            <?php endif; ?>
-                                            <?php if (!empty($ekspedisiShow) || !empty($resiShow)): ?>
-                                                <div class="text-slate-400 font-mono truncate max-w-[170px]" title="<?= htmlspecialchars(trim(($ekspedisiShow ?: '') . ' ' . ($resiShow ?: ''))) ?>">
-                                                    <span class="font-medium text-slate-600"><?= htmlspecialchars($ekspedisiShow ?: 'Kurir') ?>:</span> <?= htmlspecialchars($resiShow ?: '-') ?>
-                                                </div>
-                                            <?php endif; ?>
-                                            <?php if (!empty($dist['link_pembelian'])): ?>
-                                                <div class="pt-0.5">
-                                                    <a href="<?= htmlspecialchars($dist['link_pembelian']) ?>" target="_blank" rel="noopener noreferrer" 
-                                                       class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 hover:underline">
-                                                        <ion-icon name="link-outline"></ion-icon>
-                                                        <span>Link Pesanan</span>
-                                                    </a>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php endif; ?>
                                 </td>
 
                                 <!-- 2. STATUS DISTRIBUSI (Hanya muncul/bisa diubah jika Sudah Dipesan) -->
-                                <td class="py-2 px-3 align-top whitespace-nowrap">
+                                <td class="py-1.5 px-3 whitespace-nowrap">
                                     <?php if (!$isOrdered): ?>
                                         <!-- Locked / Disabled jika Belum Dipesan -->
-                                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200/80 cursor-not-allowed select-none opacity-80"
-                                             title="Pesan barang terlebih dahulu untuk mengubah status distribusi">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200/80 cursor-not-allowed select-none opacity-80"
+                                              title="Pesan barang terlebih dahulu untuk mengubah status distribusi">
                                             <ion-icon name="lock-closed-outline" class="text-xs"></ion-icon>
                                             <span>Belum Dipesan</span>
-                                        </div>
+                                        </span>
                                     <?php else: ?>
                                         <?php 
                                         $sDist = $dist['status_distribusi'] ?? '';
@@ -188,13 +153,13 @@
                                 </td>
 
                                 <!-- Aksi -->
-                                <td class="py-2 px-2.5 text-right whitespace-nowrap align-top pt-2.5">
+                                <td class="py-1.5 px-2.5 text-right whitespace-nowrap">
                                     <?php if ($role === 'admin' || $role === 'user'): ?>
                                         <div class="flex items-center justify-end">
                                             <a href="<?= APP_URL ?>/paket/deleteDistribusi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/<?= $dist['id'] ?>" 
                                                data-confirm-delete="<?= htmlspecialchars($dist['nama_tujuan'] . ' (' . $dist['nama_komponen'] . ')') ?>"
                                                data-type="Alokasi Distribusi"
-                                               class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors text-sm inline-flex items-center justify-center"
+                                               class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors text-sm inline-flex items-center justify-center"
                                                title="Hapus Alokasi">
                                                 <ion-icon name="trash-outline"></ion-icon>
                                             </a>
