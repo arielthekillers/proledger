@@ -89,8 +89,8 @@
                                 <td class="py-2 px-3 align-top">
                                     <?php 
                                     $isOrdered = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
-                                    $namaBarangShow = !empty($dist['nama_barang']) ? $dist['nama_barang'] : $dist['nama_komponen'];
-                                    $ekspedisiShow = !empty($dist['ekspedisi']) ? $dist['ekspedisi'] : ($dist['kurir_ekspedisi'] ?? '');
+                                    $namaBarangShow = !empty($dist['nama_barang']) ? $dist['nama_barang'] : '';
+                                    $ekspedisiShow = !empty($dist['ekspedisi']) ? $dist['ekspedisi'] : '';
                                     $resiShow = $dist['no_resi'] ?? '';
                                     $hargaShow = isset($dist['harga_satuan']) && $dist['harga_satuan'] !== '' && $dist['harga_satuan'] !== null ? (float)$dist['harga_satuan'] : null;
                                     ?>
@@ -118,14 +118,14 @@
                                     <!-- Informasi Rincian jika Sudah Dipesan -->
                                     <?php if ($isOrdered): ?>
                                         <div class="mt-1.5 space-y-0.5 text-[10px] leading-tight">
-                                            <?php if (!empty($namaBarangShow) && $namaBarangShow !== $dist['nama_komponen']): ?>
+                                            <?php if (!empty($namaBarangShow)): ?>
                                                 <div class="text-slate-700 font-semibold truncate max-w-[170px]" title="<?= htmlspecialchars($namaBarangShow) ?>">
                                                     <?= htmlspecialchars($namaBarangShow) ?>
                                                 </div>
                                             <?php endif; ?>
                                             <?php if ($hargaShow !== null): ?>
-                                                <div class="text-slate-500 font-mono">
-                                                    @ Rp <?= number_format($hargaShow, 0, ',', '.') ?>
+                                                <div class="text-emerald-700 font-mono font-semibold">
+                                                    Beli: Rp <?= number_format($hargaShow, 0, ',', '.') ?>
                                                 </div>
                                             <?php endif; ?>
                                             <?php if (!empty($ekspedisiShow) || !empty($resiShow)): ?>

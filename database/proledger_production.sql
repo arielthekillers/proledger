@@ -295,18 +295,12 @@ CREATE TABLE `paket_distribusi` (
   `harga_satuan` decimal(15,2) DEFAULT NULL,
   `ekspedisi` varchar(100) DEFAULT NULL,
   `status_distribusi` varchar(50) DEFAULT NULL,
-  `rute_pengiriman` varchar(50) DEFAULT 'kantor',
-  `status_pemesanan` varchar(50) DEFAULT 'Belum Dipesan',
   `tanggal_pesan` date DEFAULT NULL,
   `link_pembelian` text DEFAULT NULL,
-  `kurir_ekspedisi` varchar(100) DEFAULT NULL,
   `nama_pic` varchar(255) DEFAULT NULL,
   `no_kontak` varchar(100) DEFAULT NULL,
   `alamat` text DEFAULT NULL,
   `kab_kota` varchar(100) DEFAULT NULL,
-  `status` varchar(50) DEFAULT 'Belum Dikirim',
-  `status_penerimaan` varchar(50) DEFAULT 'Menunggu Barang',
-  `tanggal_kirim` date DEFAULT NULL,
   `tanggal_terima` date DEFAULT NULL,
   `no_resi` varchar(100) DEFAULT NULL,
   `catatan` text DEFAULT NULL,
@@ -319,14 +313,14 @@ CREATE TABLE `paket_distribusi` (
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `paket_distribusi`
-INSERT INTO `paket_distribusi` (`id`, `paket_id`, `item_id`, `lokasi_id`, `nama_tujuan`, `kategori`, `jumlah`, `rute_pengiriman`, `status_pemesanan`, `tanggal_pesan`, `link_pembelian`, `kurir_ekspedisi`, `nama_pic`, `no_kontak`, `alamat`, `kab_kota`, `status`, `status_penerimaan`, `tanggal_kirim`, `tanggal_terima`, `no_resi`, `catatan`, `created_at`, `updated_at`) VALUES
-('1', '62', '1', NULL, 'SMAN 2 BONTANG', 'Sekolah', '4.00', 'kantor', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Kota Bontang', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
-('3', '62', '3', NULL, 'SMAN 1 SANDARAN', 'Sekolah', '2.00', 'kantor', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
-('4', '62', '3', NULL, 'SMAN 1 LONG MESANGAT', 'Sekolah', '1.00', 'kantor', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
-('5', '62', '3', NULL, 'SMAN 1 MUARA ANCALONG', 'Sekolah', '1.00', 'kantor', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
-('6', '62', '3', NULL, 'SMAN 1 KARANGAN', 'Sekolah', '2.00', 'gudang', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 21:26:30'),
-('10', '62', '2', '2', 'SMKN 2 BONTANG', 'Sekolah', '2.00', 'kantor', 'Belum Dipesan', NULL, NULL, NULL, 'Nurwahidah, S.Pd, M.Pd', '081258348205', 'Jl. Cumi - Cumi No. 1 Kel. Tanjung Laut Indah Kec. Bontang Selatan', 'Kota Bontang', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-19 22:53:21', '2026-11-19 22:53:21'),
-('11', '62', '2', '1', 'SMKN 1 BONTANG', 'Sekolah', '2.00', 'kantor', 'Belum Dipesan', NULL, NULL, NULL, 'Muhammad Sultan, S.Ag., M.Pd.I', '081347071619', 'Jl. Ciptomangunkusumo No. 2, Kel. Gn Elai Kec. Bontang Utara', 'Kota Bontang', 'Belum Dikirim', 'Menunggu Barang', NULL, NULL, NULL, NULL, '2026-11-19 22:53:38', '2026-11-19 22:53:38');
+INSERT INTO `paket_distribusi` (`id`, `paket_id`, `item_id`, `lokasi_id`, `nama_tujuan`, `kategori`, `jumlah`, `status_barang`, `nama_barang`, `harga_satuan`, `ekspedisi`, `status_distribusi`, `tanggal_pesan`, `link_pembelian`, `nama_pic`, `no_kontak`, `alamat`, `kab_kota`, `tanggal_terima`, `no_resi`, `catatan`, `created_at`, `updated_at`) VALUES
+('1', '62', '1', NULL, 'SMAN 2 BONTANG', 'Sekolah', '4.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kota Bontang', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
+('3', '62', '3', NULL, 'SMAN 1 SANDARAN', 'Sekolah', '2.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
+('4', '62', '3', NULL, 'SMAN 1 LONG MESANGAT', 'Sekolah', '1.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
+('5', '62', '3', NULL, 'SMAN 1 MUARA ANCALONG', 'Sekolah', '1.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
+('6', '62', '3', NULL, 'SMAN 1 KARANGAN', 'Sekolah', '2.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 21:26:30'),
+('10', '62', '2', '2', 'SMKN 2 BONTANG', 'Sekolah', '2.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Nurwahidah, S.Pd, M.Pd', '081258348205', 'Jl. Cumi - Cumi No. 1 Kel. Tanjung Laut Indah Kec. Bontang Selatan', 'Kota Bontang', NULL, NULL, NULL, '2026-11-19 22:53:21', '2026-11-19 22:53:21'),
+('11', '62', '2', '1', 'SMKN 1 BONTANG', 'Sekolah', '2.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Muhammad Sultan, S.Ag., M.Pd.I', '081347071619', 'Jl. Ciptomangunkusumo No. 2, Kel. Gn Elai Kec. Bontang Utara', 'Kota Bontang', NULL, NULL, NULL, '2026-11-19 22:53:38', '2026-11-19 22:53:38');
 
 -- --------------------------------------------------------
 -- Table structure for `paket_dokumen`

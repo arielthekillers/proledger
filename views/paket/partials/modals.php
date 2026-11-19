@@ -630,19 +630,21 @@
 
                 <!-- Nama Barang -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Barang <span class="text-red-500">*</span></label>
-                    <input type="text" id="status_barang_nama" name="nama_barang" placeholder="Nama barang yang dipesan..."
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Barang yang Dipesan <span class="text-red-500">*</span></label>
+                    <input type="text" id="status_barang_nama" name="nama_barang" placeholder="Contoh: Asus Zenbook 14 OLED 16GB 512GB SSD"
                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-semibold text-slate-800 focus:bg-white transition-all">
+                    <span class="text-[10px] text-slate-400 mt-1 block">Tuliskan tipe/merk spesifik barang riil yang dibeli di toko.</span>
                 </div>
 
                 <!-- Harga Satuan -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Harga Satuan (Rp)</label>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Harga Satuan Beli (Rp) <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <span class="absolute left-3 top-2 text-xs font-bold text-slate-400">Rp</span>
                         <input type="text" id="status_barang_harga" name="harga_satuan" oninput="formatRupiahInput(this)" placeholder="0"
                                class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-bold text-slate-800 focus:bg-white transition-all">
                     </div>
+                    <span class="text-[10px] text-slate-400 mt-1 block">Harga modal riil dari toko (menjadi acuan perhitungan keuntungan).</span>
                 </div>
 
                 <!-- Ekspedisi & No. Resi -->

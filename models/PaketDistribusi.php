@@ -17,14 +17,10 @@ class PaketDistribusi {
     public function getByPaketId($paketId) {
         $stmt = $this->db->prepare("
             SELECT pd.*, 
-                   COALESCE(pd.nama_barang, pi.komponen) as nama_barang_display,
-                   COALESCE(pd.harga_satuan, pi.harga_satuan) as harga_satuan_display,
-                   COALESCE(pd.ekspedisi, pd.kurir_ekspedisi) as ekspedisi_display,
                    pi.komponen as nama_komponen, 
                    pi.spesifikasi, 
                    pi.satuan, 
                    pi.harga_satuan as item_harga_satuan,
-                   pi.harga_satuan,
                    pi.jumlah as item_total_qty,
                    lp.nama_pic as master_pic,
                    lp.jabatan_pic as master_jabatan,
@@ -85,12 +81,9 @@ class PaketDistribusi {
                 COUNT(*) as total_baris,
                 COUNT(DISTINCT nama_tujuan) as total_tujuan,
                 COALESCE(SUM(jumlah), 0) as total_qty_dialokasikan,
-                SUM(CASE WHEN status_distribusi = 'Tiba di Tujuan' OR status_penerimaan = 'Diterima di Tujuan' OR status = 'Diterima' THEN 1 ELSE 0 END) as total_diterima,
-                SUM(CASE WHEN status_barang = 'Sudah Dipesan' OR status_pemesanan IN ('Sudah Dipesan', 'Tiba di Transit') THEN 1 ELSE 0 END) as total_dipesan,
-                SUM(CASE WHEN status_barang = 'Belum Dipesan' OR status_barang IS NULL THEN 1 ELSE 0 END) as total_belum_pesan,
-                SUM(CASE WHEN status = 'Diterima' THEN 1 ELSE 0 END) as legacy_total_diterima,
-                SUM(CASE WHEN status = 'Proses Kirim' THEN 1 ELSE 0 END) as total_dikirim,
-                SUM(CASE WHEN status = 'Belum Dikirim' OR status IS NULL THEN 1 ELSE 0 END) as total_belum_kirim
+                SUM(CASE WHEN status_distribusi = 'Tiba di Tujuan' THEN 1 ELSE 0 END) as total_diterima,
+                SUM(CASE WHEN status_barang = 'Sudah Dipesan' THEN 1 ELSE 0 END) as total_dipesan,
+                SUM(CASE WHEN status_barang = 'Belum Dipesan' OR status_barang IS NULL THEN 1 ELSE 0 END) as total_belum_pesan
             FROM paket_distribusi
             WHERE paket_id = ?
         ");
@@ -105,17 +98,16 @@ class PaketDistribusi {
         $statusBarang = !empty($data['status_barang']) ? trim($data['status_barang']) : 'Belum Dipesan';
         $namaBarang = !empty($data['nama_barang']) ? trim($data['nama_barang']) : null;
         $hargaSatuan = isset($data['harga_satuan']) && $data['harga_satuan'] !== '' ? (float)$data['harga_satuan'] : null;
-        $ekspedisi = !empty($data['ekspedisi']) ? trim($data['ekspedisi']) : (!empty($data['kurir_ekspedisi']) ? trim($data['kurir_ekspedisi']) : null);
+        $ekspedisi = !empty($data['ekspedisi']) ? trim($data['ekspedisi']) : null;
         $statusDistribusi = !empty($data['status_distribusi']) ? trim($data['status_distribusi']) : null;
 
         $stmt = $this->db->prepare("
             INSERT INTO paket_distribusi (
                 paket_id, item_id, lokasi_id, nama_tujuan, kategori, jumlah,
                 status_barang, nama_barang, harga_satuan, ekspedisi, status_distribusi,
-                rute_pengiriman, status_pemesanan, tanggal_pesan, link_pembelian, kurir_ekspedisi,
-                nama_pic, no_kontak, alamat, kab_kota, status, status_penerimaan,
-                tanggal_kirim, tanggal_terima, no_resi, catatan
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                tanggal_pesan, link_pembelian, nama_pic, no_kontak, alamat, kab_kota,
+                tanggal_terima, no_resi, catatan
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
@@ -130,18 +122,12 @@ class PaketDistribusi {
             $hargaSatuan,
             $ekspedisi,
             $statusDistribusi,
-            !empty($data['rute_pengiriman']) ? trim($data['rute_pengiriman']) : 'kantor',
-            $statusBarang,
             !empty($data['tanggal_pesan']) ? $data['tanggal_pesan'] : null,
             !empty($data['link_pembelian']) ? trim($data['link_pembelian']) : null,
-            $ekspedisi,
             !empty($data['nama_pic']) ? trim($data['nama_pic']) : null,
             !empty($data['no_kontak']) ? trim($data['no_kontak']) : null,
             !empty($data['alamat']) ? trim($data['alamat']) : null,
             !empty($data['kab_kota']) ? trim($data['kab_kota']) : null,
-            !empty($data['status']) ? trim($data['status']) : 'Belum Dikirim',
-            !empty($data['status_penerimaan']) ? trim($data['status_penerimaan']) : 'Menunggu Barang',
-            !empty($data['tanggal_kirim']) ? $data['tanggal_kirim'] : null,
             !empty($data['tanggal_terima']) ? $data['tanggal_terima'] : null,
             !empty($data['no_resi']) ? trim($data['no_resi']) : null,
             !empty($data['catatan']) ? trim($data['catatan']) : null
@@ -161,17 +147,13 @@ class PaketDistribusi {
             $stmt = $this->db->prepare("
                 UPDATE paket_distribusi SET
                     status_barang = 'Belum Dipesan',
-                    status_pemesanan = 'Belum Dipesan',
                     nama_barang = NULL,
                     harga_satuan = NULL,
                     ekspedisi = NULL,
-                    kurir_ekspedisi = NULL,
                     no_resi = NULL,
                     link_pembelian = NULL,
                     tanggal_pesan = NULL,
                     status_distribusi = NULL,
-                    status_penerimaan = 'Menunggu Barang',
-                    status = 'Belum Dikirim',
                     updated_at = NOW()
                 WHERE id = ?
             ");
@@ -187,11 +169,9 @@ class PaketDistribusi {
             $stmt = $this->db->prepare("
                 UPDATE paket_distribusi SET
                     status_barang = 'Sudah Dipesan',
-                    status_pemesanan = 'Sudah Dipesan',
                     nama_barang = ?,
                     harga_satuan = ?,
                     ekspedisi = ?,
-                    kurir_ekspedisi = ?,
                     no_resi = ?,
                     link_pembelian = ?,
                     tanggal_pesan = COALESCE(tanggal_pesan, ?),
@@ -201,7 +181,6 @@ class PaketDistribusi {
             return $stmt->execute([
                 $namaBarang,
                 $hargaSatuan,
-                $ekspedisi,
                 $ekspedisi,
                 $noResi,
                 $link,
@@ -217,85 +196,18 @@ class PaketDistribusi {
     public function updateStatusDistribusi($id, $statusDistribusi) {
         $statusDistribusi = trim($statusDistribusi);
         $isTujuan = ($statusDistribusi === 'Tiba di Tujuan');
-        $statusPenerimaan = $isTujuan ? 'Diterima di Tujuan' : 'Menunggu Barang';
-        $statusLegacy = $isTujuan ? 'Diterima' : 'Proses Kirim';
-        $rute = ($statusDistribusi === 'Tiba di Gudang') ? 'gudang' : 'kantor';
         $tanggalTerima = $isTujuan ? date('Y-m-d') : null;
 
         $stmt = $this->db->prepare("
             UPDATE paket_distribusi SET
                 status_distribusi = ?,
-                rute_pengiriman = ?,
-                status_penerimaan = ?,
-                status = ?,
                 tanggal_terima = COALESCE(tanggal_terima, ?),
                 updated_at = NOW()
             WHERE id = ?
         ");
         return $stmt->execute([
             $statusDistribusi,
-            $rute,
-            $statusPenerimaan,
-            $statusLegacy,
             $tanggalTerima,
-            (int)$id
-        ]);
-    }
-    
-    /**
-     * Update rute pengiriman
-     */
-    public function updateRute($id, $rute) {
-        $stmt = $this->db->prepare("UPDATE paket_distribusi SET rute_pengiriman = ?, updated_at = NOW() WHERE id = ?");
-        return $stmt->execute([trim($rute), (int)$id]);
-    }
-
-    /**
-     * Update status pemesanan
-     */
-    public function updatePemesanan($id, $data) {
-        $stmt = $this->db->prepare("
-            UPDATE paket_distribusi SET 
-                status_pemesanan = ?,
-                tanggal_pesan = ?,
-                link_pembelian = ?,
-                kurir_ekspedisi = ?,
-                no_resi = ?,
-                updated_at = NOW()
-            WHERE id = ?
-        ");
-        return $stmt->execute([
-            !empty($data['status_pemesanan']) ? trim($data['status_pemesanan']) : 'Belum Dipesan',
-            !empty($data['tanggal_pesan']) ? $data['tanggal_pesan'] : null,
-            !empty($data['link_pembelian']) ? trim($data['link_pembelian']) : null,
-            !empty($data['kurir_ekspedisi']) ? trim($data['kurir_ekspedisi']) : null,
-            !empty($data['no_resi']) ? trim($data['no_resi']) : null,
-            (int)$id
-        ]);
-    }
-
-    /**
-     * Update status penerimaan
-     */
-    public function updatePenerimaan($id, $data) {
-        $statusPenerimaan = !empty($data['status_penerimaan']) ? trim($data['status_penerimaan']) : 'Menunggu Barang';
-        $statusLegacy = ($statusPenerimaan === 'Diterima di Tujuan') ? 'Diterima' : (($statusPenerimaan === 'Dalam Pengantaran ke Tujuan') ? 'Proses Kirim' : 'Belum Dikirim');
-        $tanggalTerima = !empty($data['tanggal_terima']) ? $data['tanggal_terima'] : (($statusPenerimaan === 'Diterima di Tujuan') ? date('Y-m-d') : null);
-
-        $stmt = $this->db->prepare("
-            UPDATE paket_distribusi SET 
-                status_penerimaan = ?,
-                status = ?,
-                tanggal_terima = ?,
-                catatan = ?,
-                updated_at = NOW()
-            WHERE id = ?
-        ");
-        return $stmt->execute([
-            $statusPenerimaan,
-            $statusLegacy,
-            $tanggalTerima,
-            !empty($data['catatan']) ? trim($data['catatan']) : null,
             (int)$id
         ]);
     }
@@ -311,21 +223,21 @@ class PaketDistribusi {
                 nama_tujuan = ?,
                 kategori = ?,
                 jumlah = ?,
-                rute_pengiriman = ?,
-                status_pemesanan = ?,
+                status_barang = ?,
+                nama_barang = ?,
+                harga_satuan = ?,
+                ekspedisi = ?,
+                status_distribusi = ?,
                 tanggal_pesan = ?,
                 link_pembelian = ?,
-                kurir_ekspedisi = ?,
                 nama_pic = ?,
                 no_kontak = ?,
                 alamat = ?,
                 kab_kota = ?,
-                status = ?,
-                status_penerimaan = ?,
-                tanggal_kirim = ?,
                 tanggal_terima = ?,
                 no_resi = ?,
-                catatan = ?
+                catatan = ?,
+                updated_at = NOW()
             WHERE id = ?
         ");
         
@@ -335,18 +247,17 @@ class PaketDistribusi {
             trim($data['nama_tujuan']),
             !empty($data['kategori']) ? trim($data['kategori']) : 'Sekolah',
             (float)($data['jumlah'] ?? 1),
-            !empty($data['rute_pengiriman']) ? trim($data['rute_pengiriman']) : 'kantor',
-            !empty($data['status_pemesanan']) ? trim($data['status_pemesanan']) : 'Belum Dipesan',
+            !empty($data['status_barang']) ? trim($data['status_barang']) : 'Belum Dipesan',
+            !empty($data['nama_barang']) ? trim($data['nama_barang']) : null,
+            isset($data['harga_satuan']) && $data['harga_satuan'] !== '' ? (float)$data['harga_satuan'] : null,
+            !empty($data['ekspedisi']) ? trim($data['ekspedisi']) : null,
+            !empty($data['status_distribusi']) ? trim($data['status_distribusi']) : null,
             !empty($data['tanggal_pesan']) ? $data['tanggal_pesan'] : null,
             !empty($data['link_pembelian']) ? trim($data['link_pembelian']) : null,
-            !empty($data['kurir_ekspedisi']) ? trim($data['kurir_ekspedisi']) : null,
             !empty($data['nama_pic']) ? trim($data['nama_pic']) : null,
             !empty($data['no_kontak']) ? trim($data['no_kontak']) : null,
             !empty($data['alamat']) ? trim($data['alamat']) : null,
             !empty($data['kab_kota']) ? trim($data['kab_kota']) : null,
-            !empty($data['status']) ? trim($data['status']) : 'Belum Dikirim',
-            !empty($data['status_penerimaan']) ? trim($data['status_penerimaan']) : 'Menunggu Barang',
-            !empty($data['tanggal_kirim']) ? $data['tanggal_kirim'] : null,
             !empty($data['tanggal_terima']) ? $data['tanggal_terima'] : null,
             !empty($data['no_resi']) ? trim($data['no_resi']) : null,
             !empty($data['catatan']) ? trim($data['catatan']) : null,

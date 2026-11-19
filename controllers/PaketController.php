@@ -266,7 +266,7 @@ class PaketController {
                         'nama_tujuan' => $dist['nama_tujuan'],
                         'jumlah' => (float)$dist['jumlah'],
                         'satuan' => $it['satuan'] ?: 'Unit',
-                        'status' => $dist['status_penerimaan'] ?: ($dist['status'] ?? 'Menunggu')
+                        'status' => $dist['status_distribusi'] ?: ($dist['status_barang'] ?? 'Belum Dipesan')
                     ];
                     if (!empty($dist['nama_tujuan'])) {
                         $tujuanNames[trim($dist['nama_tujuan'])] = true;
@@ -654,14 +654,6 @@ class PaketController {
             return;
         }
 
-        $statusPenerimaan = trim($_POST['status_penerimaan'] ?? 'Menunggu Barang');
-        $statusLegacy = ($statusPenerimaan === 'Diterima di Tujuan') ? 'Diterima' : (($statusPenerimaan === 'Dalam Pengiriman') ? 'Proses Kirim' : 'Belum Dikirim');
-        $statusPemesanan = trim($_POST['status_pemesanan'] ?? 'Belum Dipesan');
-        $rutePengiriman = trim($_POST['rute_pengiriman'] ?? 'kantor');
-
-        // Otomatisasi tanggal terima jika status diterima
-        $tanggalTerima = !empty($_POST['tanggal_terima']) ? $_POST['tanggal_terima'] : ($statusPenerimaan === 'Diterima di Tujuan' ? date('Y-m-d') : null);
-
         try {
             $this->distribusiModel->create([
                 'paket_id' => $paket['id'],
@@ -670,20 +662,19 @@ class PaketController {
                 'nama_tujuan' => $namaTujuan,
                 'kategori' => $kategori,
                 'jumlah' => $jumlah,
-                'rute_pengiriman' => $rutePengiriman,
-                'status_pemesanan' => $statusPemesanan,
-                'tanggal_pesan' => !empty($_POST['tanggal_pesan']) ? $_POST['tanggal_pesan'] : null,
-                'link_pembelian' => trim($_POST['link_pembelian'] ?? ''),
-                'kurir_ekspedisi' => trim($_POST['kurir_ekspedisi'] ?? ''),
+                'status_barang' => 'Belum Dipesan',
+                'nama_barang' => null,
+                'harga_satuan' => null,
+                'ekspedisi' => null,
+                'status_distribusi' => null,
+                'tanggal_pesan' => null,
+                'link_pembelian' => null,
                 'nama_pic' => $namaPic,
                 'no_kontak' => $noKontak,
                 'alamat' => $alamat,
                 'kab_kota' => $kabKota,
-                'status' => $statusLegacy,
-                'status_penerimaan' => $statusPenerimaan,
-                'tanggal_kirim' => !empty($_POST['tanggal_kirim']) ? $_POST['tanggal_kirim'] : null,
-                'tanggal_terima' => $tanggalTerima,
-                'no_resi' => trim($_POST['no_resi'] ?? ''),
+                'tanggal_terima' => null,
+                'no_resi' => null,
                 'catatan' => trim($_POST['catatan'] ?? '')
             ]);
 
@@ -746,13 +737,6 @@ class PaketController {
 
         $lokasiId = !empty($_POST['lokasi_id']) ? (int)$_POST['lokasi_id'] : $dist['lokasi_id'];
 
-        $statusPenerimaan = trim($_POST['status_penerimaan'] ?? ($dist['status_penerimaan'] ?: 'Menunggu Barang'));
-        $statusLegacy = ($statusPenerimaan === 'Diterima di Tujuan') ? 'Diterima' : (($statusPenerimaan === 'Dalam Pengiriman') ? 'Proses Kirim' : 'Belum Dikirim');
-        $statusPemesanan = trim($_POST['status_pemesanan'] ?? ($dist['status_pemesanan'] ?: 'Belum Dipesan'));
-        $rutePengiriman = trim($_POST['rute_pengiriman'] ?? ($dist['rute_pengiriman'] ?: 'kantor'));
-
-        $tanggalTerima = !empty($_POST['tanggal_terima']) ? $_POST['tanggal_terima'] : ($statusPenerimaan === 'Diterima di Tujuan' ? ($dist['tanggal_terima'] ?: date('Y-m-d')) : null);
-
         try {
             $this->distribusiModel->update($distribusiId, [
                 'item_id' => $itemId,
@@ -760,20 +744,19 @@ class PaketController {
                 'nama_tujuan' => $namaTujuan,
                 'kategori' => trim($_POST['kategori'] ?? ($dist['kategori'] ?: 'Sekolah')),
                 'jumlah' => $jumlah,
-                'rute_pengiriman' => $rutePengiriman,
-                'status_pemesanan' => $statusPemesanan,
-                'tanggal_pesan' => !empty($_POST['tanggal_pesan']) ? $_POST['tanggal_pesan'] : null,
-                'link_pembelian' => trim($_POST['link_pembelian'] ?? ''),
-                'kurir_ekspedisi' => trim($_POST['kurir_ekspedisi'] ?? ''),
+                'status_barang' => $dist['status_barang'] ?? 'Belum Dipesan',
+                'nama_barang' => $dist['nama_barang'] ?? null,
+                'harga_satuan' => $dist['harga_satuan'] ?? null,
+                'ekspedisi' => $dist['ekspedisi'] ?? null,
+                'status_distribusi' => $dist['status_distribusi'] ?? null,
+                'tanggal_pesan' => $dist['tanggal_pesan'] ?? null,
+                'link_pembelian' => $dist['link_pembelian'] ?? null,
                 'nama_pic' => trim($_POST['nama_pic'] ?? ''),
                 'no_kontak' => trim($_POST['no_kontak'] ?? ''),
                 'alamat' => trim($_POST['alamat'] ?? ''),
                 'kab_kota' => trim($_POST['kab_kota'] ?? ''),
-                'status' => $statusLegacy,
-                'status_penerimaan' => $statusPenerimaan,
-                'tanggal_kirim' => !empty($_POST['tanggal_kirim']) ? $_POST['tanggal_kirim'] : null,
-                'tanggal_terima' => $tanggalTerima,
-                'no_resi' => trim($_POST['no_resi'] ?? ''),
+                'tanggal_terima' => $dist['tanggal_terima'] ?? null,
+                'no_resi' => $dist['no_resi'] ?? null,
                 'catatan' => trim($_POST['catatan'] ?? '')
             ]);
 
@@ -860,93 +843,6 @@ class PaketController {
                 exit;
             }
             flash('error', 'Gagal memperbarui status distribusi: ' . $e->getMessage());
-        }
-
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
-    }
-
-    /**
-     * AJAX/POST: Update Rute Pengiriman Distribusi (Legacy/Fallback)
-     */
-    public function updateRuteDistribusi($idOrKode, $distribusiId) {
-        $paket = $this->getAccessiblePaket($idOrKode, true);
-
-        $rute = trim($_POST['rute_pengiriman'] ?? 'kantor');
-        try {
-            $this->distribusiModel->updateRute($distribusiId, $rute);
-            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
-                echo json_encode(['success' => true, 'message' => 'Rute pengiriman berhasil diperbarui!']);
-                exit;
-            }
-            flash('success', 'Rute pengiriman berhasil diperbarui!');
-        } catch (Exception $e) {
-            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
-                echo json_encode(['success' => false, 'message' => 'Gagal memperbarui rute: ' . $e->getMessage()]);
-                exit;
-            }
-            flash('error', 'Gagal memperbarui rute: ' . $e->getMessage());
-        }
-
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
-    }
-
-    /**
-     * AJAX/POST: Update Status Pemesanan Logistik Distribusi
-     */
-    public function updatePemesananDistribusi($idOrKode, $distribusiId) {
-        $paket = $this->getAccessiblePaket($idOrKode, true);
-
-        $data = [
-            'status_pemesanan' => trim($_POST['status_pemesanan'] ?? 'Belum Dipesan'),
-            'tanggal_pesan' => !empty($_POST['tanggal_pesan']) ? $_POST['tanggal_pesan'] : null,
-            'link_pembelian' => trim($_POST['link_pembelian'] ?? ''),
-            'kurir_ekspedisi' => trim($_POST['kurir_ekspedisi'] ?? ''),
-            'no_resi' => trim($_POST['no_resi'] ?? '')
-        ];
-
-        try {
-            $this->distribusiModel->updatePemesanan($distribusiId, $data);
-            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
-                echo json_encode(['success' => true, 'message' => 'Status pemesanan berhasil diperbarui!']);
-                exit;
-            }
-            flash('success', 'Status pemesanan berhasil diperbarui!');
-        } catch (Exception $e) {
-            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
-                echo json_encode(['success' => false, 'message' => 'Gagal memperbarui pemesanan: ' . $e->getMessage()]);
-                exit;
-            }
-            flash('error', 'Gagal memperbarui pemesanan: ' . $e->getMessage());
-        }
-
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');
-    }
-
-    /**
-     * AJAX/POST: Update Status Penerimaan Distribusi di Lokasi
-     */
-    public function updatePenerimaanDistribusi($idOrKode, $distribusiId) {
-        $paket = $this->getAccessiblePaket($idOrKode, true);
-
-        $data = [
-            'status_penerimaan' => trim($_POST['status_penerimaan'] ?? 'Menunggu Barang'),
-            'tanggal_terima' => !empty($_POST['tanggal_terima']) ? $_POST['tanggal_terima'] : null,
-            'catatan' => trim($_POST['catatan'] ?? '')
-        ];
-
-        try {
-            $this->distribusiModel->updatePenerimaan($distribusiId, $data);
-            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
-                echo json_encode(['success' => true, 'message' => 'Status penerimaan berhasil diperbarui!']);
-                exit;
-            }
-            flash('success', 'Status penerimaan berhasil diperbarui!');
-        } catch (Exception $e) {
-            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
-                echo json_encode(['success' => false, 'message' => 'Gagal memperbarui penerimaan: ' . $e->getMessage()]);
-                exit;
-            }
-            flash('error', 'Gagal memperbarui penerimaan: ' . $e->getMessage());
         }
 
         redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '#distribusi');

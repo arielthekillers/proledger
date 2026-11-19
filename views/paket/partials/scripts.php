@@ -613,17 +613,18 @@ function openModalUpdateStatusBarang(dist) {
         if (optBelum) optBelum.checked = true;
     }
 
-    document.getElementById('status_barang_nama').value = dist.nama_barang || dist.nama_komponen || '';
+    // Kosongkan jika belum pernah diinput detail barangnya oleh user
+    document.getElementById('status_barang_nama').value = dist.nama_barang || '';
     
     const hargaVal = (dist.harga_satuan !== null && dist.harga_satuan !== undefined && dist.harga_satuan !== '') 
         ? dist.harga_satuan 
-        : (dist.item_harga_satuan || '');
+        : '';
     const hargaInput = document.getElementById('status_barang_harga');
     if (hargaInput) {
         hargaInput.value = hargaVal ? parseInt(hargaVal, 10).toLocaleString('id-ID') : '';
     }
 
-    document.getElementById('status_barang_ekspedisi').value = dist.ekspedisi || dist.kurir_ekspedisi || '';
+    document.getElementById('status_barang_ekspedisi').value = dist.ekspedisi || '';
     document.getElementById('status_barang_resi').value = dist.no_resi || '';
     document.getElementById('status_barang_link').value = dist.link_pembelian || '';
 
