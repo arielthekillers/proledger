@@ -340,4 +340,37 @@ class PaketKegiatan {
             throw $e;
         }
     }
+
+    /**
+     * Get summary metrics for a paket kegiatan
+     */
+    public function getSummary($paket_id) {
+        $paket = $this->getById($paket_id);
+        if (!$paket) {
+            return [
+                'pagu' => 0,
+                'pagu_nego' => 0,
+                'dpp' => 0,
+                'total_pasal' => 0,
+                'rab' => 0,
+                'total_modal' => 0,
+                'total_masuk' => 0,
+                'total_keluar' => 0,
+                'saldo' => 0,
+                'laba_rugi' => 0
+            ];
+        }
+        return [
+            'pagu' => (float)($paket['pagu'] ?? 0),
+            'pagu_nego' => (float)($paket['pagu_nego'] ?? 0),
+            'dpp' => (float)($paket['dpp'] ?? 0),
+            'total_pasal' => (float)($paket['total_pasal'] ?? 0),
+            'rab' => (float)($paket['rab'] ?? 0),
+            'total_modal' => 0,
+            'total_masuk' => 0,
+            'total_keluar' => 0,
+            'saldo' => 0,
+            'laba_rugi' => 0
+        ];
+    }
 }
