@@ -5,10 +5,10 @@
 const SPINNER_SVG = '<svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 inline-block text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
 
 /**
- * Tab Switcher (info, items, distribusi, dokumen)
+ * Tab Switcher (info, items, distribusi, dokumentasi, dokumen)
  */
 function switchDetailTab(tabName) {
-    const validTabs = ['info', 'items', 'distribusi', 'dokumen'];
+    const validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen'];
     if (!validTabs.includes(tabName)) tabName = 'info';
 
     // Hapus style preload jika ada agar kontrol display kembali normal
@@ -46,7 +46,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
     const h = (window.location.hash || '').replace('#', '');
-    const target = (['info', 'items', 'distribusi', 'dokumen'].includes(tabParam)) ? tabParam : (['info', 'items', 'distribusi', 'dokumen'].includes(h) ? h : '');
+    const validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen'];
+    const target = (validTabs.includes(tabParam)) ? tabParam : (validTabs.includes(h) ? h : '');
     if (target) {
         switchDetailTab(target);
     }
@@ -1109,4 +1110,525 @@ function handleQuickTambahSkema(e) {
         window.ProToast.error('Koneksi terputus saat menyimpan skema.');
     });
 }
+
+// ==========================================
+// LOGIKA TAB DOKUMENTASI (UPLOAD & GALERI)
+// ==========================================
+let currentDokDistId = null;
+let dokSelectedFiles = [];
+let isUploadingDok = false;
+
+/**
+ * Buka modal dokumentasi foto untuk alokasi distribusi tertentu
+ */
+function openModalDokumentasi(distId, namaTujuan, namaBarang, qty) {
+    currentDokDistId = distId;
+
+    const elTujuan = document.getElementById('modalDokTujuan');
+    const elBarang = document.getElementById('modalDokBarang');
+    if (elTujuan) elTujuan.textContent = namaTujuan;
+    if (elBarang) elBarang.textContent = 'Barang: ' + namaBarang + ' (' + qty + ')';
+
+    clearDokSelectedQueue();
+    const ketInput = document.getElementById('dokKeteranganInput');
+    if (ketInput) ketInput.value = '';
+
+    window.ProModal.open('modalDokumentasi');
+    loadDokumentasiPhotos(distId);
+}
+
+/**
+ * Muat daftar foto dokumentasi dari server (AJAX)
+ */
+function loadDokumentasiPhotos(distId) {
+    const loadingEl = document.getElementById('dokGalleryLoading');
+    const emptyEl = document.getElementById('dokGalleryEmpty');
+    const gridEl = document.getElementById('dokGalleryGrid');
+    const countEl = document.getElementById('dokGalleryCount');
+
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    if (emptyEl) emptyEl.classList.add('hidden');
+    if (gridEl) {
+        gridEl.classList.add('hidden');
+        gridEl.innerHTML = '';
+    }
+
+    fetch('<?= APP_URL ?>/paket/getDokumentasiList/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (loadingEl) loadingEl.classList.add('hidden');
+
+        if (res.success) {
+            const photos = res.photos || [];
+            if (countEl) countEl.textContent = photos.length;
+
+            if (photos.length === 0) {
+                if (emptyEl) emptyEl.classList.remove('hidden');
+            } else {
+                if (gridEl) {
+                    gridEl.classList.remove('hidden');
+                    photos.forEach(p => {
+                        const card = document.createElement('div');
+                        card.className = 'group relative bg-slate-50 rounded-xl border border-slate-200 overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col';
+                        card.id = 'photo_card_' + p.id;
+
+                        const imgUrl = p.url;
+                        const thumbUrl = p.thumb_url || p.url;
+                        const caption = (p.keterangan ? (p.keterangan + ' - ') : '') + (p.formatted_date || '');
+
+                        card.innerHTML = `
+                            <div class="relative aspect-square w-full overflow-hidden bg-slate-100 cursor-pointer" onclick="openPhotoLightbox('${imgUrl}', '${escapeHtml(caption)}')">
+                                <img src="${thumbUrl}" alt="Dokumentasi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" loading="lazy">
+                                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-lg">
+                                    <ion-icon name="search-outline"></ion-icon>
+                                </div>
+                            </div>
+                            <div class="p-2 flex items-center justify-between gap-1 text-[10px] text-slate-500 bg-white border-t border-slate-100">
+                                <div class="truncate">
+                                    <span class="font-semibold text-slate-700 block truncate" title="${escapeHtml(p.nama_file_asli)}">${escapeHtml(p.nama_file_asli)}</span>
+                                    <span class="text-[9px] text-slate-400 block">${p.formatted_size} &bull; ${p.formatted_date}</span>
+                                </div>
+                                <button type="button" onclick="deleteDokumentasiFoto(${p.id}, ${distId})" class="text-slate-400 hover:text-rose-600 p-1 rounded-md hover:bg-rose-50 transition-colors shrink-0" title="Hapus Foto">
+                                    <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+                                </button>
+                            </div>
+                        `;
+                        gridEl.appendChild(card);
+                    });
+                }
+            }
+        } else {
+            if (emptyEl) emptyEl.classList.remove('hidden');
+            window.ProToast.error(res.message || 'Gagal memuat galeri foto.');
+        }
+    })
+    .catch(() => {
+        if (loadingEl) loadingEl.classList.add('hidden');
+        if (emptyEl) emptyEl.classList.remove('hidden');
+        window.ProToast.error('Koneksi terputus saat memuat galeri.');
+    });
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+/**
+ * Handle Drag & Drop di Dropzone Foto
+ */
+function handleDokDrop(e) {
+    e.preventDefault();
+    const dropzone = document.getElementById('dokDropzone');
+    if (dropzone) dropzone.classList.remove('border-teal-500', 'bg-teal-50/50');
+    if (e.dataTransfer && e.dataTransfer.files) {
+        handleDokFileSelect(e.dataTransfer.files);
+    }
+}
+
+/**
+ * Handle penambahan file baru ke antrean upload
+ */
+function handleDokFileSelect(files) {
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        if (f.type.startsWith('image/')) {
+            dokSelectedFiles.push(f);
+        } else {
+            window.ProToast.warning('File ' + f.name + ' bukan gambar yang didukung.');
+        }
+    }
+
+    renderDokQueuePreview();
+}
+
+/**
+ * Render thumbnail preview untuk foto yang dipilih sebelum upload
+ */
+function renderDokQueuePreview() {
+    const queueContainer = document.getElementById('dokSelectedQueue');
+    const queueList = document.getElementById('dokQueueList');
+    const countEl = document.getElementById('dokSelectedCount');
+    const uploadBtn = document.getElementById('btnUploadDokumentasi');
+
+    if (!queueContainer || !queueList) return;
+
+    if (dokSelectedFiles.length === 0) {
+        queueContainer.classList.add('hidden');
+        queueList.innerHTML = '';
+        if (uploadBtn) {
+            uploadBtn.disabled = true;
+            uploadBtn.className = 'px-4 py-2 bg-slate-200 text-slate-400 font-semibold rounded-xl text-xs shadow-xs transition-all cursor-not-allowed flex items-center gap-1.5';
+        }
+        return;
+    }
+
+    queueContainer.classList.remove('hidden');
+    if (countEl) countEl.textContent = dokSelectedFiles.length;
+    queueList.innerHTML = '';
+
+    dokSelectedFiles.forEach((file, index) => {
+        const item = document.createElement('div');
+        item.className = 'relative flex items-center gap-2 p-1.5 bg-slate-50 border border-slate-200 rounded-lg overflow-hidden group';
+
+        const img = document.createElement('img');
+        img.className = 'w-10 h-10 rounded-md object-cover border border-slate-200 shrink-0';
+        img.src = URL.createObjectURL(file);
+
+        const info = document.createElement('div');
+        info.className = 'truncate text-[10px] leading-tight flex-1';
+        const sizeKb = Math.round(file.size / 1024);
+        info.innerHTML = `<span class="font-bold text-slate-700 block truncate">${escapeHtml(file.name)}</span><span class="text-slate-400 font-mono">${sizeKb} KB</span>`;
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'text-slate-400 hover:text-rose-600 p-1 rounded transition-colors';
+        delBtn.title = 'Hapus dari antrean';
+        delBtn.innerHTML = '<ion-icon name="close-circle" class="text-base"></ion-icon>';
+        delBtn.onclick = () => removeDokQueueItem(index);
+
+        item.appendChild(img);
+        item.appendChild(info);
+        item.appendChild(delBtn);
+        queueList.appendChild(item);
+    });
+
+    if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.className = 'px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 hover:scale-[1.02]';
+    }
+}
+
+/**
+ * Hapus satu item dari antrean upload
+ */
+function removeDokQueueItem(index) {
+    if (index >= 0 && index < dokSelectedFiles.length) {
+        dokSelectedFiles.splice(index, 1);
+        renderDokQueuePreview();
+    }
+}
+
+/**
+ * Bersihkan seluruh antrean upload
+ */
+function clearDokSelectedQueue() {
+    dokSelectedFiles = [];
+    const input = document.getElementById('dokFileInput');
+    if (input) input.value = '';
+    renderDokQueuePreview();
+
+    const progressContainer = document.getElementById('dokProgressContainer');
+    if (progressContainer) progressContainer.classList.add('hidden');
+}
+
+/**
+ * Client-Side Image Compression using HTML5 Canvas
+ * Mengompres gambar jika resolusi > maxWidth atau ukuran besar
+ */
+function compressImageToBlob(file, maxWidth = 1600, quality = 0.82) {
+    return new Promise((resolve) => {
+        if (!file.type.match(/image\/(jpeg|jpg|png|webp)/i)) {
+            return resolve(file); // fallback
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                let w = img.width;
+                let h = img.height;
+
+                if (w > maxWidth || h > maxWidth) {
+                    if (w > h) {
+                        h = Math.round((h * maxWidth) / w);
+                        w = maxWidth;
+                    } else {
+                        w = Math.round((w * maxWidth) / h);
+                        h = maxWidth;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+
+                canvas.toBlob((blob) => {
+                    if (blob && blob.size < file.size) {
+                        const compFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        resolve(compFile);
+                    } else {
+                        resolve(file);
+                    }
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => resolve(file);
+            img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(file);
+        reader.readAsDataURL(file);
+    });
+}
+
+/**
+ * Eksekusi Upload Foto Dokumentasi dengan Progress Bar Real-time
+ */
+async function startUploadDokumentasi() {
+    if (dokSelectedFiles.length === 0 || !currentDokDistId || isUploadingDok) return;
+    isUploadingDok = true;
+
+    const progressContainer = document.getElementById('dokProgressContainer');
+    const progressBar = document.getElementById('dokProgressBar');
+    const progressPercent = document.getElementById('dokProgressPercent');
+    const progressStatus = document.getElementById('dokProgressStatusText');
+    const uploadBtn = document.getElementById('btnUploadDokumentasi');
+    const uploadBtnText = document.getElementById('btnUploadDokumentasiText');
+
+    if (progressContainer) progressContainer.classList.remove('hidden');
+    if (uploadBtn) {
+        uploadBtn.disabled = true;
+        uploadBtn.classList.add('opacity-75');
+    }
+    if (uploadBtnText) uploadBtnText.textContent = 'Memproses...';
+
+    // 1. Fase kompresi client-side
+    if (progressStatus) progressStatus.textContent = 'Mengompres gambar (' + dokSelectedFiles.length + ' foto)...';
+    if (progressBar) progressBar.style.width = '15%';
+    if (progressPercent) progressPercent.textContent = '15%';
+
+    const formData = new FormData();
+    formData.append('is_ajax', '1');
+    formData.append('distribusi_id', currentDokDistId);
+    const ketVal = (document.getElementById('dokKeteranganInput')?.value || '').trim();
+    if (ketVal) formData.append('keterangan', ketVal);
+
+    for (let i = 0; i < dokSelectedFiles.length; i++) {
+        const comp = await compressImageToBlob(dokSelectedFiles[i], 1600, 0.82);
+        formData.append('fotos[]', comp, dokSelectedFiles[i].name);
+    }
+
+    if (progressStatus) progressStatus.textContent = 'Mengunggah ke server...';
+    if (progressBar) progressBar.style.width = '30%';
+    if (progressPercent) progressPercent.textContent = '30%';
+
+    // 2. Upload via AJAX XMLHttpRequest
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '<?= APP_URL ?>/paket/uploadDokumentasi/<?= $paket['kode_paket'] ?: $paket['id'] ?>', true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+    xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+            const pct = 30 + Math.round((e.loaded / e.total) * 65); // 30% -> 95%
+            if (progressBar) progressBar.style.width = pct + '%';
+            if (progressPercent) progressPercent.textContent = pct + '%';
+        }
+    };
+
+    xhr.onload = function() {
+        isUploadingDok = false;
+        if (progressBar) progressBar.style.width = '100%';
+        if (progressPercent) progressPercent.textContent = '100%';
+        if (progressStatus) progressStatus.textContent = 'Selesai!';
+
+        setTimeout(() => {
+            if (progressContainer) progressContainer.classList.add('hidden');
+            if (uploadBtn) {
+                uploadBtn.disabled = false;
+                uploadBtn.classList.remove('opacity-75');
+            }
+            if (uploadBtnText) uploadBtnText.textContent = 'Mulai Upload Foto';
+        }, 600);
+
+        try {
+            const res = JSON.parse(xhr.responseText);
+            if (res.success) {
+                clearDokSelectedQueue();
+                const ketInput = document.getElementById('dokKeteranganInput');
+                if (ketInput) ketInput.value = '';
+                loadDokumentasiPhotos(currentDokDistId);
+                refreshDokTableRow(currentDokDistId);
+                window.ProToast.success(res.message || 'Foto dokumentasi berhasil diupload!');
+            } else {
+                window.ProToast.error(res.message || 'Gagal mengupload foto.');
+            }
+        } catch (err) {
+            window.ProToast.error('Format respon server tidak valid.');
+        }
+    };
+
+    xhr.onerror = function() {
+        isUploadingDok = false;
+        if (progressContainer) progressContainer.classList.add('hidden');
+        if (uploadBtn) {
+            uploadBtn.disabled = false;
+            uploadBtn.classList.remove('opacity-75');
+        }
+        if (uploadBtnText) uploadBtnText.textContent = 'Mulai Upload Foto';
+        window.ProToast.error('Koneksi terputus saat mengupload foto.');
+    };
+
+    xhr.send(formData);
+}
+
+/**
+ * Hapus satu foto dokumentasi
+ */
+function deleteDokumentasiFoto(fotoId, distId) {
+    if (!confirm('Yakin ingin menghapus foto dokumentasi ini? File yang dihapus tidak dapat dikembalikan.')) {
+        return;
+    }
+
+    const card = document.getElementById('photo_card_' + fotoId);
+    if (card) card.style.opacity = '0.4';
+
+    fetch('<?= APP_URL ?>/paket/deleteDokumentasi/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + fotoId, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            if (card) card.remove();
+            loadDokumentasiPhotos(distId);
+            refreshDokTableRow(distId);
+            window.ProToast.success('Foto dokumentasi berhasil dihapus.');
+        } else {
+            if (card) card.style.opacity = '1';
+            window.ProToast.error(res.message || 'Gagal menghapus foto.');
+        }
+    })
+    .catch(() => {
+        if (card) card.style.opacity = '1';
+        window.ProToast.error('Koneksi terputus saat menghapus foto.');
+    });
+}
+
+/**
+ * Update cell tabel dokumentasi secara dinamis setelah upload/delete
+ */
+function refreshDokTableRow(distId) {
+    fetch('<?= APP_URL ?>/paket/getDokumentasiList/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            const cell = document.getElementById('cell_dok_photos_' + distId);
+            const photos = res.photos || [];
+
+            if (cell) {
+                if (photos.length === 0) {
+                    cell.innerHTML = `
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200/70">
+                            <ion-icon name="image-outline" class="text-xs"></ion-icon>
+                            <span>Belum Ada Foto</span>
+                        </span>
+                    `;
+                } else {
+                    const previewSlice = photos.slice(0, 3);
+                    let imgsHtml = '<div class="flex items-center -space-x-1.5">';
+                    previewSlice.forEach(p => {
+                        const thumb = p.thumb_url || p.url;
+                        const caption = (res.distribusi?.nama_tujuan || '') + ' - ' + (res.distribusi?.nama_komponen || 'Barang');
+                        imgsHtml += `
+                            <img src="${thumb}" alt="Foto" 
+                                 onclick="openPhotoLightbox('${p.url}', '${escapeHtml(caption)}')"
+                                 class="w-7 h-7 rounded-lg object-cover border-2 border-white shadow-2xs hover:scale-110 hover:z-10 transition-transform cursor-pointer"
+                                 title="Klik untuk memperbesar">
+                        `;
+                    });
+                    imgsHtml += '</div>';
+
+                    cell.innerHTML = `
+                        <div class="flex items-center gap-1.5">
+                            ${imgsHtml}
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200/80">
+                                ${photos.length} Foto
+                            </span>
+                        </div>
+                    `;
+                }
+            }
+
+            // Update badge total
+            updateDokumentasiTotalBadge();
+        }
+    })
+    .catch(() => {});
+}
+
+/**
+ * Hitung dan perbarui angka badge dokumentasi di header tab
+ */
+function updateDokumentasiTotalBadge() {
+    let total = 0;
+    const badges = document.querySelectorAll('#dokumentasiTable [id^="cell_dok_photos_"] span.bg-teal-50');
+    badges.forEach(b => {
+        const num = parseInt(b.textContent) || 0;
+        total += num;
+    });
+
+    const headerBadge = document.getElementById('headerTotalFotoBadge');
+    if (headerBadge) headerBadge.textContent = total;
+
+    const tabBadge = document.getElementById('tabBadge_dokumentasiCount');
+    if (tabBadge) tabBadge.textContent = total;
+
+    const footerTotal = document.getElementById('footerTotalFotoCount');
+    if (footerTotal) footerTotal.textContent = total;
+}
+
+/**
+ * Lightbox Full Image Preview
+ */
+function openPhotoLightbox(url, caption) {
+    const modal = document.getElementById('modalPhotoLightbox');
+    const img = document.getElementById('lightboxImg');
+    const cap = document.getElementById('lightboxCaption');
+
+    if (img) img.src = url;
+    if (cap) cap.textContent = caption || '';
+    if (modal) {
+        modal.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+        modal.classList.add('opacity-100');
+    }
+}
+
+function closePhotoLightbox() {
+    const modal = document.getElementById('modalPhotoLightbox');
+    if (modal) {
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+}
+
+// Tutup lightbox jika tekan tombol Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closePhotoLightbox();
+    }
+});
 </script>

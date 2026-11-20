@@ -175,7 +175,17 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
             </span>
         </button>
 
-        <!-- Tab 4: Dokumen BAST -->
+        <!-- Tab 4: Dokumentasi -->
+        <button type="button" onclick="switchDetailTab('dokumentasi')" id="tabBtn_dokumentasi"
+                class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'dokumentasi') ? 'font-bold border-b-2 border-blue-600 text-blue-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
+            <ion-icon name="camera-outline" class="text-base"></ion-icon>
+            <span>Dokumentasi</span>
+            <span id="tabBadge_dokumentasiCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= !empty($totalDokumentasiFoto) ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-600' ?>">
+                <?= (int)($totalDokumentasiFoto ?? 0) ?>
+            </span>
+        </button>
+
+        <!-- Tab 5: Dokumen BAST -->
         <button type="button" onclick="switchDetailTab('dokumen')" id="tabBtn_dokumen"
                 class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'dokumen') ? 'font-bold border-b-2 border-blue-600 text-blue-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
             <ion-icon name="document-text-outline" class="text-base"></ion-icon>
@@ -188,7 +198,7 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
 </div>
 <script>
 (function() {
-    var validTabs = ['info', 'items', 'distribusi', 'dokumen'];
+    var validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen'];
     var hash = (window.location.hash || '').replace('#', '');
     var urlParams = new URLSearchParams(window.location.search);
     var tabParam = urlParams.get('tab');
@@ -214,6 +224,7 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
 <?php require __DIR__ . '/partials/tab_info.php'; ?>
 <?php require __DIR__ . '/partials/tab_items.php'; ?>
 <?php require __DIR__ . '/partials/tab_distribusi.php'; ?>
+<?php require __DIR__ . '/partials/tab_dokumentasi.php'; ?>
 <?php require __DIR__ . '/partials/tab_dokumen.php'; ?>
 
 <!-- ========================================== -->

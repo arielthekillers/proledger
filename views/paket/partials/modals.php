@@ -1158,3 +1158,158 @@
         </form>
     </div>
 </div>
+
+<!-- ========================================== -->
+<!-- MODAL: DOKUMENTASI FOTO (UPLOAD & GALERI)  -->
+<!-- ========================================== -->
+<div id="modalDokumentasi" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-2xl w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
+        <!-- Modal Header -->
+        <div class="px-5 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center text-lg shadow-xs">
+                    <ion-icon name="camera-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                        <span>Dokumentasi Foto</span>
+                        <span class="text-slate-400 font-normal">|</span>
+                        <span id="modalDokTujuan" class="text-teal-700">Nama Tujuan</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-500 mt-0.5" id="modalDokBarang">Barang: -</p>
+                </div>
+            </div>
+            <button type="button" onclick="window.ProModal.close('modalDokumentasi')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                <ion-icon name="close-outline" class="text-xl"></ion-icon>
+            </button>
+        </div>
+
+        <div class="overflow-y-auto p-5 space-y-5">
+            <!-- SECTION 1: UPLOAD FOTO BARU -->
+            <div class="bg-slate-50/70 p-4 rounded-xl border border-slate-200/90 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <ion-icon name="cloud-upload-outline" class="text-teal-600 text-sm"></ion-icon>
+                        <span>Upload Foto Baru (Bisa Lebih Dari 1)</span>
+                    </span>
+                    <span class="text-[10px] text-slate-400">JPG, PNG, WebP (Otomatis Di-compress)</span>
+                </div>
+
+                <!-- Dropzone / File Picker Area -->
+                <div id="dokDropzone" 
+                     onclick="document.getElementById('dokFileInput').click()"
+                     ondragover="event.preventDefault(); this.classList.add('border-teal-500', 'bg-teal-50/50')"
+                     ondragleave="this.classList.remove('border-teal-500', 'bg-teal-50/50')"
+                     ondrop="handleDokDrop(event)"
+                     class="border-2 border-dashed border-slate-300 hover:border-teal-500 hover:bg-teal-50/30 rounded-xl p-4 text-center cursor-pointer transition-all">
+                    <input type="file" id="dokFileInput" multiple accept="image/jpeg,image/png,image/webp,image/jpg" class="hidden" onchange="handleDokFileSelect(this.files)">
+                    <div class="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center text-teal-600 text-xl mx-auto mb-2 shadow-2xs">
+                        <ion-icon name="images-outline"></ion-icon>
+                    </div>
+                    <p class="text-xs font-semibold text-slate-700">
+                        Klik untuk memilih foto atau seret foto ke sini
+                    </p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">
+                        Bisa pilih banyak foto sekaligus dari HP atau Komputer
+                    </p>
+                </div>
+
+                <!-- Queue Selected Files Preview -->
+                <div id="dokSelectedQueue" class="hidden space-y-2">
+                    <div class="flex items-center justify-between text-xs text-slate-600 font-semibold">
+                        <span>Foto yang akan diupload (<span id="dokSelectedCount">0</span> foto):</span>
+                        <button type="button" onclick="clearDokSelectedQueue()" class="text-rose-500 hover:underline text-[11px]">Batal Semua</button>
+                    </div>
+                    <div id="dokQueueList" class="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1 bg-white rounded-lg border border-slate-200">
+                        <!-- Preview Cards will be inserted here dynamically -->
+                    </div>
+                </div>
+
+                <!-- Keterangan Opsional -->
+                <div>
+                    <input type="text" id="dokKeteranganInput" placeholder="Keterangan / Catatan foto dokumentasi (opsional)..."
+                           class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all">
+                </div>
+
+                <!-- Progress Bar Container -->
+                <div id="dokProgressContainer" class="hidden space-y-1.5 pt-1">
+                    <div class="flex items-center justify-between text-xs">
+                        <span id="dokProgressStatus" class="font-semibold text-teal-700 flex items-center gap-1.5">
+                            <svg class="animate-spin h-3.5 w-3.5 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <span id="dokProgressStatusText">Mengompres & Mengunggah...</span>
+                        </span>
+                        <span id="dokProgressPercent" class="font-mono font-bold text-teal-800 text-xs">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                        <div id="dokProgressBar" class="bg-teal-600 h-2.5 rounded-full transition-all duration-150" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="flex justify-end pt-1">
+                    <button type="button" id="btnUploadDokumentasi" onclick="startUploadDokumentasi()" disabled
+                            class="px-4 py-2 bg-slate-200 text-slate-400 font-semibold rounded-xl text-xs shadow-xs transition-all cursor-not-allowed flex items-center gap-1.5">
+                        <ion-icon name="cloud-upload-outline" class="text-sm"></ion-icon>
+                        <span id="btnUploadDokumentasiText">Mulai Upload Foto</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECTION 2: GALERI FOTO TERSIMPAN -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <ion-icon name="images-outline" class="text-teal-600 text-sm"></ion-icon>
+                        <span>Galeri Foto Tersimpan (<span id="dokGalleryCount">0</span>)</span>
+                    </h4>
+                    <span class="text-[11px] text-slate-400">Klik foto untuk memperbesar</span>
+                </div>
+
+                <!-- Foto Grid Container -->
+                <div id="dokGalleryLoading" class="py-8 text-center text-slate-400 text-xs">
+                    <svg class="animate-spin h-5 w-5 text-teal-600 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span>Memuat galeri foto...</span>
+                </div>
+
+                <div id="dokGalleryEmpty" class="hidden py-8 text-center text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                    <ion-icon name="image-outline" class="text-2xl text-slate-300 mb-1"></ion-icon>
+                    <p class="text-xs font-medium text-slate-600">Belum ada foto dokumentasi tersimpan</p>
+                    <p class="text-[11px] text-slate-400">Gunakan form di atas untuk mengupload foto barang atau serah terima.</p>
+                </div>
+
+                <div id="dokGalleryGrid" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    <!-- Photo cards loaded dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end shrink-0">
+            <button type="button" onclick="window.ProModal.close('modalDokumentasi')"
+                    class="px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-semibold transition-colors">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: LIGHTBOX FULL IMAGE PREVIEW         -->
+<!-- ========================================== -->
+<div id="modalPhotoLightbox" class="app-modal fixed inset-0 z-[60] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="relative max-w-4xl w-full flex flex-col items-center">
+        <!-- Close Button -->
+        <button type="button" onclick="closePhotoLightbox()" 
+                class="absolute -top-10 right-0 sm:-right-4 text-white hover:text-rose-400 p-2 text-2xl transition-colors cursor-pointer"
+                title="Tutup (Esc)">
+            <ion-icon name="close-circle-outline"></ion-icon>
+        </button>
+
+        <img id="lightboxImg" src="" alt="Preview Foto" 
+             class="max-h-[82vh] max-w-full rounded-2xl object-contain shadow-2xl border border-white/10">
+
+        <div id="lightboxCaption" class="mt-2.5 text-center text-xs text-white/90 bg-black/50 px-4 py-1.5 rounded-full backdrop-blur-md">
+            Caption
+        </div>
+    </div>
+</div>

@@ -11,6 +11,7 @@ require_once MODEL_PATH . '/PaketItem.php';
 require_once MODEL_PATH . '/LokasiPenerima.php';
 require_once MODEL_PATH . '/PaketDistribusi.php';
 require_once MODEL_PATH . '/PaketDokumen.php';
+require_once MODEL_PATH . '/PaketDokumentasi.php';
 require_once HELPER_PATH . '/Uploader.php';
 
 class PaketController {
@@ -22,6 +23,7 @@ class PaketController {
     private $lokasiModel;
     private $distribusiModel;
     private $dokumenModel;
+    private $dokumentasiModel;
     
     public function __construct() {
         // Admin hanya mengelola manajemen user
@@ -38,6 +40,7 @@ class PaketController {
         $this->lokasiModel = new LokasiPenerima();
         $this->distribusiModel = new PaketDistribusi();
         $this->dokumenModel = new PaketDokumen();
+        $this->dokumentasiModel = new PaketDokumentasi();
     }
     
     // Helper to enforce user access
@@ -291,6 +294,8 @@ class PaketController {
             'distribusiList' => $distribusiList,
             'distribusiSummary' => $distribusiSummary,
             'groupedDistribusi' => $this->distribusiModel->getGroupedByTujuan($paket['id']),
+            'dokumentasiMap' => $this->dokumentasiModel->getGroupedByDistribusi($paket['id']),
+            'totalDokumentasiFoto' => $this->dokumentasiModel->countByPaketId($paket['id']),
             'lokasiList' => $lokasiList,
             'kabupatenList' => $kabupatenList,
             'dokumenList' => $dokumenList,
@@ -917,6 +922,7 @@ class PaketController {
         $paket = $this->getAccessiblePaket($idOrKode);
 
         try {
+            $this->dokumentasiModel->deleteByDistribusiId($distribusiId);
             $this->distribusiModel->delete($distribusiId);
             flash('success', 'Alokasi distribusi berhasil dihapus.');
         } catch (Exception $e) {
@@ -1108,7 +1114,7 @@ class PaketController {
             $namaDokumen = pathinfo($_FILES['file_dokumen']['name'], PATHINFO_FILENAME);
         }
 
-        $uploadResult = Uploader::uploadFile($_FILES['file_dokumen'], 'dokumen', ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'jpg', 'jpeg', 'png', 'webp', 'zip', 'rar'], 25);
+        $uploadResult = Uploader::uploadFile($_FILES['file_dokumen'], 'dokumen', ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'jpg', 'jpeg', 'png', 'webp', 'zip', 'rar'], 25, true);
 
         if (!$uploadResult['success']) {
             flash('error', $uploadResult['message']);
@@ -1196,6 +1202,218 @@ class PaketController {
         }
 
         redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
+    }
+
+    /**
+     * Upload foto dokumentasi (bisa multiple) untuk item alokasi distribusi
+     */
+    public function uploadDokumentasi($idOrKode) {
+        $paket = $this->getAccessiblePaket($idOrKode, true);
+
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || 
+                  (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) ||
+                  (isset($_POST['is_ajax']) && $_POST['is_ajax'] == '1');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Metode request tidak valid.']);
+                exit;
+            }
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
+            return;
+        }
+
+        $distribusiId = (int)($_POST['distribusi_id'] ?? 0);
+        $dist = $this->distribusiModel->getById($distribusiId);
+        if (!$dist || (int)$dist['paket_id'] !== (int)$paket['id']) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Data alokasi distribusi tidak ditemukan pada paket ini.']);
+                exit;
+            }
+            flash('error', 'Data alokasi distribusi tidak ditemukan.');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
+            return;
+        }
+
+        if (!isset($_FILES['fotos']) || empty($_FILES['fotos']['name'])) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Silakan pilih minimal satu file foto.']);
+                exit;
+            }
+            flash('error', 'Silakan pilih foto yang akan diupload.');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
+            return;
+        }
+
+        $keterangan = trim($_POST['keterangan'] ?? '');
+        $uploadedList = [];
+        $errors = [];
+
+        // Normalisasi array $_FILES['fotos'] untuk multiple file upload
+        $files = [];
+        if (is_array($_FILES['fotos']['name'])) {
+            $count = count($_FILES['fotos']['name']);
+            for ($i = 0; $i < $count; $i++) {
+                if ($_FILES['fotos']['error'][$i] === UPLOAD_ERR_OK) {
+                    $files[] = [
+                        'name'     => $_FILES['fotos']['name'][$i],
+                        'type'     => $_FILES['fotos']['type'][$i],
+                        'tmp_name' => $_FILES['fotos']['tmp_name'][$i],
+                        'error'    => $_FILES['fotos']['error'][$i],
+                        'size'     => $_FILES['fotos']['size'][$i]
+                    ];
+                } elseif ($_FILES['fotos']['error'][$i] !== UPLOAD_ERR_NO_FILE) {
+                    $errors[] = $_FILES['fotos']['name'][$i] . ' gagal diupload (Error code: ' . $_FILES['fotos']['error'][$i] . ')';
+                }
+            }
+        } elseif ($_FILES['fotos']['error'] === UPLOAD_ERR_OK) {
+            $files[] = $_FILES['fotos'];
+        }
+
+        if (empty($files)) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Tidak ada file foto valid yang diterima server.']);
+                exit;
+            }
+            flash('error', 'Tidak ada foto yang valid untuk diupload.');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
+            return;
+        }
+
+        foreach ($files as $file) {
+            $uploadResult = Uploader::uploadDocumentationImage($file, 'dokumentasi', 1600, 1600, 82);
+            if ($uploadResult['success']) {
+                $docId = $this->dokumentasiModel->create([
+                    'paket_id'       => $paket['id'],
+                    'distribusi_id'  => $distribusiId,
+                    'nama_file_asli' => $uploadResult['orig_name'],
+                    'file_path'      => $uploadResult['file_path'],
+                    'thumb_path'     => $uploadResult['thumb_path'],
+                    'file_size'      => $uploadResult['file_size'],
+                    'file_ext'       => $uploadResult['file_ext'],
+                    'mime_type'      => $uploadResult['mime_type'],
+                    'keterangan'     => $keterangan,
+                    'uploaded_by'    => $_SESSION['admin_id'] ?? null
+                ]);
+                $uploadResult['id'] = $docId;
+                $uploadedList[] = $uploadResult;
+            } else {
+                $errors[] = $file['name'] . ': ' . $uploadResult['message'];
+            }
+        }
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            if (!empty($uploadedList)) {
+                echo json_encode([
+                    'success'  => true,
+                    'message'  => count($uploadedList) . ' foto dokumentasi berhasil diunggah!',
+                    'count'    => count($uploadedList),
+                    'uploaded' => $uploadedList,
+                    'errors'   => $errors
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Gagal mengupload foto: ' . implode(', ', $errors)
+                ]);
+            }
+            exit;
+        }
+
+        if (!empty($uploadedList)) {
+            flash('success', count($uploadedList) . ' foto dokumentasi berhasil diupload.');
+        }
+        if (!empty($errors)) {
+            flash('warning', 'Beberapa foto gagal diupload: ' . implode(', ', $errors));
+        }
+
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
+    }
+
+    /**
+     * Ambil daftar JSON foto dokumentasi untuk alokasi distribusi tertentu
+     */
+    public function getDokumentasiList($idOrKode, $distribusiId) {
+        $paket = $this->getAccessiblePaket($idOrKode, true);
+        $dist = $this->distribusiModel->getById((int)$distribusiId);
+
+        if (!$dist || (int)$dist['paket_id'] !== (int)$paket['id']) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Distribusi tidak ditemukan.']);
+            exit;
+        }
+
+        $photos = $this->dokumentasiModel->getByDistribusiId((int)$distribusiId);
+        foreach ($photos as &$p) {
+            $p['url'] = APP_URL . '/' . ltrim($p['file_path'], '/');
+            $p['thumb_url'] = !empty($p['thumb_path']) ? (APP_URL . '/' . ltrim($p['thumb_path'], '/')) : $p['url'];
+            $bytes = (int)($p['file_size'] ?? 0);
+            $p['formatted_size'] = ($bytes >= 1048576) ? (round($bytes / 1048576, 1) . ' MB') : (round($bytes / 1024, 0) . ' KB');
+            $p['formatted_date'] = !empty($p['created_at']) ? date('d M Y, H:i', strtotime($p['created_at'])) : '-';
+        }
+        unset($p);
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => true,
+            'distribusi' => [
+                'id' => (int)$dist['id'],
+                'nama_tujuan' => $dist['nama_tujuan'],
+                'nama_komponen' => $dist['nama_komponen'] ?? '-',
+                'jumlah' => (float)$dist['jumlah'],
+                'satuan' => $dist['satuan'] ?? 'Unit',
+                'status_distribusi' => $dist['status_distribusi'] ?? 'Belum Dipesan'
+            ],
+            'photos' => $photos
+        ]);
+        exit;
+    }
+
+    /**
+     * Hapus satu foto dokumentasi
+     */
+    public function deleteDokumentasi($idOrKode, $fotoId) {
+        $paket = $this->getAccessiblePaket($idOrKode, true);
+        $foto = $this->dokumentasiModel->getById((int)$fotoId);
+
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || 
+                  (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) ||
+                  (isset($_POST['is_ajax']) && $_POST['is_ajax'] == '1');
+
+        if (!$foto || (int)$foto['paket_id'] !== (int)$paket['id']) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Foto tidak ditemukan atau bukan milik paket ini.']);
+                exit;
+            }
+            flash('error', 'Foto dokumentasi tidak ditemukan.');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
+            return;
+        }
+
+        try {
+            $this->dokumentasiModel->delete((int)$fotoId);
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => 'Foto dokumentasi berhasil dihapus.']);
+                exit;
+            }
+            flash('success', 'Foto dokumentasi berhasil dihapus.');
+        } catch (Exception $e) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Gagal menghapus: ' . $e->getMessage()]);
+                exit;
+            }
+            flash('error', 'Gagal menghapus foto dokumentasi: ' . $e->getMessage());
+        }
+
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
     }
     
     private function view($view, $data = []) {

@@ -349,4 +349,27 @@ CREATE TABLE `paket_dokumen` (
 INSERT INTO `paket_dokumen` (`id`, `paket_id`, `jenis_dokumen`, `nama_dokumen`, `nama_file_asli`, `file_path`, `file_size`, `file_ext`, `mime_type`, `keterangan`, `uploaded_by`, `created_at`, `updated_at`) VALUES
 ('1', '62', 'BAST', 'BAST SMAN 2 Bontang', 'BAST_SMAN2_Bontang_Terkonfirmasi.pdf', 'uploads/dokumen/sample_bast_sman2_bontang.pdf', '40', 'pdf', 'application/pdf', 'Berita Acara Serah Terima Tenda Lipat & Tenda Camping', '1', '2026-11-18 17:00:35', '2026-11-18 17:00:35');
 
+-- --------------------------------------------------------
+-- Table structure for `paket_dokumentasi`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `paket_dokumentasi`;
+CREATE TABLE `paket_dokumentasi` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `paket_id` int(11) NOT NULL,
+  `distribusi_id` int(11) NOT NULL,
+  `nama_file_asli` varchar(255) NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `thumb_path` varchar(255) DEFAULT NULL,
+  `file_size` int(11) NOT NULL DEFAULT 0,
+  `file_ext` varchar(20) NOT NULL DEFAULT '',
+  `mime_type` varchar(100) DEFAULT NULL,
+  `keterangan` text DEFAULT NULL,
+  `uploaded_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_paket_id` (`paket_id`),
+  KEY `idx_distribusi_id` (`distribusi_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

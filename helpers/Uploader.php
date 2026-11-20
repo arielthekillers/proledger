@@ -138,7 +138,7 @@ class Uploader {
     /**
      * Upload berkas dokumen umum (PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, ZIP, dll)
      */
-    public static function uploadFile($file, $folder = 'dokumen', $allowedExtensions = null, $maxSizeMb = 25) {
+    public static function uploadFile($file, $folder = 'dokumen', $allowedExtensions = null, $maxSizeMb = 25, $pureRandomName = false) {
         if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
             $errorCode = $file['error'] ?? UPLOAD_ERR_NO_FILE;
             return ['success' => false, 'message' => self::getErrorMessage($errorCode)];
@@ -170,10 +170,15 @@ class Uploader {
             mkdir($baseDir, 0755, true);
         }
 
-        $randomToken = bin2hex(random_bytes(6));
-        $cleanBaseName = preg_replace('/[^a-zA-Z0-9_-]/', '_', pathinfo($origName, PATHINFO_FILENAME));
-        $cleanBaseName = substr($cleanBaseName, 0, 30);
-        $filename = "{$cleanBaseName}_" . time() . "_{$randomToken}.{$ext}";
+        if ($pureRandomName) {
+            $randomToken = bin2hex(random_bytes(16));
+            $filename = "{$randomToken}.{$ext}";
+        } else {
+            $randomToken = bin2hex(random_bytes(6));
+            $cleanBaseName = preg_replace('/[^a-zA-Z0-9_-]/', '_', pathinfo($origName, PATHINFO_FILENAME));
+            $cleanBaseName = substr($cleanBaseName, 0, 30);
+            $filename = "{$cleanBaseName}_" . time() . "_{$randomToken}.{$ext}";
+        }
         $targetPath = "{$baseDir}/{$filename}";
 
         if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
@@ -194,6 +199,99 @@ class Uploader {
             'mime_type' => $mime,
             'url'       => APP_URL . "/uploads/{$folder}/{$filename}"
         ];
+    }
+
+    /**
+     * Upload foto dokumentasi dengan otomatis kompresi dan nama acak murni
+     */
+    public static function uploadDocumentationImage($file, $folder = 'dokumentasi', $maxWidth = 1600, $maxHeight = 1600, $quality = 82) {
+        if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
+            $errorCode = $file['error'] ?? UPLOAD_ERR_NO_FILE;
+            return ['success' => false, 'message' => self::getErrorMessage($errorCode)];
+        }
+
+        // 1. Validasi MIME Type & Ekstensi gambar
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+
+        if (!in_array($mime, $allowedTypes)) {
+            return ['success' => false, 'message' => 'Format file tidak didukung. Harap upload gambar JPG, PNG, atau WebP.'];
+        }
+
+        // Batas ukuran 20MB
+        if ($file['size'] > 20 * 1024 * 1024) {
+            return ['success' => false, 'message' => 'Ukuran file terlalu besar. Maksimum 20MB.'];
+        }
+
+        // 2. Direktori Penyimpanan
+        $baseDir = PUBLIC_PATH . "/uploads/{$folder}";
+        $largeDir = "{$baseDir}/large";
+        $thumbDir = "{$baseDir}/thumb";
+
+        if (!is_dir($largeDir)) mkdir($largeDir, 0755, true);
+        if (!is_dir($thumbDir)) mkdir($thumbDir, 0755, true);
+
+        // 3. Nama File Acak Murni
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if ($ext === 'jpeg') $ext = 'jpg';
+        $randomName = bin2hex(random_bytes(16)) . ".{$ext}";
+
+        $destLarge = "{$largeDir}/{$randomName}";
+        $destThumb = "{$thumbDir}/{$randomName}";
+
+        // 4. Kompresi & Resize menggunakan GD
+        $sourceImage = self::createImageFromSource($file['tmp_name'], $mime);
+        if ($sourceImage) {
+            $srcW = imagesx($sourceImage);
+            $srcH = imagesy($sourceImage);
+
+            // Large version (maks $maxWidth x $maxHeight, proporsional)
+            $largeImg = self::resizeImage($sourceImage, $srcW, $srcH, $maxWidth, $maxHeight, false);
+            self::saveImage($largeImg, $destLarge, $ext, $mime);
+            imagedestroy($largeImg);
+
+            // Thumbnail version (320 x 320, crop atau fit rapi)
+            $thumbImg = self::resizeImage($sourceImage, $srcW, $srcH, 320, 320, false);
+            self::saveImage($thumbImg, $destThumb, $ext, $mime);
+            imagedestroy($thumbImg);
+
+            imagedestroy($sourceImage);
+        } else {
+            // Fallback jika GD gagal baca file
+            if (!move_uploaded_file($file['tmp_name'], $destLarge)) {
+                return ['success' => false, 'message' => 'Gagal memproses dan menyimpan file ke server.'];
+            }
+            @copy($destLarge, $destThumb);
+        }
+
+        $finalSize = file_exists($destLarge) ? filesize($destLarge) : $file['size'];
+
+        return [
+            'success'    => true,
+            'filename'   => $randomName,
+            'file_path'  => "uploads/{$folder}/large/{$randomName}",
+            'thumb_path' => "uploads/{$folder}/thumb/{$randomName}",
+            'orig_name'  => $file['name'],
+            'file_size'  => $finalSize,
+            'file_ext'   => $ext,
+            'mime_type'  => $mime,
+            'url'        => APP_URL . "/uploads/{$folder}/large/{$randomName}",
+            'thumb_url'  => APP_URL . "/uploads/{$folder}/thumb/{$randomName}"
+        ];
+    }
+
+    /**
+     * Hapus foto dokumentasi dari disk (large dan thumb)
+     */
+    public static function deleteDocumentationImage($filePath, $thumbPath = null) {
+        if (!empty($filePath)) {
+            self::deleteFile($filePath);
+        }
+        if (!empty($thumbPath)) {
+            self::deleteFile($thumbPath);
+        }
     }
 
     /**
