@@ -57,7 +57,7 @@
                 <thead>
                     <tr class="bg-[#24543b] text-white text-[11px] font-bold uppercase tracking-wider">
                         <th class="py-2.5 px-3 text-center w-10 border-b border-[#1b3f2c]">NO</th>
-                        <th class="py-2.5 px-3 min-w-[200px] border-b border-[#1b3f2c]">KOMPONEN BARANG</th>
+                        <th class="py-2.5 px-3 min-w-[200px] border-b border-[#1b3f2c]">KOMPONEN</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[70px] border-b border-[#1b3f2c]">SATUAN</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[60px] border-b border-[#1b3f2c]">JUMLAH</th>
                         <th class="py-2.5 px-3 text-right min-w-[130px] border-b border-[#1b3f2c]">HARGA SATUAN</th>
@@ -166,13 +166,13 @@
                                             <table class="w-full text-left text-[11px]">
                                                 <thead class="bg-slate-50 text-[10px] text-slate-500 uppercase font-bold border-b border-slate-100">
                                                     <tr>
-                                                        <th class="py-1.5 px-3">Barang Pesanan Toko</th>
+                                                        <th class="py-1.5 px-3">Pesanan Toko</th>
                                                         <th class="py-1.5 px-3">Tujuan Penerima</th>
                                                         <th class="py-1.5 px-2.5 text-center">Satuan</th>
                                                         <th class="py-1.5 px-2.5 text-center">Qty</th>
                                                         <th class="py-1.5 px-3 text-right">Harga Beli Satuan</th>
                                                         <th class="py-1.5 px-3 text-right">Total HPP</th>
-                                                        <th class="py-1.5 px-3 text-center">Status Barang</th>
+                                                        <th class="py-1.5 px-3 text-center">Status Pesanan</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody class="divide-y divide-slate-100">

@@ -361,7 +361,7 @@
 
             <!-- Dropdown Pilihan Item (Hanya tampil jika dibuka dari tab Distribusi Umum) -->
             <div id="tambah_dist_item_dropdown_wrapper" class="hidden">
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Item Komponen <span class="text-red-500">*</span></label>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Komponen <span class="text-red-500">*</span></label>
                 <select id="tambah_dist_item_id_select" onchange="onDistribusiItemSelectChange(this.value)"
                         class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 text-xs font-semibold text-slate-800 focus:bg-white transition-all cursor-pointer">
                     <option value="">-- Pilih Item Barang --</option>

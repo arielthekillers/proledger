@@ -26,7 +26,7 @@
                 <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200/90 tracking-wider">
                     <tr>
                         <th class="py-2.5 px-3 w-8 text-center">NO</th>
-                        <th class="py-2.5 px-3 min-w-[150px]">KOMPONEN BARANG</th>
+                        <th class="py-2.5 px-3 min-w-[150px]">KOMPONEN</th>
                         <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[70px]">SATUAN</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[60px]">JUMLAH</th>

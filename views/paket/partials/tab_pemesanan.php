@@ -29,15 +29,15 @@
                 <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200/90 tracking-wider">
                     <tr>
                         <th class="py-2.5 px-3 w-8 text-center">NO</th>
-                        <th class="py-2.5 px-3 min-w-[150px]">KOMPONEN BARANG</th>
+                        <th class="py-2.5 px-3 min-w-[150px]">KOMPONEN</th>
                         <th class="py-2.5 px-3 min-w-[160px]">TUJUAN PENERIMA</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[70px]">SATUAN</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[60px]">JUMLAH</th>
                         <th class="py-2.5 px-3 text-right min-w-[120px]">HARGA SATUAN</th>
-                        <th class="py-2.5 px-3 min-w-[170px]">NAMA BARANG PESANAN (TOKO)</th>
+                        <th class="py-2.5 px-3 min-w-[170px]">NAMA PESANAN (TOKO)</th>
                         <th class="py-2.5 px-3 text-right min-w-[120px]">HARGA BELI SATUAN</th>
                         <th class="py-2.5 px-3 text-right min-w-[130px]">TOTAL MODAL BELI</th>
-                        <th class="py-2.5 px-3 min-w-[130px]">STATUS BARANG</th>
+                        <th class="py-2.5 px-3 min-w-[130px]">STATUS PESANAN</th>
                         <th class="py-2.5 px-2.5 text-right w-12">AKSI</th>
                     </tr>
                 </thead>

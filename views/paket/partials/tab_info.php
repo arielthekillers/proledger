@@ -332,7 +332,7 @@
 
                     <!-- Shortcut Rekap Tab Item -->
                     <div class="py-2 flex items-center justify-between">
-                        <span class="text-slate-500">Total Komponen Barang</span>
+                        <span class="text-slate-500">Total Komponen</span>
                         <div class="flex items-center gap-2">
                             <span class="font-mono font-bold text-slate-800"><?= (int)$itemSummary['total_item'] ?> Item (<?= (float)$itemSummary['total_qty'] ?> Unit)</span>
                             <button type="button" onclick="switchDetailTab('items')" class="text-blue-600 hover:text-blue-800 text-[11px] font-semibold flex items-center">

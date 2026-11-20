@@ -37,7 +37,7 @@
                 <thead class="bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                     <tr>
                         <th class="py-2.5 px-3 w-8 text-center">NO</th>
-                        <th class="py-2.5 px-3 min-w-[180px]">ITEM KOMPONEN</th>
+                        <th class="py-2.5 px-3 min-w-[180px]">KOMPONEN</th>
                         <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[70px]">TOTAL QTY</th>
                         <th class="py-2.5 px-3 text-center min-w-[140px]">STATUS PENERIMAAN</th>
