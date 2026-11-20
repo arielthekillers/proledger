@@ -32,25 +32,6 @@
                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all font-semibold">
             </div>
 
-            <!-- No Dokumen & Tanggal TTD -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">
-                        Nomor Surat BAST (Opsional)
-                    </label>
-                    <input type="text" name="nomor_dokumen" id="upload_nomor_dokumen"
-                           placeholder="Contoh: 028/BAST-DISDIK/XI/2026"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-amber-500 transition-all">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">
-                        Tanggal Tanda Tangan
-                    </label>
-                    <input type="date" name="tanggal_dokumen" id="upload_tanggal_dokumen" value="<?= date('Y-m-d') ?>"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-amber-500 transition-all">
-                </div>
-            </div>
-
             <!-- Berkas File -->
             <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">

@@ -1122,7 +1122,7 @@ class PaketController {
                 'jenis_dokumen'   => $jenis,
                 'nama_dokumen'    => $namaDokumen,
                 'nomor_dokumen'   => trim($_POST['nomor_dokumen'] ?? ''),
-                'tanggal_dokumen' => !empty($_POST['tanggal_dokumen']) ? $_POST['tanggal_dokumen'] : null,
+                'tanggal_dokumen' => !empty($_POST['tanggal_dokumen']) ? $_POST['tanggal_dokumen'] : date('Y-m-d'),
                 'nama_file_asli'  => $uploadResult['orig_name'],
                 'file_path'       => $uploadResult['file_path'],
                 'file_size'       => $uploadResult['file_size'],
