@@ -30,7 +30,7 @@ class PaketDistribusi {
             LEFT JOIN paket_items pi ON pd.item_id = pi.id
             LEFT JOIN lokasi_penerima lp ON pd.lokasi_id = lp.id
             WHERE pd.paket_id = ?
-            ORDER BY pd.nama_tujuan ASC, pd.id ASC
+            ORDER BY COALESCE(pi.id, pd.item_id, 999999) ASC, pd.nama_tujuan ASC, pd.id ASC
         ");
         $stmt->execute([(int)$paketId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -345,7 +345,7 @@ class PaketDistribusi {
             LEFT JOIN paket_items pi ON pd.item_id = pi.id
             LEFT JOIN lokasi_penerima lp ON pd.lokasi_id = lp.id
             WHERE pd.paket_id = ? AND TRIM(pd.nama_tujuan) = ?
-            ORDER BY pd.id ASC
+            ORDER BY COALESCE(pi.id, pd.item_id, 999999) ASC, pd.id ASC
         ");
         $stmt->execute([(int)$paketId, trim($namaTujuan)]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
