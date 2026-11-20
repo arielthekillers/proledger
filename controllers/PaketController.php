@@ -350,7 +350,8 @@ class PaketController {
             $isOrdered = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
             $sDist = $dist['status_distribusi'] ?? '';
 
-            if ($isOrdered && (float)($dist['harga_satuan'] ?? 0) > 0) {
+            // Hitung total harga beli barang (HPP) jika harga satuan toko terisi
+            if ((float)($dist['harga_satuan'] ?? 0) > 0) {
                 $totalBeliBarang += ((float)$dist['harga_satuan'] * (float)$dist['jumlah']);
             }
 
@@ -365,6 +366,47 @@ class PaketController {
             } else {
                 $statusDistBreakdown['dalam_pengiriman']++;
             }
+        }
+
+        // Kalkulasi HPP & Estimasi Untung per Item Kontrak
+        $itemsWithProfit = [];
+        $totalHppAllItems = 0;
+        $totalNilaiItemsAll = 0;
+        $totalQtyAllItems = 0;
+
+        foreach ($items as $it) {
+            $itemId = $it['id'];
+            $itQty = (float)$it['jumlah'];
+            $itHargaSatuan = (float)$it['harga_satuan'];
+            $itTotalKontrak = (float)($it['total_harga'] ?? round($itQty * $itHargaSatuan));
+            
+            // Hitung HPP item dari distribusi
+            $itemHpp = 0;
+            $distsForItem = [];
+            foreach ($distribusiList as $dist) {
+                if ($dist['item_id'] == $itemId) {
+                    $distsForItem[] = $dist;
+                    $dHppSatuan = (float)($dist['harga_satuan'] ?? 0);
+                    $dQty = (float)$dist['jumlah'];
+                    if ($dHppSatuan > 0) {
+                        $itemHpp += ($dQty * $dHppSatuan);
+                    }
+                }
+            }
+            
+            $itUntung = $itTotalKontrak - $itemHpp;
+            $itMarginPct = ($itTotalKontrak > 0) ? round(($itUntung / $itTotalKontrak) * 100, 2) : 0;
+            
+            $it['hpp'] = $itemHpp;
+            $it['total_kontrak'] = $itTotalKontrak;
+            $it['estimasi_untung'] = $itUntung;
+            $it['margin_pct'] = $itMarginPct;
+            $it['dists'] = $distsForItem;
+            
+            $itemsWithProfit[] = $it;
+            $totalHppAllItems += $itemHpp;
+            $totalNilaiItemsAll += $itTotalKontrak;
+            $totalQtyAllItems += $itQty;
         }
 
         $nilaiBersihProfit = $acuanPagu - $totalPasalVal - $totalBeliBarang;
@@ -396,6 +438,10 @@ class PaketController {
             'paket' => $paket,
             'summary' => $summary,
             'items' => $items,
+            'itemsWithProfit' => $itemsWithProfit,
+            'totalHppAllItems' => $totalHppAllItems,
+            'totalNilaiItemsAll' => $totalNilaiItemsAll,
+            'totalQtyAllItems' => $totalQtyAllItems,
             'itemSummary' => $itemSummary,
             'distribusiList' => $distribusiList,
             'distribusiSummary' => $distribusiSummary,
