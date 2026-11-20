@@ -331,8 +331,6 @@ CREATE TABLE `paket_dokumen` (
   `paket_id` int(11) NOT NULL,
   `jenis_dokumen` varchar(100) NOT NULL DEFAULT 'BAST',
   `nama_dokumen` varchar(255) NOT NULL,
-  `nomor_dokumen` varchar(100) DEFAULT NULL,
-  `tanggal_dokumen` date DEFAULT NULL,
   `nama_file_asli` varchar(255) NOT NULL,
   `file_path` varchar(255) NOT NULL,
   `file_size` int(11) NOT NULL DEFAULT 0,
@@ -348,7 +346,7 @@ CREATE TABLE `paket_dokumen` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `paket_dokumen`
-INSERT INTO `paket_dokumen` (`id`, `paket_id`, `jenis_dokumen`, `nama_dokumen`, `nomor_dokumen`, `tanggal_dokumen`, `nama_file_asli`, `file_path`, `file_size`, `file_ext`, `mime_type`, `keterangan`, `uploaded_by`, `created_at`, `updated_at`) VALUES
-('1', '62', 'BAST', 'BAST SMAN 2 Bontang', '020/BAST-DISDIK/XI/2026', '2026-11-18', 'BAST_SMAN2_Bontang_Terkonfirmasi.pdf', 'uploads/dokumen/sample_bast_sman2_bontang.pdf', '40', 'pdf', 'application/pdf', 'Berita Acara Serah Terima Tenda Lipat & Tenda Camping', '1', '2026-11-18 17:00:35', '2026-11-18 17:00:35');
+INSERT INTO `paket_dokumen` (`id`, `paket_id`, `jenis_dokumen`, `nama_dokumen`, `nama_file_asli`, `file_path`, `file_size`, `file_ext`, `mime_type`, `keterangan`, `uploaded_by`, `created_at`, `updated_at`) VALUES
+('1', '62', 'BAST', 'BAST SMAN 2 Bontang', 'BAST_SMAN2_Bontang_Terkonfirmasi.pdf', 'uploads/dokumen/sample_bast_sman2_bontang.pdf', '40', 'pdf', 'application/pdf', 'Berita Acara Serah Terima Tenda Lipat & Tenda Camping', '1', '2026-11-18 17:00:35', '2026-11-18 17:00:35');
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -47,17 +47,15 @@ class PaketDokumen {
     public function create($data) {
         $stmt = $this->db->prepare("
             INSERT INTO paket_dokumen (
-                paket_id, jenis_dokumen, nama_dokumen, nomor_dokumen, tanggal_dokumen,
+                paket_id, jenis_dokumen, nama_dokumen,
                 nama_file_asli, file_path, file_size, file_ext, mime_type, keterangan, uploaded_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
             (int)$data['paket_id'],
             !empty($data['jenis_dokumen']) ? trim($data['jenis_dokumen']) : 'BAST',
             trim($data['nama_dokumen']),
-            !empty($data['nomor_dokumen']) ? trim($data['nomor_dokumen']) : null,
-            !empty($data['tanggal_dokumen']) ? $data['tanggal_dokumen'] : null,
             $data['nama_file_asli'],
             $data['file_path'],
             (int)($data['file_size'] ?? 0),
