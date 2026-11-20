@@ -26,15 +26,15 @@
             <table class="w-full text-left text-xs" id="itemsTable">
                 <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200/90 tracking-wider">
                     <tr>
-                        <th class="py-2 px-3 w-10 text-center">NO</th>
-                        <th class="py-2 px-3 min-w-[150px]">KOMPONEN</th>
-                        <th class="py-2 px-3 min-w-[220px]">SPESIFIKASI</th>
-                        <th class="py-2 px-2.5 text-center">SATUAN</th>
-                        <th class="py-2 px-2.5 text-center">JUMLAH</th>
-                        <th class="py-2 px-3 text-right">HARGA SATUAN</th>
-                        <th class="py-2 px-3 text-right">TOTAL</th>
-                        <th class="py-2 px-3 text-center min-w-[120px]">DISTRIBUSI</th>
-                        <th class="py-2 px-3 text-right min-w-[70px]">AKSI</th>
+                        <th class="py-2.5 px-3 w-10 text-center">NO</th>
+                        <th class="py-2.5 px-3 min-w-[150px]">KOMPONEN</th>
+                        <th class="py-2.5 px-3 min-w-[220px]">SPESIFIKASI</th>
+                        <th class="py-2.5 px-2.5 text-center">SATUAN</th>
+                        <th class="py-2.5 px-2.5 text-center">JUMLAH</th>
+                        <th class="py-2.5 px-3 text-right">HARGA SATUAN</th>
+                        <th class="py-2.5 px-3 text-right">TOTAL</th>
+                        <th class="py-2.5 px-3 text-center min-w-[120px]">DISTRIBUSI</th>
+                        <th class="py-2.5 px-3 text-right min-w-[70px]">AKSI</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -59,44 +59,44 @@
                         <?php $no = 1; foreach ($items as $item): ?>
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <!-- No -->
-                                <td class="py-1.5 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold">
+                                <td class="py-2 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold">
                                     <?= $no++ ?>
                                 </td>
 
                                 <!-- Komponen -->
-                                <td class="py-1.5 px-3 font-bold text-slate-800 text-xs">
+                                <td class="py-2 px-3 font-bold text-slate-800 text-xs">
                                     <?= htmlspecialchars($item['komponen']) ?>
                                 </td>
 
                                 <!-- Spesifikasi -->
-                                <td class="py-1.5 px-3 text-slate-600 text-[11px] leading-relaxed max-w-xs">
+                                <td class="py-2 px-3 text-slate-600 text-[11px] leading-relaxed max-w-xs">
                                     <?= nl2br(htmlspecialchars($item['spesifikasi'] ?: '-')) ?>
                                 </td>
 
                                 <!-- Satuan -->
-                                <td class="py-1.5 px-2.5 text-center whitespace-nowrap">
+                                <td class="py-2 px-2.5 text-center whitespace-nowrap">
                                     <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold text-xs">
                                         <?= htmlspecialchars($item['satuan'] ?: 'Unit') ?>
                                     </span>
                                 </td>
 
                                 <!-- Jumlah -->
-                                <td class="py-1.5 px-2.5 text-center font-bold text-slate-800 text-xs whitespace-nowrap">
+                                <td class="py-2 px-2.5 text-center font-bold text-slate-800 text-xs whitespace-nowrap">
                                     <?= (float)$item['jumlah'] ?>
                                 </td>
 
                                 <!-- Harga Satuan -->
-                                <td class="py-1.5 px-3 text-right font-mono text-slate-700 text-xs whitespace-nowrap">
+                                <td class="py-2 px-3 text-right font-mono text-slate-700 text-xs whitespace-nowrap">
                                     <?= formatRupiah($item['harga_satuan']) ?>
                                 </td>
 
                                 <!-- Total Harga -->
-                                <td class="py-1.5 px-3 text-right font-mono font-bold text-slate-900 text-xs bg-slate-50/50 whitespace-nowrap">
+                                <td class="py-2 px-3 text-right font-mono font-bold text-slate-900 text-xs bg-slate-50/50 whitespace-nowrap">
                                     <?= formatRupiah($item['total_harga']) ?>
                                 </td>
 
                                 <!-- Distribusi -->
-                                <td class="py-1.5 px-3 text-center whitespace-nowrap">
+                                <td class="py-2 px-3 text-center whitespace-nowrap">
                                     <?php 
                                         $tujuanCount = (int)($item['tujuan_count'] ?? 0);
                                         if ($tujuanCount === 0 && !empty($item['existing_dists'])) {
@@ -134,7 +134,7 @@
                                 </td>
 
                                 <!-- Aksi (Edit & Hapus) -->
-                                <td class="py-1.5 px-3 text-right whitespace-nowrap">
+                                <td class="py-2 px-3 text-right whitespace-nowrap">
                                     <?php if ($role === 'admin' || $role === 'user'): ?>
                                         <div class="flex items-center justify-end gap-1">
                                             <!-- Edit Item Trigger -->
@@ -167,19 +167,19 @@
                 <?php if (!empty($items)): ?>
                     <tfoot class="bg-slate-50/90 font-bold text-slate-700 border-t-2 border-slate-200">
                         <tr>
-                            <td colspan="4" class="py-2 px-3 text-right uppercase text-[10px] tracking-wider text-slate-500">
+                            <td colspan="4" class="py-2.5 px-3 text-right uppercase text-[10px] tracking-wider text-slate-500">
                                 Total:
                             </td>
-                            <td class="py-2 px-2.5 text-center font-mono text-xs text-slate-900">
+                            <td class="py-2.5 px-2.5 text-center font-bold text-slate-800 text-xs">
                                 <?= (float)$itemSummary['total_qty'] ?>
                             </td>
-                            <td class="py-2 px-3 text-right text-[10px] text-slate-400 font-normal">
+                            <td class="py-2.5 px-3 text-right text-[10px] text-slate-400 font-normal">
                                 Subtotal Realisasi
                             </td>
-                            <td class="py-2 px-3 text-right font-mono text-xs sm:text-sm text-blue-700 bg-blue-50/50">
+                            <td class="py-2.5 px-3 text-right font-mono text-xs sm:text-sm text-blue-700 bg-blue-50/50">
                                 <?= formatRupiah($itemSummary['grand_total']) ?>
                             </td>
-                            <td colspan="2" class="py-2 px-3 text-slate-400 text-[10px] font-normal">
+                            <td colspan="2" class="py-2.5 px-3 text-slate-400 text-[10px] font-normal">
                                 (<?= count($items) ?> item terdaftar)
                             </td>
                         </tr>

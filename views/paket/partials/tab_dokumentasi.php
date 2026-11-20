@@ -25,14 +25,14 @@
             <table class="w-full text-left text-xs" id="dokumentasiTable">
                 <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200/90 tracking-wider">
                     <tr>
-                        <th class="py-2 px-3 w-8 text-center">NO</th>
-                        <th class="py-2 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
-                        <th class="py-2 px-3 min-w-[150px]">KOMPONEN BARANG</th>
-                        <th class="py-2 px-2.5 text-center min-w-[70px]">SATUAN</th>
-                        <th class="py-2 px-2.5 text-center min-w-[60px]">JUMLAH</th>
-                        <th class="py-2 px-3 min-w-[130px]">STATUS DISTRIBUSI</th>
-                        <th class="py-2 px-3 min-w-[180px]">FOTO DOKUMENTASI</th>
-                        <th class="py-2 px-2.5 text-right w-28">AKSI</th>
+                        <th class="py-2.5 px-3 w-8 text-center">NO</th>
+                        <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
+                        <th class="py-2.5 px-3 min-w-[150px]">KOMPONEN BARANG</th>
+                        <th class="py-2.5 px-2.5 text-center min-w-[70px]">SATUAN</th>
+                        <th class="py-2.5 px-2.5 text-center min-w-[60px]">JUMLAH</th>
+                        <th class="py-2.5 px-3 min-w-[130px]">STATUS DISTRIBUSI</th>
+                        <th class="py-2.5 px-3 min-w-[180px]">FOTO DOKUMENTASI</th>
+                        <th class="py-2.5 px-2.5 text-right w-28">AKSI</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -64,34 +64,34 @@
                         ?>
                             <tr class="hover:bg-slate-50/70 transition-colors" id="row_dok_<?= $dist['id'] ?>">
                                 <!-- No -->
-                                <td class="py-1.5 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold whitespace-nowrap">
+                                <td class="py-2 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold whitespace-nowrap">
                                     <?= $no++ ?>
                                 </td>
 
                                 <!-- Tujuan Penerima -->
-                                <td class="py-1.5 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
+                                <td class="py-2 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
                                     <?= htmlspecialchars($dist['nama_tujuan']) ?>
                                 </td>
 
                                 <!-- Komponen Barang (Normal / Tidak Bold) -->
-                                <td class="py-1.5 px-3 whitespace-nowrap text-xs text-slate-700">
+                                <td class="py-2 px-3 whitespace-nowrap text-xs text-slate-700">
                                     <?= htmlspecialchars($dist['nama_komponen'] ?: '-') ?>
                                 </td>
 
                                 <!-- Satuan -->
-                                <td class="py-1.5 px-2.5 text-center whitespace-nowrap">
+                                <td class="py-2 px-2.5 text-center whitespace-nowrap">
                                     <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold text-xs">
                                         <?= htmlspecialchars($dist['satuan'] ?: 'Unit') ?>
                                     </span>
                                 </td>
 
                                 <!-- Jumlah -->
-                                <td class="py-1.5 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
+                                <td class="py-2 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
                                     <?= (float)$dist['jumlah'] ?>
                                 </td>
 
                                 <!-- Status Distribusi -->
-                                <td class="py-1.5 px-3 whitespace-nowrap">
+                                <td class="py-2 px-3 whitespace-nowrap">
                                     <?php if (!$isOrdered): ?>
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal bg-slate-100 text-slate-400 border border-slate-200/80">
                                             <ion-icon name="lock-closed-outline" class="text-xs"></ion-icon>
@@ -112,7 +112,7 @@
                                 </td>
 
                                 <!-- Foto Dokumentasi Strip -->
-                                <td class="py-1.5 px-3 whitespace-nowrap" id="cell_dok_photos_<?= $dist['id'] ?>">
+                                <td class="py-2 px-3 whitespace-nowrap" id="cell_dok_photos_<?= $dist['id'] ?>">
                                     <?php if ($photoCount === 0): ?>
                                         <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200/70">
                                             <ion-icon name="image-outline" class="text-xs"></ion-icon>
@@ -123,7 +123,7 @@
                                             <div class="flex items-center -space-x-1.5">
                                                 <?php foreach (array_slice($photos, 0, 3) as $p): ?>
                                                     <?php 
-                                                    $thumb = !empty($p['thumb_path']) ? (APP_URL . '/' . ltrim($p['thumb_path'], '/')) : (APP_URL . '/' . ltrim($p['file_path'], '/'));
+                                                     $thumb = !empty($p['thumb_path']) ? (APP_URL . '/' . ltrim($p['thumb_path'], '/')) : (APP_URL . '/' . ltrim($p['file_path'], '/'));
                                                     $full = APP_URL . '/' . ltrim($p['file_path'], '/');
                                                     ?>
                                                     <img src="<?= htmlspecialchars($thumb) ?>" 
@@ -141,7 +141,7 @@
                                 </td>
 
                                 <!-- Aksi Upload / Galeri -->
-                                <td class="py-1.5 px-2.5 text-right whitespace-nowrap">
+                                <td class="py-2 px-2.5 text-right whitespace-nowrap">
                                     <button type="button" 
                                             onclick="openModalDokumentasi(<?= (int)$dist['id'] ?>, '<?= htmlspecialchars(addslashes($dist['nama_tujuan'])) ?>', '<?= htmlspecialchars(addslashes($dist['nama_komponen'] ?: '-')) ?>', '<?= (float)$dist['jumlah'] ?> <?= htmlspecialchars(addslashes($dist['satuan'] ?: 'Unit')) ?>')"
                                             class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 rounded-lg text-xs font-semibold transition-all hover:scale-[1.02] shadow-2xs cursor-pointer group"

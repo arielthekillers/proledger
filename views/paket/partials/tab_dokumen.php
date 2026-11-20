@@ -36,12 +36,12 @@
             <table class="w-full text-left text-xs" id="bastTable">
                 <thead class="bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                     <tr>
-                        <th class="py-2 px-3 w-8 text-center">NO</th>
-                        <th class="py-2 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
-                        <th class="py-2 px-3 min-w-[180px]">ITEM KOMPONEN</th>
-                        <th class="py-2 px-2.5 text-center min-w-[70px]">TOTAL QTY</th>
-                        <th class="py-2 px-3 text-center min-w-[140px]">STATUS PENERIMAAN</th>
-                        <th class="py-2 px-3 text-right min-w-[200px]">AKSI BAST</th>
+                        <th class="py-2.5 px-3 w-8 text-center">NO</th>
+                        <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
+                        <th class="py-2.5 px-3 min-w-[180px]">ITEM KOMPONEN</th>
+                        <th class="py-2.5 px-2.5 text-center min-w-[70px]">TOTAL QTY</th>
+                        <th class="py-2.5 px-3 text-center min-w-[140px]">STATUS PENERIMAAN</th>
+                        <th class="py-2.5 px-3 text-right min-w-[200px]">AKSI BAST</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -67,27 +67,27 @@
                             ?>
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <!-- No -->
-                                <td class="py-1.5 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold whitespace-nowrap">
+                                <td class="py-2 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold whitespace-nowrap">
                                     <?= $grpNo++ ?>
                                 </td>
 
                                 <!-- Tujuan Penerima (Hanya nama sekolah / tujuan, tanpa info kepsek & alamat) -->
-                                <td class="py-1.5 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
+                                <td class="py-2 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
                                     <?= htmlspecialchars($grp['nama_tujuan']) ?>
                                 </td>
 
                                 <!-- Daftar Item Komponen -->
-                                <td class="py-1.5 px-3 whitespace-nowrap text-xs text-slate-700 max-w-xs truncate" title="<?= $itemsText ?>">
+                                <td class="py-2 px-3 whitespace-nowrap text-xs text-slate-700 max-w-xs truncate" title="<?= $itemsText ?>">
                                     <?= $itemsText ?>
                                 </td>
 
                                 <!-- Total Qty -->
-                                <td class="py-1.5 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
+                                <td class="py-2 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
                                     <?= (float)$grp['total_qty'] ?> Unit
                                 </td>
 
                                 <!-- Status Penerimaan (Semua barang harus Tiba di Gudang atau Tiba di Tujuan) -->
-                                <td class="py-1.5 px-3 text-center whitespace-nowrap">
+                                <td class="py-2 px-3 text-center whitespace-nowrap">
                                     <?php if ($grp['is_bast_ready']): ?>
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal bg-emerald-50 text-emerald-700 border border-emerald-200">
                                             <ion-icon name="checkmark-circle" class="text-xs text-emerald-600 shrink-0"></ion-icon>
@@ -103,7 +103,7 @@
                                 </td>
 
                                 <!-- Aksi BAST: Cetak & Upload hanya bisa jika semua barang tiba di gudang/tujuan -->
-                                <td class="py-1.5 px-3 text-right whitespace-nowrap">
+                                <td class="py-2 px-3 text-right whitespace-nowrap">
                                     <div class="flex items-center justify-end gap-1.5">
                                         <!-- Berkas BAST yang Sudah Terupload -->
                                         <?php if ($uploadedBast): ?>
@@ -171,13 +171,13 @@
                 <?php if (!empty($groupedDistribusi)): ?>
                     <tfoot class="bg-slate-50/90 font-bold text-slate-700 border-t-2 border-slate-200">
                         <tr>
-                            <td colspan="3" class="py-2 px-3 text-right uppercase text-[10px] tracking-wider text-slate-500">
+                            <td colspan="3" class="py-2.5 px-3 text-right uppercase text-[10px] tracking-wider text-slate-500">
                                 Ringkasan Dokumen BAST:
                             </td>
-                            <td class="py-2 px-2.5 text-center font-bold text-slate-800 text-xs whitespace-nowrap">
+                            <td class="py-2.5 px-2.5 text-center font-bold text-slate-800 text-xs whitespace-nowrap">
                                 <?= (float)($distribusiSummary['total_qty_dialokasikan'] ?? 0) ?> Unit
                             </td>
-                            <td colspan="2" class="py-2 px-3 text-slate-500 text-[10px] font-normal">
+                            <td colspan="2" class="py-2.5 px-3 text-slate-500 text-[10px] font-normal">
                                 <span class="font-bold text-amber-700"><?= count($uploadedBastByTujuan) ?></span> dari <?= count($groupedDistribusi) ?> berkas BAST telah diupload (<?= (int)(count($groupedDistribusi) - count($uploadedBastByTujuan)) ?> pending)
                             </td>
                         </tr>

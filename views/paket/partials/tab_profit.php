@@ -56,14 +56,14 @@
                 <!-- Header Dark Forest Green (#24543b) -->
                 <thead>
                     <tr class="bg-[#24543b] text-white text-[11px] font-bold uppercase tracking-wider">
-                        <th class="py-3 px-3 text-center w-10 border-b border-[#1b3f2c]">NO</th>
-                        <th class="py-3 px-3 min-w-[200px] border-b border-[#1b3f2c]">KOMPONEN BARANG</th>
-                        <th class="py-3 px-2.5 text-center min-w-[70px] border-b border-[#1b3f2c]">SATUAN</th>
-                        <th class="py-3 px-2.5 text-center min-w-[60px] border-b border-[#1b3f2c]">JUMLAH</th>
-                        <th class="py-3 px-3 text-right min-w-[130px] border-b border-[#1b3f2c]">HARGA SATUAN</th>
-                        <th class="py-3 px-3 text-right min-w-[130px] border-b border-[#1b3f2c]">#</th>
-                        <th class="py-3 px-3 text-right min-w-[130px] border-b border-[#1b3f2c]">HPP</th>
-                        <th class="py-3 px-3 text-right min-w-[140px] border-b border-[#1b3f2c]">ESTIMASI UNTUNG</th>
+                        <th class="py-2.5 px-3 text-center w-10 border-b border-[#1b3f2c]">NO</th>
+                        <th class="py-2.5 px-3 min-w-[200px] border-b border-[#1b3f2c]">KOMPONEN BARANG</th>
+                        <th class="py-2.5 px-2.5 text-center min-w-[70px] border-b border-[#1b3f2c]">SATUAN</th>
+                        <th class="py-2.5 px-2.5 text-center min-w-[60px] border-b border-[#1b3f2c]">JUMLAH</th>
+                        <th class="py-2.5 px-3 text-right min-w-[130px] border-b border-[#1b3f2c]">HARGA SATUAN</th>
+                        <th class="py-2.5 px-3 text-right min-w-[130px] border-b border-[#1b3f2c]">#</th>
+                        <th class="py-2.5 px-3 text-right min-w-[130px] border-b border-[#1b3f2c]">HPP</th>
+                        <th class="py-2.5 px-3 text-right min-w-[140px] border-b border-[#1b3f2c]">ESTIMASI UNTUNG</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -88,12 +88,12 @@
                         ?>
                             <tr class="hover:bg-slate-50/80 transition-colors">
                                 <!-- NO -->
-                                <td class="py-2.5 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold whitespace-nowrap align-middle">
+                                <td class="py-2 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold whitespace-nowrap align-middle">
                                     <?= $no++ ?>
                                 </td>
 
                                 <!-- KOMPONEN BARANG -->
-                                <td class="py-2.5 px-3 align-middle">
+                                <td class="py-2 px-3 align-middle">
                                     <div class="font-bold text-slate-800 text-xs">
                                         <?= htmlspecialchars($it['komponen']) ?>
                                     </div>
@@ -112,29 +112,29 @@
                                 </td>
 
                                 <!-- SATUAN -->
-                                <td class="py-2.5 px-2.5 text-center whitespace-nowrap align-middle">
+                                <td class="py-2 px-2.5 text-center whitespace-nowrap align-middle">
                                     <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold text-xs">
                                         <?= htmlspecialchars($it['satuan'] ?: 'Unit') ?>
                                     </span>
                                 </td>
 
                                 <!-- JUMLAH -->
-                                <td class="py-2.5 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs align-middle">
+                                <td class="py-2 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs align-middle">
                                     <?= (float)$qty ?>
                                 </td>
 
                                 <!-- HARGA SATUAN -->
-                                <td class="py-2.5 px-3 text-right whitespace-nowrap font-mono text-slate-700 align-middle">
+                                <td class="py-2 px-3 text-right whitespace-nowrap font-mono text-slate-700 align-middle">
                                     <?= formatRupiah($hargaSatuan) ?>
                                 </td>
 
                                 <!-- # (TOTAL KONTRAK ITEM) -->
-                                <td class="py-2.5 px-3 text-right whitespace-nowrap font-mono font-bold text-slate-800 align-middle">
+                                <td class="py-2 px-3 text-right whitespace-nowrap font-mono font-bold text-slate-800 align-middle">
                                     <?= formatRupiah($totalKontrak) ?>
                                 </td>
 
                                 <!-- HPP (MODAL BELI BARANG) -->
-                                <td class="py-2.5 px-3 text-right whitespace-nowrap font-mono font-bold align-middle">
+                                <td class="py-2 px-3 text-right whitespace-nowrap font-mono font-bold align-middle">
                                     <?php if ($hpp > 0): ?>
                                         <span class="text-indigo-700"><?= formatRupiah($hpp) ?></span>
                                     <?php else: ?>
@@ -143,7 +143,7 @@
                                 </td>
 
                                 <!-- ESTIMASI UNTUNG -->
-                                <td class="py-2.5 px-3 text-right whitespace-nowrap font-mono font-extrabold align-middle">
+                                <td class="py-2 px-3 text-right whitespace-nowrap font-mono font-extrabold align-middle">
                                     <?php if ($untung > 0): ?>
                                         <span class="text-emerald-700">+<?= formatRupiah($untung) ?></span>
                                     <?php elseif ($untung < 0): ?>
@@ -157,7 +157,7 @@
                             <!-- Sub-Row Rincian Distribusi (Collapsed by Default) -->
                             <?php if ($hasDists): ?>
                                 <tr id="detail_profit_<?= $it['id'] ?>" class="hidden bg-slate-50/70 border-y border-slate-100">
-                                    <td colspan="8" class="py-2.5 px-4 pl-12">
+                                    <td colspan="8" class="py-2 px-4 pl-12">
                                         <div class="text-[11px] font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
                                             <ion-icon name="storefront-outline" class="text-xs text-indigo-600"></ion-icon>
                                             <span>Rincian Pembelian Toko & Alokasi Tujuan:</span>
@@ -182,27 +182,27 @@
                                                         $dSubtotal = $dQty * $dHppSatuan;
                                                     ?>
                                                         <tr>
-                                                            <td class="py-1.5 px-3 font-medium text-slate-800">
+                                                            <td class="py-2 px-3 font-medium text-slate-800">
                                                                 <?= htmlspecialchars($d['nama_tujuan']) ?>
                                                             </td>
-                                                            <td class="py-1.5 px-3 text-slate-600">
+                                                            <td class="py-2 px-3 text-slate-600">
                                                                 <?= !empty($d['nama_barang']) ? htmlspecialchars($d['nama_barang']) : '<span class="text-slate-400 italic">Sesuai komponen</span>' ?>
                                                             </td>
-                                                            <td class="py-1.5 px-2.5 text-center">
+                                                            <td class="py-2 px-2.5 text-center">
                                                                 <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-xs">
                                                                     <?= htmlspecialchars($it['satuan'] ?: 'Unit') ?>
                                                                 </span>
                                                             </td>
-                                                            <td class="py-1.5 px-2.5 text-center font-bold text-slate-700 text-xs">
+                                                            <td class="py-2 px-2.5 text-center font-bold text-slate-700 text-xs">
                                                                 <?= $dQty ?>
                                                             </td>
-                                                            <td class="py-1.5 px-3 text-right font-mono text-slate-600">
+                                                            <td class="py-2 px-3 text-right font-mono text-slate-600">
                                                                 <?= $dHppSatuan > 0 ? formatRupiah($dHppSatuan) : '<span class="text-slate-400 italic">Belum diinput</span>' ?>
                                                             </td>
-                                                            <td class="py-1.5 px-3 text-right font-mono font-bold text-indigo-700">
+                                                            <td class="py-2 px-3 text-right font-mono font-bold text-indigo-700">
                                                                 <?= $dSubtotal > 0 ? formatRupiah($dSubtotal) : '-' ?>
                                                             </td>
-                                                            <td class="py-1.5 px-3 text-center">
+                                                            <td class="py-2 px-3 text-center">
                                                                 <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium <?= (($d['status_barang'] ?? '') === 'Sudah Dipesan') ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500' ?>">
                                                                     <?= htmlspecialchars($d['status_barang'] ?? 'Belum Dipesan') ?>
                                                                 </span>
