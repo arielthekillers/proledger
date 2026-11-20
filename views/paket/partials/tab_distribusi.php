@@ -62,17 +62,13 @@
                                 </td>
 
                                 <!-- Tujuan Penerima -->
-                                <td class="py-1.5 px-3">
-                                    <span class="font-bold text-slate-800 text-xs block">
-                                        <?= htmlspecialchars($dist['nama_tujuan']) ?>
-                                    </span>
+                                <td class="py-1.5 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
+                                    <?= htmlspecialchars($dist['nama_tujuan']) ?>
                                 </td>
 
-                                <!-- Komponen Barang -->
-                                <td class="py-1.5 px-3">
-                                    <span class="font-semibold text-slate-800 text-xs block">
-                                        <?= htmlspecialchars($dist['nama_komponen'] ?: '-') ?>
-                                    </span>
+                                <!-- Komponen Barang (Normal / Tidak Bold) -->
+                                <td class="py-1.5 px-3 whitespace-nowrap text-xs text-slate-700">
+                                    <?= htmlspecialchars($dist['nama_komponen'] ?: '-') ?>
                                 </td>
 
                                 <!-- Satuan & Jumlah -->
@@ -93,19 +89,19 @@
                                     <?php if ($role === 'admin' || $role === 'user'): ?>
                                         <button type="button" 
                                                 onclick='openModalUpdateStatusBarang(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all hover:scale-[1.02] shadow-2xs cursor-pointer group <?= $isOrdered ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200' ?>"
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal transition-all hover:scale-[1.02] shadow-2xs cursor-pointer group <?= $isOrdered ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200' ?>"
                                                 title="Klik untuk ubah status barang & data pemesanan">
                                             <?php if ($isOrdered): ?>
-                                                <ion-icon name="bag-check-outline" class="text-sm shrink-0 text-emerald-600"></ion-icon>
+                                                <ion-icon name="bag-check-outline" class="text-xs shrink-0 text-emerald-600"></ion-icon>
                                                 <span>Sudah dipesan</span>
                                             <?php else: ?>
-                                                <ion-icon name="time-outline" class="text-sm shrink-0 text-slate-500"></ion-icon>
+                                                <ion-icon name="time-outline" class="text-xs shrink-0 text-slate-500"></ion-icon>
                                                 <span>Belum Dipesan</span>
                                             <?php endif; ?>
                                             <ion-icon name="create-outline" class="text-[10px] opacity-40 group-hover:opacity-100 transition-opacity ml-0.5"></ion-icon>
                                         </button>
                                     <?php else: ?>
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold <?= $isOrdered ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' ?>">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal <?= $isOrdered ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' ?>">
                                             <span><?= $isOrdered ? 'Sudah dipesan' : 'Belum Dipesan' ?></span>
                                         </span>
                                     <?php endif; ?>
@@ -115,7 +111,7 @@
                                 <td class="py-1.5 px-3 whitespace-nowrap">
                                     <?php if (!$isOrdered): ?>
                                         <!-- Locked / Disabled jika Belum Dipesan -->
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200/80 cursor-not-allowed select-none opacity-80"
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal bg-slate-100 text-slate-400 border border-slate-200/80 cursor-not-allowed select-none opacity-80"
                                               title="Pesan barang terlebih dahulu untuk mengubah status distribusi">
                                             <ion-icon name="lock-closed-outline" class="text-xs"></ion-icon>
                                             <span>Belum Dipesan</span>
@@ -127,25 +123,25 @@
                                         <?php if ($role === 'admin' || $role === 'user'): ?>
                                             <button type="button" 
                                                     onclick='openModalUpdateStatusDistribusi(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all hover:scale-[1.02] shadow-2xs cursor-pointer group <?= ($sDist === 'Tiba di Tujuan') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' : (($sDist === 'Tiba di Gudang') ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100' : (($sDist === 'Tiba dirumah/kantor' || $sDist === 'Tiba di Rumah/Kantor') ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')) ?>"
+                                                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal transition-all hover:scale-[1.02] shadow-2xs cursor-pointer group <?= ($sDist === 'Tiba di Tujuan') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' : (($sDist === 'Tiba di Gudang') ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100' : (($sDist === 'Tiba dirumah/kantor' || $sDist === 'Tiba di Rumah/Kantor') ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')) ?>"
                                                     title="Klik untuk ubah status distribusi">
                                                 <?php if ($sDist === 'Tiba di Tujuan'): ?>
-                                                    <ion-icon name="checkmark-done-circle" class="text-sm text-emerald-600 shrink-0"></ion-icon>
+                                                    <ion-icon name="checkmark-done-circle" class="text-xs text-emerald-600 shrink-0"></ion-icon>
                                                     <span>Tiba di Tujuan</span>
                                                 <?php elseif ($sDist === 'Tiba di Gudang'): ?>
-                                                    <ion-icon name="business-outline" class="text-sm shrink-0 text-amber-600"></ion-icon>
+                                                    <ion-icon name="business-outline" class="text-xs shrink-0 text-amber-600"></ion-icon>
                                                     <span>Tiba di Gudang</span>
                                                 <?php elseif ($sDist === 'Tiba dirumah/kantor' || $sDist === 'Tiba di Rumah/Kantor'): ?>
-                                                    <ion-icon name="home-outline" class="text-sm shrink-0 text-blue-600"></ion-icon>
+                                                    <ion-icon name="home-outline" class="text-xs shrink-0 text-blue-600"></ion-icon>
                                                     <span>Tiba dirumah/kantor</span>
                                                 <?php else: ?>
-                                                    <ion-icon name="paper-plane-outline" class="text-sm shrink-0 text-sky-600"></ion-icon>
+                                                    <ion-icon name="paper-plane-outline" class="text-xs shrink-0 text-sky-600"></ion-icon>
                                                     <span>Pilih Status</span>
                                                 <?php endif; ?>
                                                 <ion-icon name="create-outline" class="text-[10px] opacity-40 group-hover:opacity-100 transition-opacity ml-0.5"></ion-icon>
                                             </button>
                                         <?php else: ?>
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold <?= ($sDist === 'Tiba di Tujuan') ? 'bg-emerald-50 text-emerald-700' : (($sDist === 'Tiba di Gudang') ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700') ?>">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal <?= ($sDist === 'Tiba di Tujuan') ? 'bg-emerald-50 text-emerald-700' : (($sDist === 'Tiba di Gudang') ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700') ?>">
                                                 <span><?= htmlspecialchars($sDist ?: 'Dalam Pengiriman') ?></span>
                                             </span>
                                         <?php endif; ?>
