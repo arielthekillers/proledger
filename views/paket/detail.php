@@ -61,64 +61,58 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
 <!-- ========================================== -->
 <!-- 1. PAGE HEADER                             -->
 <!-- ========================================== -->
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
-    <div>
-        <div class="flex items-center gap-2 text-slate-500 mb-1">
-            <ion-icon name="cube-outline"></ion-icon>
-            <span class="text-xs font-bold uppercase tracking-wider">Detail Paket Kegiatan</span>
-            <span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-mono font-bold text-xs tracking-wider">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+    <div class="min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-lg md:text-xl font-bold text-slate-800 leading-snug">
+                <?= htmlspecialchars($paket['nama_paket']) ?>
+            </h1>
+            <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/80 font-mono font-bold text-[11px] tracking-wide shrink-0">
                 #<?= htmlspecialchars($paket['kode_paket'] ?: $paket['id']) ?>
             </span>
         </div>
-        <h1 class="text-2xl md:text-3xl font-bold text-slate-800"><?= htmlspecialchars($paket['nama_paket']) ?></h1>
-        <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+        <div class="flex items-center gap-2 mt-1 text-xs text-slate-500 flex-wrap">
             <?php if (!empty($paket['perusahaan'])): ?>
-                <a href="<?= APP_URL ?>/perusahaan/detail/<?= $paket['perusahaan_id'] ?>" class="text-slate-500 font-medium inline-flex items-center gap-1.5 hover:text-blue-600 transition-colors text-xs">
-                    <ion-icon name="business-outline"></ion-icon>
-                    <?= htmlspecialchars($paket['perusahaan']) ?>
-                    <ion-icon name="open-outline" class="text-[10px]"></ion-icon>
+                <a href="<?= APP_URL ?>/perusahaan/detail/<?= $paket['perusahaan_id'] ?>" class="text-slate-600 font-medium inline-flex items-center gap-1 hover:text-blue-600 transition-colors">
+                    <ion-icon name="business-outline" class="text-slate-400 text-xs"></ion-icon>
+                    <span><?= htmlspecialchars($paket['perusahaan']) ?></span>
                 </a>
             <?php endif; ?>
 
             <?php if (!empty($paket['nama_group'])): ?>
                 <span class="text-slate-300">&bull;</span>
-                <a href="<?= APP_URL ?>/group/detail/<?= $paket['group_id'] ?>" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors">
-                    <ion-icon name="folder-outline"></ion-icon>
+                <a href="<?= APP_URL ?>/group/detail/<?= $paket['group_id'] ?>" class="text-slate-600 hover:text-indigo-600 inline-flex items-center gap-1 transition-colors">
+                    <ion-icon name="folder-outline" class="text-slate-400 text-xs"></ion-icon>
                     <span>Group: <?= htmlspecialchars($paket['nama_group']) ?></span>
                 </a>
-            <?php else: ?>
-                <span class="text-slate-300">&bull;</span>
-                <span class="text-xs text-slate-400 italic">Paket Mandiri (Tanpa Group)</span>
             <?php endif; ?>
 
             <?php if (!empty($paket['nomor_sp'])): ?>
                 <span class="text-slate-300">&bull;</span>
-                <span class="text-xs text-slate-600 font-mono inline-flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-md" title="Nomor Surat Pesanan / SPK">
-                    <ion-icon name="document-text-outline" class="text-slate-400"></ion-icon>
+                <span class="text-slate-500 font-mono text-[11px] inline-flex items-center gap-1" title="Nomor Surat Pesanan / SPK">
                     <span>No. SP: <?= htmlspecialchars($paket['nomor_sp']) ?></span>
                 </span>
             <?php endif; ?>
 
             <?php if (!empty($paket['kab_kota'])): ?>
                 <span class="text-slate-300">&bull;</span>
-                <span class="text-xs text-indigo-700 font-semibold inline-flex items-center gap-1 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full" title="Wilayah Kota / Kabupaten">
-                    <ion-icon name="location-outline" class="text-indigo-500"></ion-icon>
+                <span class="text-slate-500 inline-flex items-center gap-1">
+                    <ion-icon name="location-outline" class="text-slate-400 text-xs"></ion-icon>
                     <span><?= htmlspecialchars($paket['kab_kota']) ?></span>
                 </span>
             <?php endif; ?>
         </div>
     </div>
     
-    <div class="flex items-center gap-2.5">
-        <a href="<?= $backUrl ?>" class="px-3.5 py-2 bg-white border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors shadow-2xs flex items-center gap-1.5 text-xs">
+    <div class="flex items-center gap-2 shrink-0">
+        <a href="<?= $backUrl ?>" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors shadow-2xs flex items-center gap-1.5 text-xs">
             <ion-icon name="arrow-back-outline"></ion-icon>
             <span><?= $backLabel ?></span>
         </a>
 
         <?php if ($role === 'admin' || $role === 'user'): ?>
-            <!-- Tombol Edit Paket Pop Up -->
             <button type="button" onclick="openDetailEditPaketModal()" 
-                    class="px-4 py-2 bg-slate-800 text-white font-semibold rounded-xl hover:bg-slate-900 transition-all shadow-md shadow-slate-800/20 flex items-center gap-2 text-xs">
+                    class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl transition-all shadow-xs flex items-center gap-1.5 text-xs">
                 <ion-icon name="create-outline" class="text-sm"></ion-icon>
                 <span>Edit Paket</span>
             </button>
