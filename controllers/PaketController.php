@@ -283,6 +283,56 @@ class PaketController {
         }
         unset($it);
         
+        $groupedDistribusi = $this->distribusiModel->getGroupedByTujuan($paket['id']);
+        $dokumentasiMap = $this->dokumentasiModel->getGroupedByDistribusi($paket['id']);
+        $totalDokumentasiFoto = $this->dokumentasiModel->countByPaketId($paket['id']);
+
+        // Progress Metrics untuk Badge Tab (Format: Selesai / Total)
+        // 1. Item: Item yang kuantitasnya sudah 100% dialokasikan
+        $totalItems = count($items);
+        $itemsDone = 0;
+        foreach ($items as $it) {
+            if (!empty($it['is_fully_allocated'])) {
+                $itemsDone++;
+            }
+        }
+
+        // 2. Distribusi: Alokasi yang status distribusinya sudah tiba di tujuan
+        $totalDist = count($distribusiList);
+        $distDone = 0;
+        foreach ($distribusiList as $dist) {
+            if (($dist['status_distribusi'] ?? '') === 'Tiba di Tujuan') {
+                $distDone++;
+            }
+        }
+
+        // 3. Dokumentasi: Alokasi tujuan yang sudah memiliki minimal 1 foto dokumentasi
+        $dokDone = 0;
+        foreach ($distribusiList as $dist) {
+            if (!empty($dokumentasiMap[$dist['id']])) {
+                $dokDone++;
+            }
+        }
+
+        // 4. BAST: Titik sekolah penerima yang berkas BAST-nya sudah diupload
+        $totalBast = count($groupedDistribusi);
+        $bastDone = 0;
+        foreach ($groupedDistribusi as $tujuanKey => $grpVal) {
+            foreach ($dokumenList as $doc) {
+                if (stripos($doc['nama_dokumen'], $tujuanKey) !== false || stripos($doc['nama_file_asli'], $tujuanKey) !== false) {
+                    $bastDone++;
+                    break;
+                }
+            }
+        }
+
+        $tabProgress = [
+            'items'       => ['done' => $itemsDone, 'total' => $totalItems],
+            'distribusi'  => ['done' => $distDone, 'total' => $totalDist],
+            'dokumentasi' => ['done' => $dokDone, 'total' => $totalDist],
+            'dokumen'     => ['done' => $bastDone, 'total' => $totalBast]
+        ];
+        
         $data = [
             'title' => $paket['nama_paket'],
             'active' => 'paket',
@@ -293,9 +343,10 @@ class PaketController {
             'itemSummary' => $itemSummary,
             'distribusiList' => $distribusiList,
             'distribusiSummary' => $distribusiSummary,
-            'groupedDistribusi' => $this->distribusiModel->getGroupedByTujuan($paket['id']),
-            'dokumentasiMap' => $this->dokumentasiModel->getGroupedByDistribusi($paket['id']),
-            'totalDokumentasiFoto' => $this->dokumentasiModel->countByPaketId($paket['id']),
+            'groupedDistribusi' => $groupedDistribusi,
+            'dokumentasiMap' => $dokumentasiMap,
+            'totalDokumentasiFoto' => $totalDokumentasiFoto,
+            'tabProgress' => $tabProgress,
             'lokasiList' => $lokasiList,
             'kabupatenList' => $kabupatenList,
             'dokumenList' => $dokumenList,

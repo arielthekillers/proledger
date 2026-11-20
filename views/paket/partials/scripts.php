@@ -1584,21 +1584,36 @@ function refreshDokTableRow(distId) {
  * Hitung dan perbarui angka badge dokumentasi di header tab
  */
 function updateDokumentasiTotalBadge() {
-    let total = 0;
-    const badges = document.querySelectorAll('#dokumentasiTable [id^="cell_dok_photos_"] span.bg-teal-50');
-    badges.forEach(b => {
-        const num = parseInt(b.textContent) || 0;
-        total += num;
+    let totalPhotos = 0;
+    let documentedRows = 0;
+    const rows = document.querySelectorAll('#dokumentasiTable tbody tr[id^="row_dok_"]');
+    const totalRows = rows.length;
+
+    rows.forEach(r => {
+        const badge = r.querySelector('[id^="cell_dok_photos_"] span.bg-teal-50');
+        if (badge) {
+            const num = parseInt(badge.textContent) || 0;
+            totalPhotos += num;
+            if (num > 0) documentedRows++;
+        }
     });
 
     const headerBadge = document.getElementById('headerTotalFotoBadge');
-    if (headerBadge) headerBadge.textContent = total;
+    if (headerBadge) headerBadge.textContent = totalPhotos;
 
     const tabBadge = document.getElementById('tabBadge_dokumentasiCount');
-    if (tabBadge) tabBadge.textContent = total;
+    if (tabBadge) {
+        tabBadge.textContent = documentedRows + '/' + totalRows;
+        tabBadge.title = documentedRows + ' dari ' + totalRows + ' alokasi telah memiliki foto dokumentasi';
+        if (totalRows > 0 && documentedRows >= totalRows) {
+            tabBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700';
+        } else {
+            tabBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-800';
+        }
+    }
 
     const footerTotal = document.getElementById('footerTotalFotoCount');
-    if (footerTotal) footerTotal.textContent = total;
+    if (footerTotal) footerTotal.textContent = totalPhotos;
 }
 
 /**

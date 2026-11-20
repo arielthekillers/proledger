@@ -156,42 +156,50 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
         </button>
 
         <!-- Tab 2: Item / Spesifikasi -->
+        <?php $itP = $tabProgress['items'] ?? ['done' => 0, 'total' => count($items)]; ?>
+        <?php $itDone = ($itP['total'] > 0 && $itP['done'] >= $itP['total']); ?>
         <button type="button" onclick="switchDetailTab('items')" id="tabBtn_items"
                 class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'items') ? 'font-bold border-b-2 border-blue-600 text-blue-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
             <ion-icon name="list-outline" class="text-base"></ion-icon>
             <span>Item / Spesifikasi</span>
-            <span id="tabBadge_itemsCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= !empty($items) ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600' ?>">
-                <?= count($items) ?>
+            <span id="tabBadge_itemsCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= $itDone ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700' ?>" title="<?= $itP['done'] ?> dari <?= $itP['total'] ?> item telah lengkap dialokasikan">
+                <?= $itP['done'] ?>/<?= $itP['total'] ?>
             </span>
         </button>
 
         <!-- Tab 3: Distribusi -->
+        <?php $distP = $tabProgress['distribusi'] ?? ['done' => 0, 'total' => count($distribusiList)]; ?>
+        <?php $distDone = ($distP['total'] > 0 && $distP['done'] >= $distP['total']); ?>
         <button type="button" onclick="switchDetailTab('distribusi')" id="tabBtn_distribusi"
                 class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'distribusi') ? 'font-bold border-b-2 border-blue-600 text-blue-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
             <ion-icon name="navigate-outline" class="text-base"></ion-icon>
             <span>Distribusi</span>
-            <span id="tabBadge_distribusiCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= !empty($distribusiList) ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600' ?>">
-                <?= count($distribusiList) ?>
+            <span id="tabBadge_distribusiCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= $distDone ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700' ?>" title="<?= $distP['done'] ?> dari <?= $distP['total'] ?> alokasi telah tiba di tujuan">
+                <?= $distP['done'] ?>/<?= $distP['total'] ?>
             </span>
         </button>
 
         <!-- Tab 4: Dokumentasi -->
+        <?php $dokP = $tabProgress['dokumentasi'] ?? ['done' => 0, 'total' => count($distribusiList)]; ?>
+        <?php $dokDone = ($dokP['total'] > 0 && $dokP['done'] >= $dokP['total']); ?>
         <button type="button" onclick="switchDetailTab('dokumentasi')" id="tabBtn_dokumentasi"
                 class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'dokumentasi') ? 'font-bold border-b-2 border-blue-600 text-blue-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
             <ion-icon name="camera-outline" class="text-base"></ion-icon>
             <span>Dokumentasi</span>
-            <span id="tabBadge_dokumentasiCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= !empty($totalDokumentasiFoto) ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-600' ?>">
-                <?= (int)($totalDokumentasiFoto ?? 0) ?>
+            <span id="tabBadge_dokumentasiCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= $dokDone ? 'bg-emerald-100 text-emerald-700' : 'bg-teal-100 text-teal-800' ?>" title="<?= $dokP['done'] ?> dari <?= $dokP['total'] ?> alokasi telah memiliki foto dokumentasi">
+                <?= $dokP['done'] ?>/<?= $dokP['total'] ?>
             </span>
         </button>
 
         <!-- Tab 5: Dokumen BAST -->
+        <?php $bastP = $tabProgress['dokumen'] ?? ['done' => 0, 'total' => count($groupedDistribusi ?? [])]; ?>
+        <?php $bastDone = ($bastP['total'] > 0 && $bastP['done'] >= $bastP['total']); ?>
         <button type="button" onclick="switchDetailTab('dokumen')" id="tabBtn_dokumen"
                 class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'dokumen') ? 'font-bold border-b-2 border-blue-600 text-blue-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
             <ion-icon name="document-text-outline" class="text-base"></ion-icon>
             <span>Dokumen BAST</span>
-            <span id="tabBadge_dokumenCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= !empty($groupedDistribusi) ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600' ?>">
-                <?= count($groupedDistribusi ?? []) ?>
+            <span id="tabBadge_dokumenCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= $bastDone ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800' ?>" title="<?= $bastP['done'] ?> dari <?= $bastP['total'] ?> berkas BAST telah diupload">
+                <?= $bastP['done'] ?>/<?= $bastP['total'] ?>
             </span>
         </button>
     </nav>
