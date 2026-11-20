@@ -33,7 +33,6 @@
                         <th class="py-2.5 px-3 min-w-[180px]">TUJUAN PENERIMA</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[70px]">SATUAN</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[60px]">JUMLAH</th>
-                        <th class="py-2.5 px-3 min-w-[160px]">KONTAK / PIC LOKASI</th>
                         <th class="py-2.5 px-3 min-w-[160px]">STATUS DISTRIBUSI</th>
                         <th class="py-2.5 px-2.5 text-right w-12">AKSI</th>
                     </tr>
@@ -41,7 +40,7 @@
                 <tbody class="divide-y divide-slate-100">
                     <?php if (empty($distribusiList)): ?>
                         <tr>
-                            <td colspan="8" class="py-8 text-center text-slate-400">
+                            <td colspan="7" class="py-8 text-center text-slate-400">
                                 <div class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl text-slate-300">
                                     <ion-icon name="navigate-outline"></ion-icon>
                                 </div>
@@ -62,8 +61,6 @@
                             $isOrdered = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
                             $sDist = $dist['status_distribusi'] ?? '';
                             if ($sDist === 'Tiba di Tujuan') $totalTibaTujuan++;
-                            $picName = $dist['nama_pic'] ?: ($dist['master_pic'] ?? '');
-                            $kontak = $dist['no_kontak'] ?: ($dist['master_kontak'] ?? '');
                         ?>
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <!-- No -->
@@ -71,17 +68,14 @@
                                     <?= $no++ ?>
                                 </td>
 
-                                <!-- Komponen Barang -->
+                                <!-- Komponen -->
                                 <td class="py-2 px-3 whitespace-nowrap text-xs font-bold text-slate-800">
                                     <?= htmlspecialchars($dist['nama_komponen'] ?: '-') ?>
                                 </td>
 
                                 <!-- Tujuan Penerima -->
-                                <td class="py-2 px-3 whitespace-nowrap text-xs text-slate-700">
-                                    <div class="font-semibold text-slate-800"><?= htmlspecialchars($dist['nama_tujuan']) ?></div>
-                                    <?php if (!empty($dist['kab_kota'])): ?>
-                                        <div class="text-[10px] text-slate-400 font-normal"><?= htmlspecialchars($dist['kab_kota']) ?></div>
-                                    <?php endif; ?>
+                                <td class="py-2 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
+                                    <?= htmlspecialchars($dist['nama_tujuan']) ?>
                                 </td>
 
                                 <!-- Satuan -->
@@ -94,18 +88,6 @@
                                 <!-- Jumlah -->
                                 <td class="py-2 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
                                     <?= (float)$dist['jumlah'] ?>
-                                </td>
-
-                                <!-- Kontak / PIC Lokasi -->
-                                <td class="py-2 px-3 whitespace-nowrap text-xs">
-                                    <?php if (!empty($picName)): ?>
-                                        <div class="font-medium text-slate-800"><?= htmlspecialchars($picName) ?></div>
-                                        <?php if (!empty($kontak)): ?>
-                                            <div class="text-[10px] text-slate-400 font-mono"><?= htmlspecialchars($kontak) ?></div>
-                                        <?php endif; ?>
-                                    <?php else: ?>
-                                        <span class="text-slate-400 italic text-[11px]">-</span>
-                                    <?php endif; ?>
                                 </td>
 
                                 <!-- STATUS DISTRIBUSI (Hanya bisa diubah jika Sudah Dipesan) -->
@@ -173,13 +155,10 @@
                     <tfoot class="bg-slate-50/90 font-bold text-slate-700 border-t-2 border-slate-200 text-xs">
                         <tr>
                             <td colspan="4" class="py-2.5 px-3 text-right uppercase text-[10px] tracking-wider text-slate-500">
-                                Total:
+                                Total (<?= (int)($distribusiSummary['total_tujuan'] ?? 0) ?> Titik Penerima):
                             </td>
                             <td class="py-2.5 px-2.5 text-center font-bold text-slate-800 text-xs whitespace-nowrap">
                                 <?= (float)($distribusiSummary['total_qty_dialokasikan'] ?? 0) ?>
-                            </td>
-                            <td class="py-2.5 px-3 text-slate-400 text-[10px] font-normal">
-                                (Tersebar ke <?= (int)($distribusiSummary['total_tujuan'] ?? 0) ?> titik penerima)
                             </td>
                             <td colspan="2" class="py-2.5 px-3 text-right whitespace-nowrap">
                                 <span class="px-2 py-0.5 rounded text-[10px] font-bold <?= ($totalTibaTujuan >= count($distribusiList)) ? 'bg-emerald-100 text-emerald-800' : 'bg-indigo-100 text-indigo-800' ?>">

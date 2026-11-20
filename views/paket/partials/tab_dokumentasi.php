@@ -74,11 +74,8 @@
                                 </td>
 
                                 <!-- Tujuan Penerima -->
-                                <td class="py-2 px-3 whitespace-nowrap text-xs text-slate-700">
-                                    <div class="font-semibold text-slate-800"><?= htmlspecialchars($dist['nama_tujuan']) ?></div>
-                                    <?php if (!empty($dist['kab_kota'])): ?>
-                                        <div class="text-[10px] text-slate-400 font-normal"><?= htmlspecialchars($dist['kab_kota']) ?></div>
-                                    <?php endif; ?>
+                                <td class="py-2 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
+                                    <?= htmlspecialchars($dist['nama_tujuan']) ?>
                                 </td>
 
                                 <!-- Satuan -->
