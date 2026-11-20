@@ -307,7 +307,16 @@ class PaketDistribusi {
             $grouped[$key]['total_qty'] += (float)$row['jumlah'];
             $grouped[$key]['status_count']['total']++;
 
-            $isReceived = (($row['status_distribusi'] ?? '') === 'Tiba di Tujuan' || ($row['status_penerimaan'] ?? '') === 'Diterima di Tujuan' || ($row['status'] ?? '') === 'Diterima');
+            $sDist = trim($row['status_distribusi'] ?? '');
+            $sBarang = trim($row['status_barang'] ?? '');
+            // Logic BAST: Semua barang di 1 sekolah yang sama harus sudah Tiba di Gudang atau Tiba di Tujuan
+            $isReceived = ($sBarang === 'Sudah Dipesan') && in_array($sDist, [
+                'Tiba di Tujuan',
+                'Tiba di Gudang',
+                'Tiba di Gudang Transit',
+                'gudang'
+            ]);
+
             if ($isReceived) {
                 $grouped[$key]['status_count']['diterima']++;
             } else {

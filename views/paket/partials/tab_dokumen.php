@@ -25,32 +25,23 @@
                 </h3>
                 <p class="text-xs text-slate-400 mt-0.5">Surat BAST diterbitkan 1 berkas per sekolah/tujuan gabungan dari semua item komponen yang diterima di lokasi.</p>
             </div>
-            <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200/80">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200/80">
                     Total: <?= count($groupedDistribusi ?? []) ?> Titik Penerima
                 </span>
-                <?php if (!empty($groupedDistribusi)): ?>
-                    <a href="<?= APP_URL ?>/paket/cetakBast/<?= $paket['kode_paket'] ?: $paket['id'] ?>?all=1" 
-                       target="_blank"
-                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all hover:scale-[1.01]"
-                       title="Cetak BAST untuk seluruh titik penerima sekaligus dalam satu dokumen">
-                        <ion-icon name="print-outline" class="text-sm"></ion-icon>
-                        <span>Cetak Semua BAST</span>
-                    </a>
-                <?php endif; ?>
             </div>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs" id="bastTable">
-                <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200/90 tracking-wider">
+                <thead class="bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                     <tr>
                         <th class="py-2 px-3 w-8 text-center">NO</th>
-                        <th class="py-2 px-3 min-w-[180px]">LOKASI TUJUAN & PENANGGUNG JAWAB</th>
-                        <th class="py-2 px-3 min-w-[220px]">ITEM KOMPONEN DIALOKASIKAN</th>
+                        <th class="py-2 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
+                        <th class="py-2 px-3 min-w-[180px]">ITEM KOMPONEN</th>
                         <th class="py-2 px-2.5 text-center min-w-[70px]">TOTAL QTY</th>
                         <th class="py-2 px-3 text-center min-w-[140px]">STATUS PENERIMAAN</th>
-                        <th class="py-2 px-3 text-right min-w-[210px]">AKSI BAST</th>
+                        <th class="py-2 px-3 text-right min-w-[200px]">AKSI BAST</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -66,114 +57,110 @@
                         </tr>
                     <?php else: ?>
                         <?php $grpNo = 1; foreach ($groupedDistribusi as $grp): ?>
-                            <?php $uploadedBast = $uploadedBastByTujuan[$grp['nama_tujuan']] ?? null; ?>
+                            <?php 
+                            $uploadedBast = $uploadedBastByTujuan[$grp['nama_tujuan']] ?? null; 
+                            $itemStrs = [];
+                            foreach ($grp['items'] as $gItem) {
+                                $itemStrs[] = htmlspecialchars($gItem['nama_komponen']) . ' (' . (float)$gItem['jumlah'] . ' ' . htmlspecialchars($gItem['satuan']) . ')';
+                            }
+                            $itemsText = implode(', ', $itemStrs);
+                            ?>
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <!-- No -->
-                                <td class="py-2 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold">
+                                <td class="py-1.5 px-3 text-center font-mono text-[11px] text-slate-400 font-semibold whitespace-nowrap">
                                     <?= $grpNo++ ?>
                                 </td>
 
-                                <!-- Lokasi Tujuan & PIC -->
-                                <td class="py-2 px-3">
-                                    <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                                        <span><?= htmlspecialchars($grp['nama_tujuan']) ?></span>
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
-                                            <?= htmlspecialchars($grp['kategori'] ?: 'Sekolah') ?>
-                                        </span>
-                                    </div>
-                                    <div class="text-[11px] text-slate-600 mt-0.5">
-                                        <span class="font-medium text-slate-700"><?= htmlspecialchars($grp['nama_pic'] ?: '-') ?></span>
-                                        <span class="text-slate-400 text-[10px]">(<?= htmlspecialchars($grp['jabatan_pic'] ?: 'Kepala Sekolah') ?>)</span>
-                                    </div>
-                                    <?php if (!empty($grp['alamat']) || !empty($grp['kab_kota'])): ?>
-                                        <div class="text-[10px] text-slate-400 truncate max-w-sm mt-0.5" title="<?= htmlspecialchars($grp['alamat'] ?: $grp['kab_kota']) ?>">
-                                            <?= htmlspecialchars($grp['alamat'] ?: $grp['kab_kota']) ?>
-                                        </div>
-                                    <?php endif; ?>
+                                <!-- Tujuan Penerima (Hanya nama sekolah / tujuan, tanpa info kepsek & alamat) -->
+                                <td class="py-1.5 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
+                                    <?= htmlspecialchars($grp['nama_tujuan']) ?>
                                 </td>
 
                                 <!-- Daftar Item Komponen -->
-                                <td class="py-2 px-3">
-                                    <div class="space-y-1">
-                                        <?php foreach ($grp['items'] as $gItem): ?>
-                                            <div class="flex items-center justify-between gap-2 text-[11px] bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                                                <span class="font-medium text-slate-700 truncate"><?= htmlspecialchars($gItem['nama_komponen']) ?></span>
-                                                <span class="font-mono font-bold text-slate-800 shrink-0"><?= (float)$gItem['jumlah'] ?> <?= htmlspecialchars($gItem['satuan']) ?></span>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
+                                <td class="py-1.5 px-3 whitespace-nowrap text-xs text-slate-700 max-w-xs truncate" title="<?= $itemsText ?>">
+                                    <?= $itemsText ?>
                                 </td>
 
                                 <!-- Total Qty -->
-                                <td class="py-2 px-2.5 text-center font-mono font-bold text-slate-900 text-xs bg-amber-50/20 whitespace-nowrap">
-                                    <?= (float)$grp['total_qty'] ?> Unit
+                                <td class="py-1.5 px-2.5 text-center whitespace-nowrap bg-indigo-50/20 font-mono font-bold text-slate-900 text-xs">
+                                    <?= (float)$grp['total_qty'] ?> <span class="text-[10px] text-slate-500 font-medium">Unit</span>
                                 </td>
 
-                                <!-- Status Kesiapan BAST -->
-                                <td class="py-2 px-3 text-center whitespace-nowrap">
+                                <!-- Status Penerimaan (Semua barang harus Tiba di Gudang atau Tiba di Tujuan) -->
+                                <td class="py-1.5 px-3 text-center whitespace-nowrap">
                                     <?php if ($grp['is_bast_ready']): ?>
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                            <ion-icon name="checkmark-circle" class="text-xs"></ion-icon>
-                                            <span>Lengkap di Tujuan</span>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            <ion-icon name="checkmark-circle" class="text-xs text-emerald-600 shrink-0"></ion-icon>
+                                            <span>Siap BAST</span>
                                         </span>
                                     <?php else: ?>
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                                            <ion-icon name="time-outline" class="text-xs"></ion-icon>
-                                            <span><?= $grp['status_count']['diterima'] ?>/<?= $grp['status_count']['total'] ?> Tiba di Tujuan</span>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal bg-amber-50 text-amber-700 border border-amber-200"
+                                              title="<?= $grp['status_count']['diterima'] ?> dari <?= $grp['status_count']['total'] ?> barang telah tiba di gudang/tujuan">
+                                            <ion-icon name="time-outline" class="text-xs text-amber-600 shrink-0"></ion-icon>
+                                            <span><?= $grp['status_count']['diterima'] ?>/<?= $grp['status_count']['total'] ?> Barang Tiba</span>
                                         </span>
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Aksi Cetak BAST & Upload BAST -->
-                                <td class="py-2 px-3 text-right whitespace-nowrap">
-                                    <div class="flex items-center justify-end gap-1.5 flex-wrap">
-                                        <!-- Tombol Cetak BAST -->
-                                        <a href="<?= APP_URL ?>/paket/cetakBast/<?= $paket['kode_paket'] ?: $paket['id'] ?>?tujuan=<?= urlencode($grp['nama_tujuan']) ?>" 
-                                           target="_blank"
-                                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold <?= $grp['is_bast_ready'] ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' ?> transition-all"
-                                           title="<?= $grp['is_bast_ready'] ? 'Cetak Lembar Resmi BAST' : 'Pratinjau Draft BAST (Barang belum lengkap diterima)' ?>">
-                                            <ion-icon name="print-outline"></ion-icon>
-                                            <span>Cetak BAST</span>
-                                        </a>
-
-                                        <!-- Tombol Upload BAST -->
-                                        <?php if ($role === 'admin' || $role === 'user'): ?>
-                                            <button type="button" 
-                                                    onclick="openUploadBastSekolah('<?= htmlspecialchars(addslashes($grp['nama_tujuan'])) ?>')"
-                                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200/80 transition-colors"
-                                                    title="Upload scan/foto berkas BAST yang sudah ditandatangani">
-                                                <ion-icon name="cloud-upload-outline"></ion-icon>
-                                                <span>Upload BAST</span>
-                                            </button>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <!-- Berkas BAST yang Sudah Terupload -->
-                                    <?php if ($uploadedBast): ?>
-                                        <div class="flex items-center justify-end gap-1.5 mt-1.5">
+                                <!-- Aksi BAST: Cetak & Upload hanya bisa jika semua barang tiba di gudang/tujuan -->
+                                <td class="py-1.5 px-3 text-right whitespace-nowrap">
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <!-- Berkas BAST yang Sudah Terupload -->
+                                        <?php if ($uploadedBast): ?>
                                             <a href="<?= APP_URL ?>/paket/downloadDokumen/<?= $paket['kode_paket'] ?: $paket['id'] ?>/<?= $uploadedBast['id'] ?>?view=1" 
                                                target="_blank"
-                                               class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors"
+                                               class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200 transition-colors shadow-2xs"
                                                title="Buka / Preview Berkas: <?= htmlspecialchars($uploadedBast['nama_file_asli']) ?>">
-                                                <ion-icon name="document-attach-outline"></ion-icon>
-                                                <span>BAST Terupload (<?= strtoupper($uploadedBast['file_ext'] ?: 'FILE') ?>)</span>
-                                            </a>
-                                            <a href="<?= APP_URL ?>/paket/downloadDokumen/<?= $paket['kode_paket'] ?: $paket['id'] ?>/<?= $uploadedBast['id'] ?>" 
-                                               class="p-0.5 text-slate-400 hover:text-emerald-700 rounded transition-colors text-xs"
-                                               title="Unduh Berkas BAST">
-                                                <ion-icon name="download-outline"></ion-icon>
+                                                <ion-icon name="document-attach-outline" class="text-xs"></ion-icon>
+                                                <span>Lihat BAST (<?= strtoupper($uploadedBast['file_ext'] ?: 'FILE') ?>)</span>
                                             </a>
                                             <?php if ($role === 'admin' || $role === 'user'): ?>
                                                 <a href="<?= APP_URL ?>/paket/deleteDokumen/<?= $paket['kode_paket'] ?: $paket['id'] ?>/<?= $uploadedBast['id'] ?>" 
                                                    data-confirm-delete="<?= htmlspecialchars($uploadedBast['nama_dokumen']) ?>"
                                                    data-type="Dokumen BAST"
-                                                   class="p-0.5 text-slate-400 hover:text-rose-600 rounded transition-colors text-xs"
+                                                   class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors text-xs inline-flex items-center justify-center"
                                                    title="Hapus Berkas BAST">
                                                     <ion-icon name="trash-outline"></ion-icon>
                                                 </a>
                                             <?php endif; ?>
-                                        </div>
-                                    <?php endif; ?>
+                                        <?php endif; ?>
+
+                                        <!-- Tombol Cetak BAST -->
+                                        <?php if ($grp['is_bast_ready']): ?>
+                                            <a href="<?= APP_URL ?>/paket/cetakBast/<?= $paket['kode_paket'] ?: $paket['id'] ?>?tujuan=<?= urlencode($grp['nama_tujuan']) ?>" 
+                                               target="_blank"
+                                               class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal bg-amber-600 hover:bg-amber-700 text-white shadow-2xs transition-all hover:scale-[1.02]"
+                                               title="Cetak Berkas BAST">
+                                                <ion-icon name="print-outline" class="text-xs"></ion-icon>
+                                                <span>Cetak BAST</span>
+                                            </a>
+                                        <?php else: ?>
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal bg-slate-100 text-slate-400 border border-slate-200/80 cursor-not-allowed select-none opacity-80"
+                                                  title="Semua barang harus tiba di gudang atau tujuan terlebih dahulu untuk cetak BAST">
+                                                <ion-icon name="lock-closed-outline" class="text-xs"></ion-icon>
+                                                <span>Cetak BAST</span>
+                                            </span>
+                                        <?php endif; ?>
+
+                                        <!-- Tombol Upload BAST -->
+                                        <?php if ($role === 'admin' || $role === 'user'): ?>
+                                            <?php if ($grp['is_bast_ready']): ?>
+                                                <button type="button" 
+                                                        onclick="openUploadBastSekolah('<?= htmlspecialchars(addslashes($grp['nama_tujuan'])) ?>')"
+                                                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200/80 shadow-2xs transition-all hover:scale-[1.02]"
+                                                        title="<?= $uploadedBast ? 'Ganti File BAST' : 'Upload Berkas BAST yang sudah ditandatangani' ?>">
+                                                    <ion-icon name="cloud-upload-outline" class="text-xs"></ion-icon>
+                                                    <span><?= $uploadedBast ? 'Ganti BAST' : 'Upload BAST' ?></span>
+                                                </button>
+                                            <?php else: ?>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium leading-normal bg-slate-100 text-slate-400 border border-slate-200/80 cursor-not-allowed select-none opacity-80"
+                                                      title="Semua barang harus tiba di gudang atau tujuan terlebih dahulu untuk upload BAST">
+                                                    <ion-icon name="lock-closed-outline" class="text-xs"></ion-icon>
+                                                    <span>Upload BAST</span>
+                                                </span>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

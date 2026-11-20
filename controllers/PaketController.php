@@ -854,36 +854,41 @@ class PaketController {
     }
 
     /**
-     * Cetak BAST per Sekolah / Lokasi Tujuan atau Cetak Semua BAST Sekaligus
+     * Cetak Lembar BAST per Sekolah / Lokasi Tujuan
      */
     public function cetakBast($idOrKode) {
         $paket = $this->getAccessiblePaket($idOrKode);
         $perusahaan = $this->perusahaanModel->getById($paket['perusahaan_id']);
-        $isBulk = (isset($_GET['all']) && $_GET['all'] == '1');
-
-        if ($isBulk) {
-            $groupedList = $this->distribusiModel->getGroupedByTujuan($paket['id']);
-            if (empty($groupedList)) {
-                flash('error', 'Belum ada data alokasi barang untuk mencetak BAST.');
-                redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
-                return;
-            }
-            $bastDate = !empty($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d');
-            require_once VIEW_PATH . '/paket/cetak_bast.php';
-            exit;
-        }
 
         $namaTujuan = trim($_GET['tujuan'] ?? '');
         if (empty($namaTujuan)) {
             flash('error', 'Silakan pilih lokasi tujuan penerima untuk mencetak BAST.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
             return;
         }
 
         $items = $this->distribusiModel->getItemsByTujuan($paket['id'], $namaTujuan);
         if (empty($items)) {
             flash('error', 'Tidak ada data barang yang dialokasikan untuk tujuan: ' . htmlspecialchars($namaTujuan));
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
+            return;
+        }
+
+        // Validasi: seluruh barang untuk tujuan ini harus sudah Tiba di Gudang atau Tiba di Tujuan
+        $notReady = false;
+        foreach ($items as $it) {
+            $sDist = trim($it['status_distribusi'] ?? '');
+            $sBarang = trim($it['status_barang'] ?? '');
+            $arrived = ($sBarang === 'Sudah Dipesan') && in_array($sDist, ['Tiba di Tujuan', 'Tiba di Gudang', 'Tiba di Gudang Transit', 'gudang']);
+            if (!$arrived) {
+                $notReady = true;
+                break;
+            }
+        }
+
+        if ($notReady) {
+            flash('error', 'BAST belum dapat dicetak/didownload karena belum semua barang tiba di gudang atau tujuan.');
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
             return;
         }
 
