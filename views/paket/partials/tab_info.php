@@ -253,7 +253,15 @@
                         <ion-icon name="calculator-outline" class="text-blue-600 text-sm"></ion-icon>
                         <span>Rincian Finansial & Perpajakan</span>
                     </h4>
-                    <span class="text-[11px] text-slate-400 font-mono">Kode: #<?= htmlspecialchars($paket['kode_paket'] ?: $paket['id']) ?></span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-slate-400 font-mono">Kode: #<?= htmlspecialchars($paket['kode_paket'] ?: $paket['id']) ?></span>
+                        <?php if ($role === 'admin' || $role === 'user'): ?>
+                            <button type="button" onclick="openModalSkemaPotongan()" class="text-[11px] font-semibold text-amber-600 hover:text-amber-700 hover:underline flex items-center gap-1">
+                                <ion-icon name="options-outline"></ion-icon>
+                                <span>Atur Skema</span>
+                            </button>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <div class="divide-y divide-slate-100 text-xs">

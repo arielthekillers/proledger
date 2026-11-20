@@ -44,6 +44,15 @@
                     </span>
                 <?php endif; ?>
 
+                <!-- Tombol Atur Skema Potongan -->
+                <?php if ($role === 'admin' || $role === 'user'): ?>
+                    <button type="button" onclick="openModalSkemaPotongan()" 
+                            class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-xl text-xs font-semibold shadow-2xs transition-all flex items-center gap-1.5">
+                        <ion-icon name="options-outline" class="text-sm text-amber-600"></ion-icon>
+                        <span>Atur Skema Potongan</span>
+                    </button>
+                <?php endif; ?>
+
                 <!-- Tombol Cetak / PDF -->
                 <button type="button" onclick="window.print()" 
                         class="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl text-xs font-semibold shadow-2xs transition-all flex items-center gap-1.5">

@@ -83,6 +83,11 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
         </a>
 
         <?php if ($role === 'admin' || $role === 'user'): ?>
+            <button type="button" onclick="openModalSkemaPotongan()" 
+                    class="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 font-semibold rounded-xl transition-all shadow-xs flex items-center gap-1.5 text-xs">
+                <ion-icon name="options-outline" class="text-sm text-amber-600"></ion-icon>
+                <span>Skema Potongan</span>
+            </button>
             <button type="button" onclick="openDetailEditPaketModal()" 
                     class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl transition-all shadow-xs flex items-center gap-1.5 text-xs">
                 <ion-icon name="create-outline" class="text-sm"></ion-icon>

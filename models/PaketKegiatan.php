@@ -291,6 +291,52 @@ class PaketKegiatan {
             throw $e;
         }
     }
+
+    /**
+     * Update khusus skema potongan paket kegiatan (Popup / Modal Mandiri)
+     */
+    public function updatePotongan($idOrKode, $data) {
+        $existing = $this->getById($idOrKode);
+        if (!$existing) throw new Exception("Paket tidak ditemukan");
+
+        $pagu = (float)($existing['pagu'] ?? 0);
+        $paguNego = (!empty($existing['pagu_nego']) && (float)$existing['pagu_nego'] > 0) ? (float)$existing['pagu_nego'] : null;
+        $acuan = $paguNego !== null ? $paguNego : $pagu;
+
+        $persenPasal = isset($data['persen_pasal']) && $data['persen_pasal'] !== '' ? (float)$data['persen_pasal'] : 13.0;
+        $persenAdmin = isset($data['persen_admin']) && $data['persen_admin'] !== '' ? (float)$data['persen_admin'] : 2.0;
+        $tipePotongan = in_array($data['tipe_potongan'] ?? '', ['kontrak', 'dpp']) ? $data['tipe_potongan'] : 'dpp';
+
+        $dpp = calculateDPP($acuan);
+        $basis = ($tipePotongan === 'kontrak') ? $acuan : $dpp;
+        $pasal = calculatePasal($basis, $persenPasal);
+        $admin = calculateAdmin($basis, $persenAdmin);
+        $totalPasal = $pasal + $admin;
+
+        $stmt = $this->db->prepare("
+            UPDATE paket_kegiatan SET
+                skema_id = ?,
+                tipe_potongan = ?,
+                persen_pasal = ?,
+                persen_admin = ?,
+                dpp = ?,
+                pasal_13 = ?,
+                admin_2 = ?,
+                total_pasal = ?
+            WHERE id = ?
+        ");
+        return $stmt->execute([
+            !empty($data['skema_id']) ? (int)$data['skema_id'] : null,
+            $tipePotongan,
+            $persenPasal,
+            $persenAdmin,
+            $dpp,
+            $pasal,
+            $admin,
+            $totalPasal,
+            (int)$existing['id']
+        ]);
+    }
     
     /**
      * Delete paket secara berantai (Cascade Delete):

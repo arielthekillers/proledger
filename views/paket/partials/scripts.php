@@ -812,12 +812,19 @@ function submitUpdateStatusDistribusi(e) {
  * Buka Modal Edit Paket Pop Up di Halaman Detail
  */
 function openDetailEditPaketModal() {
-    updateEditCalc();
     window.ProModal.open('modalEditPaket');
 }
 
 /**
- * Logika Edit Paket (Checkboxes, Dropdown, Perhitungan Live)
+ * Buka Modal Skema Potongan Mandiri
+ */
+function openModalSkemaPotongan() {
+    updatePotonganCalc();
+    window.ProModal.open('modalSkemaPotongan');
+}
+
+/**
+ * Logika Skema Potongan (Checkboxes, Dropdown, Perhitungan Live)
  */
 function togglePasalCheck(prefix) {
     const chk = document.getElementById(prefix + '_ada_pasal');
@@ -849,7 +856,8 @@ function togglePasalCheck(prefix) {
             badge.className = 'text-[10px] text-slate-400 font-medium';
         }
     }
-    updateEditCalc();
+    if (prefix === 'potongan') updatePotonganCalc();
+    else updateEditCalc();
 }
 
 function toggleAdminCheck(prefix) {
@@ -882,7 +890,8 @@ function toggleAdminCheck(prefix) {
             badge.className = 'text-[10px] text-slate-400 font-medium';
         }
     }
-    updateEditCalc();
+    if (prefix === 'potongan') updatePotonganCalc();
+    else updateEditCalc();
 }
 
 function onSkemaSelectChange(prefix, sel) {
@@ -911,20 +920,71 @@ function onSkemaSelectChange(prefix, sel) {
     if (chkTipe) {
         chkTipe.checked = (tipePotongan === 'kontrak');
     }
-    updateEditCalc();
+    if (prefix === 'potongan') updatePotonganCalc();
+    else updateEditCalc();
+}
+
+/**
+ * Perhitungan Live Standalone Modal Skema Potongan
+ */
+function updatePotonganCalc() {
+    const acuan = <?= (float)$acuan ?>;
+    const chkPasal = document.getElementById('potongan_ada_pasal');
+    const adaPasal = chkPasal ? chkPasal.checked : true;
+    const persenPasal = adaPasal ? (parseFloat(document.getElementById('potongan_persen_pasal').value) || 0) : 0;
+
+    const chkAdmin = document.getElementById('potongan_ada_admin');
+    const adaAdmin = chkAdmin ? chkAdmin.checked : true;
+    const persenAdmin = adaAdmin ? (parseFloat(document.getElementById('potongan_persen_admin').value) || 0) : 0;
+
+    const dpp = acuan > 0 ? Math.round(acuan / 1.11) : 0;
+    const chkKontrak = document.getElementById('potongan_tipe_potongan');
+    const isKontrak = chkKontrak ? chkKontrak.checked : false;
+    const basis = isKontrak ? acuan : dpp;
+
+    const pasal = Math.round(basis * (persenPasal / 100));
+    const admin = Math.round(basis * (persenAdmin / 100));
+    const totalPasal = pasal + admin;
+    const totalPersen = Math.round((persenPasal + persenAdmin) * 100) / 100;
+
+    const elAcuan = document.getElementById('potongan_preview_acuan');
+    if (elAcuan) elAcuan.textContent = formatRupiahString(acuan);
+    const elDpp = document.getElementById('potongan_preview_dpp');
+    if (elDpp) elDpp.textContent = formatRupiahString(dpp);
+    const elPasal = document.getElementById('potongan_preview_pasal13');
+    if (elPasal) elPasal.textContent = formatRupiahString(pasal);
+    const elAdmin = document.getElementById('potongan_preview_admin2');
+    if (elAdmin) elAdmin.textContent = formatRupiahString(admin);
+    const elTotal = document.getElementById('potongan_preview_total_pasal');
+    if (elTotal) elTotal.textContent = formatRupiahString(totalPasal);
+
+    const elLblP = document.getElementById('potongan_lbl_pasal');
+    if (elLblP) elLblP.textContent = persenPasal;
+    const elLblA = document.getElementById('potongan_lbl_admin');
+    if (elLblA) elLblA.textContent = persenAdmin;
+    const elLblTot = document.getElementById('potongan_lbl_total_pasal');
+    if (elLblTot) elLblTot.textContent = totalPersen;
+
+    const lblSum = document.getElementById('potongan_lbl_sum_persen');
+    if (lblSum) lblSum.textContent = totalPersen + '%';
 }
 
 function updateEditCalc() {
-    const pagu = parseRupiahNumber(document.getElementById('edit_pagu').value);
-    const paguNego = parseRupiahNumber(document.getElementById('edit_pagu_nego').value);
+    const paguInput = document.getElementById('edit_pagu');
+    if (!paguInput) return;
+    const pagu = parseRupiahNumber(paguInput.value);
+    const negoInput = document.getElementById('edit_pagu_nego');
+    const paguNego = negoInput ? parseRupiahNumber(negoInput.value) : 0;
     
     const chkPasal = document.getElementById('edit_ada_pasal');
     const adaPasal = chkPasal ? chkPasal.checked : true;
-    const persenPasal = adaPasal ? (parseFloat(document.getElementById('edit_persen_pasal').value) || 0) : 0;
+    const inPasal = document.getElementById('edit_persen_pasal');
+    const persenPasal = (adaPasal && inPasal) ? (parseFloat(inPasal.value) || 0) : 0;
     
     const chkAdmin = document.getElementById('edit_ada_admin');
     const adaAdmin = chkAdmin ? chkAdmin.checked : true;
-    const persenAdmin = adaAdmin ? (parseFloat(document.getElementById('edit_persen_admin').value) || 0) : 0;
+    const inAdmin = document.getElementById('edit_persen_admin');
+    const persenAdmin = (adaAdmin && inAdmin) ? (parseFloat(inAdmin.value) || 0) : 0;
 
     const acuan = (paguNego > 0) ? paguNego : pagu;
     const dpp = acuan > 0 ? Math.round(acuan / 1.11) : 0;
@@ -937,15 +997,23 @@ function updateEditCalc() {
     const totalPasal = pasal + admin;
     const totalPersen = Math.round((persenPasal + persenAdmin) * 100) / 100;
 
-    document.getElementById('edit_preview_acuan').textContent = formatRupiahString(acuan);
-    document.getElementById('edit_preview_dpp').textContent = formatRupiahString(dpp);
-    document.getElementById('edit_preview_pasal13').textContent = formatRupiahString(pasal);
-    document.getElementById('edit_preview_admin2').textContent = formatRupiahString(admin);
-    document.getElementById('edit_preview_total_pasal').textContent = formatRupiahString(totalPasal);
+    const elAcuan = document.getElementById('edit_preview_acuan');
+    if (elAcuan) elAcuan.textContent = formatRupiahString(acuan);
+    const elDpp = document.getElementById('edit_preview_dpp');
+    if (elDpp) elDpp.textContent = formatRupiahString(dpp);
+    const elPasal = document.getElementById('edit_preview_pasal13');
+    if (elPasal) elPasal.textContent = formatRupiahString(pasal);
+    const elAdmin = document.getElementById('edit_preview_admin2');
+    if (elAdmin) elAdmin.textContent = formatRupiahString(admin);
+    const elTotal = document.getElementById('edit_preview_total_pasal');
+    if (elTotal) elTotal.textContent = formatRupiahString(totalPasal);
 
-    document.getElementById('edit_lbl_pasal').textContent = persenPasal;
-    document.getElementById('edit_lbl_admin').textContent = persenAdmin;
-    document.getElementById('edit_lbl_total_pasal').textContent = totalPersen;
+    const elLblP = document.getElementById('edit_lbl_pasal');
+    if (elLblP) elLblP.textContent = persenPasal;
+    const elLblA = document.getElementById('edit_lbl_admin');
+    if (elLblA) elLblA.textContent = persenAdmin;
+    const elLblTot = document.getElementById('edit_lbl_total_pasal');
+    if (elLblTot) elLblTot.textContent = totalPersen;
 
     const lblSum = document.getElementById('edit_lbl_sum_persen');
     if (lblSum) lblSum.textContent = totalPersen + '%';
@@ -955,7 +1023,7 @@ function updateEditCalc() {
  * Quick Tambah Group & Skema Helpers
  */
 let targetGroupSelectId = null;
-let targetSkemaPrefix = 'edit';
+let targetSkemaPrefix = 'potongan';
 
 function openQuickAddGroup(selectId = null) {
     targetGroupSelectId = selectId;
@@ -1009,7 +1077,7 @@ function handleQuickTambahGroup(e) {
     });
 }
 
-function openQuickAddSkema(prefix = 'edit') {
+function openQuickAddSkema(prefix = 'potongan') {
     targetSkemaPrefix = prefix;
     const chkPasal = document.getElementById(prefix + '_ada_pasal');
     const valPasal = document.getElementById(prefix + '_persen_pasal');
@@ -1031,7 +1099,7 @@ function openQuickAddSkema(prefix = 'edit') {
     window.ProModal.open('modalQuickTambahSkema');
 }
 
-function promptSaveCurrentAsSkema(prefix = 'edit') {
+function promptSaveCurrentAsSkema(prefix = 'potongan') {
     openQuickAddSkema(prefix);
 }
 
@@ -1097,19 +1165,25 @@ function handleQuickTambahSkema(e) {
 
         if (data.success && data.skema) {
             const sk = data.skema;
-            const sel = document.getElementById('edit_skema_id');
-            if (sel) {
-                const opt = document.createElement('option');
-                opt.value = sk.id;
-                opt.textContent = sk.nama_skema;
-                opt.setAttribute('data-ada-pasal', sk.ada_pasal);
-                opt.setAttribute('data-pasal', sk.persen_pasal);
-                opt.setAttribute('data-ada-admin', sk.ada_admin);
-                opt.setAttribute('data-admin', sk.persen_admin);
-                opt.setAttribute('data-tipe', sk.tipe_potongan || 'dpp');
-                sel.appendChild(opt);
-                sel.value = sk.id;
-                onSkemaSelectChange('edit', sel);
+            ['potongan_skema_id', 'edit_skema_id'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (sel) {
+                    const opt = document.createElement('option');
+                    opt.value = sk.id;
+                    opt.textContent = sk.nama_skema;
+                    opt.setAttribute('data-ada-pasal', sk.ada_pasal);
+                    opt.setAttribute('data-pasal', sk.persen_pasal);
+                    opt.setAttribute('data-ada-admin', sk.ada_admin);
+                    opt.setAttribute('data-admin', sk.persen_admin);
+                    opt.setAttribute('data-tipe', sk.tipe_potongan || 'dpp');
+                    sel.appendChild(opt);
+                    sel.value = sk.id;
+                }
+            });
+
+            const activeSel = document.getElementById(targetSkemaPrefix + '_skema_id');
+            if (activeSel) {
+                onSkemaSelectChange(targetSkemaPrefix, activeSel);
             }
 
             window.ProModal.close('modalQuickTambahSkema');
@@ -1118,6 +1192,13 @@ function handleQuickTambahSkema(e) {
         } else {
             window.ProToast.error(data.message || 'Gagal menyimpan skema.');
         }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<ion-icon name="checkmark-outline" class="text-sm"></ion-icon> <span>Simpan & Gunakan</span>';
+        window.ProToast.error('Koneksi terputus saat menyimpan skema.');
+    });
+}
     })
     .catch(err => {
         btn.disabled = false;

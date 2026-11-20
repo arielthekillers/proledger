@@ -180,17 +180,13 @@ class PaketController {
         }
         
         try {
-            // Parse Rupiah & percentage values
+            // Parse Rupiah
             $pagu = parseRupiah($_POST['pagu']);
             $paguNego = !empty($_POST['pagu_nego']) ? parseRupiah($_POST['pagu_nego']) : null;
 
-            // Dinamis: Cek status checkbox pasal & admin
-            $adaPasal = !empty($_POST['ada_pasal']);
-            $persenPasal = ($adaPasal && isset($_POST['persen_pasal']) && $_POST['persen_pasal'] !== '') ? (float)$_POST['persen_pasal'] : 0.0;
-            
-            $adaAdmin = !empty($_POST['ada_admin']);
-            $persenAdmin = ($adaAdmin && isset($_POST['persen_admin']) && $_POST['persen_admin'] !== '') ? (float)$_POST['persen_admin'] : 0.0;
-            
+            // Potongan standar bawaan saat buat paket baru
+            $persenPasal = isset($_POST['persen_pasal']) && $_POST['persen_pasal'] !== '' ? (float)$_POST['persen_pasal'] : 13.0;
+            $persenAdmin = isset($_POST['persen_admin']) && $_POST['persen_admin'] !== '' ? (float)$_POST['persen_admin'] : 2.0;
             $skemaId = !empty($_POST['skema_id']) ? (int)$_POST['skema_id'] : null;
             $tipePotongan = (!empty($_POST['tipe_potongan']) && $_POST['tipe_potongan'] === 'kontrak') ? 'kontrak' : 'dpp';
 
@@ -528,15 +524,11 @@ class PaketController {
             $pagu = parseRupiah($_POST['pagu']);
             $paguNego = !empty($_POST['pagu_nego']) ? parseRupiah($_POST['pagu_nego']) : null;
 
-            // Dinamis: Cek status checkbox pasal & admin
-            $adaPasal = !empty($_POST['ada_pasal']);
-            $persenPasal = ($adaPasal && isset($_POST['persen_pasal']) && $_POST['persen_pasal'] !== '') ? (float)$_POST['persen_pasal'] : 0.0;
-            
-            $adaAdmin = !empty($_POST['ada_admin']);
-            $persenAdmin = ($adaAdmin && isset($_POST['persen_admin']) && $_POST['persen_admin'] !== '') ? (float)$_POST['persen_admin'] : 0.0;
-            
-            $skemaId = !empty($_POST['skema_id']) ? (int)$_POST['skema_id'] : null;
-            $tipePotongan = (!empty($_POST['tipe_potongan']) && $_POST['tipe_potongan'] === 'kontrak') ? 'kontrak' : 'dpp';
+            // Potongan: pertahankan nilai paket yang sudah ada jika tidak dikirim dalam form edit dasar
+            $persenPasal = isset($_POST['persen_pasal']) && $_POST['persen_pasal'] !== '' ? (float)$_POST['persen_pasal'] : (float)($existing['persen_pasal'] ?? 13.0);
+            $persenAdmin = isset($_POST['persen_admin']) && $_POST['persen_admin'] !== '' ? (float)$_POST['persen_admin'] : (float)($existing['persen_admin'] ?? 2.0);
+            $skemaId = isset($_POST['skema_id']) ? (!empty($_POST['skema_id']) ? (int)$_POST['skema_id'] : null) : ($existing['skema_id'] ?? null);
+            $tipePotongan = isset($_POST['tipe_potongan']) ? (($_POST['tipe_potongan'] === 'kontrak') ? 'kontrak' : 'dpp') : ($existing['tipe_potongan'] ?? 'dpp');
 
             $perusahaanId = $existing['perusahaan_id'] ?? (!empty($_POST['perusahaan_id']) ? (int)$_POST['perusahaan_id'] : ($_SESSION['active_perusahaan_id'] ?? null));
             $perusahaanNama = $existing['perusahaan_nama'] ?? $existing['perusahaan'] ?? null;
@@ -571,6 +563,56 @@ class PaketController {
             flash('error', 'Gagal mengupdate paket: ' . $e->getMessage());
             setOld($_POST);
             redirect('/paket/edit/' . $idOrKode);
+        }
+    }
+
+    /**
+     * Update khusus Skema Potongan Paket Kegiatan (Standalone Modal / Popup Mandiri)
+     */
+    public function updatePotongan($idOrKode) {
+        $existing = $this->getAccessiblePaket($idOrKode);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('/paket/detail/' . ($existing['kode_paket'] ?: $existing['id']));
+            return;
+        }
+
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Invalid CSRF token');
+            redirect('/paket/detail/' . ($existing['kode_paket'] ?: $existing['id']));
+            return;
+        }
+
+        try {
+            $adaPasal = !empty($_POST['ada_pasal']);
+            $persenPasal = ($adaPasal && isset($_POST['persen_pasal']) && $_POST['persen_pasal'] !== '') ? (float)$_POST['persen_pasal'] : 0.0;
+            
+            $adaAdmin = !empty($_POST['ada_admin']);
+            $persenAdmin = ($adaAdmin && isset($_POST['persen_admin']) && $_POST['persen_admin'] !== '') ? (float)$_POST['persen_admin'] : 0.0;
+            
+            $skemaId = !empty($_POST['skema_id']) ? (int)$_POST['skema_id'] : null;
+            $tipePotongan = (!empty($_POST['tipe_potongan']) && $_POST['tipe_potongan'] === 'kontrak') ? 'kontrak' : 'dpp';
+
+            $this->paketModel->updatePotongan($existing['id'], [
+                'skema_id'      => $skemaId,
+                'tipe_potongan' => $tipePotongan,
+                'persen_pasal'  => $persenPasal,
+                'persen_admin'  => $persenAdmin
+            ]);
+
+            flash('success', 'Skema potongan paket (' . ($existing['kode_paket'] ?: $existing['id']) . ') berhasil diperbarui!');
+            
+            if (!empty($_POST['redirect_to']) && $_POST['redirect_to'] === 'index') {
+                redirect('/paket');
+                return;
+            }
+
+            $redirectTab = !empty($_POST['redirect_tab']) ? ('?tab=' . sanitize($_POST['redirect_tab'])) : '';
+            redirect('/paket/detail/' . ($existing['kode_paket'] ?: $existing['id']) . $redirectTab);
+
+        } catch (Exception $e) {
+            flash('error', 'Gagal memperbarui skema potongan: ' . $e->getMessage());
+            redirect('/paket/detail/' . ($existing['kode_paket'] ?: $existing['id']));
         }
     }
     
