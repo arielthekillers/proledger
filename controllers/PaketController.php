@@ -367,14 +367,26 @@ class PaketController {
             }
         }
 
-        $estimasiProfit = max(0, $acuanPagu - $totalPasalVal - $totalBeliBarang);
-        $profitMarginPct = ($acuanPagu > 0) ? round(($estimasiProfit / $acuanPagu) * 100, 1) : 0;
+        $nilaiBersihProfit = $acuanPagu - $totalPasalVal - $totalBeliBarang;
+        $profitMarginPct = ($acuanPagu > 0) ? round(($nilaiBersihProfit / $acuanPagu) * 100, 2) : 0;
+        $roiPct = ($totalBeliBarang > 0) ? round(($nilaiBersihProfit / $totalBeliBarang) * 100, 2) : 0;
+
+        $itemsPricedCount = 0;
+        $itemsUnpricedCount = 0;
+        foreach ($distribusiList as $dist) {
+            if ((float)($dist['harga_satuan'] ?? 0) > 0) {
+                $itemsPricedCount++;
+            } else {
+                $itemsUnpricedCount++;
+            }
+        }
 
         $tabProgress = [
             'items'       => ['done' => $itemsDone, 'total' => $totalItems],
             'distribusi'  => ['done' => $distDone, 'total' => $totalDist],
             'dokumentasi' => ['done' => $dokDone, 'total' => $totalDist],
-            'dokumen'     => ['done' => $bastDone, 'total' => $totalBast]
+            'dokumen'     => ['done' => $bastDone, 'total' => $totalBast],
+            'profit'      => ['profit' => $nilaiBersihProfit, 'margin' => $profitMarginPct]
         ];
         
         $data = [
@@ -392,9 +404,15 @@ class PaketController {
             'totalDokumentasiFoto' => $totalDokumentasiFoto,
             'tabProgress' => $tabProgress,
             'statusDistBreakdown' => $statusDistBreakdown,
+            'acuanPagu' => $acuanPagu,
+            'totalPasalVal' => $totalPasalVal,
             'totalBeliBarang' => $totalBeliBarang,
-            'estimasiProfit' => $estimasiProfit,
+            'estimasiProfit' => $nilaiBersihProfit,
+            'nilaiBersihProfit' => $nilaiBersihProfit,
             'profitMarginPct' => $profitMarginPct,
+            'roiPct' => $roiPct,
+            'itemsPricedCount' => $itemsPricedCount,
+            'itemsUnpricedCount' => $itemsUnpricedCount,
             'lokasiList' => $lokasiList,
             'kabupatenList' => $kabupatenList,
             'dokumenList' => $dokumenList,

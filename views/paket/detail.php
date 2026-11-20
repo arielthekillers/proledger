@@ -168,11 +168,25 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
                 <?= $bastP['done'] ?>/<?= $bastP['total'] ?>
             </span>
         </button>
+
+        <!-- Tab 6: Estimasi Margin Profit -->
+        <?php 
+        $isProfitPositive = ($nilaiBersihProfit > 0);
+        $isProfitLoss = ($nilaiBersihProfit < 0);
+        ?>
+        <button type="button" onclick="switchDetailTab('profit')" id="tabBtn_profit"
+                class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'profit') ? 'font-bold border-b-2 border-emerald-600 text-emerald-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
+            <ion-icon name="<?= $isProfitLoss ? 'trending-down-outline' : 'trending-up-outline' ?>" class="text-base <?= $isProfitLoss ? 'text-rose-600' : 'text-emerald-600' ?>"></ion-icon>
+            <span>Estimasi Margin Profit</span>
+            <span id="tabBadge_profit" class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono <?= $isProfitLoss ? 'bg-rose-100 text-rose-700 border border-rose-200' : ($isProfitPositive ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600') ?>" title="Estimasi Margin Keuntungan Bersih: <?= ($profitMarginPct > 0 ? '+' : '') . $profitMarginPct ?>%">
+                <?= ($profitMarginPct > 0 ? '+' : '') . $profitMarginPct ?>%
+            </span>
+        </button>
     </nav>
 </div>
 <script>
 (function() {
-    var validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen'];
+    var validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen', 'profit'];
     var hash = (window.location.hash || '').replace('#', '');
     var urlParams = new URLSearchParams(window.location.search);
     var tabParam = urlParams.get('tab');
@@ -200,6 +214,7 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
 <?php require __DIR__ . '/partials/tab_distribusi.php'; ?>
 <?php require __DIR__ . '/partials/tab_dokumentasi.php'; ?>
 <?php require __DIR__ . '/partials/tab_dokumen.php'; ?>
+<?php require __DIR__ . '/partials/tab_profit.php'; ?>
 
 <!-- ========================================== -->
 <!-- 4. MODALS & POPUPS                         -->

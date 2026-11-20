@@ -8,7 +8,7 @@ const SPINNER_SVG = '<svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 inline-
  * Tab Switcher (info, items, distribusi, dokumentasi, dokumen)
  */
 function switchDetailTab(tabName) {
-    const validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen'];
+    const validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen', 'profit'];
     if (!validTabs.includes(tabName)) tabName = 'info';
 
     // Hapus style preload jika ada agar kontrol display kembali normal
@@ -21,7 +21,9 @@ function switchDetailTab(tabName) {
         if (t === tabName) {
             if (el) el.classList.remove('hidden');
             if (btn) {
-                btn.className = 'tab-btn py-3 px-4 text-xs font-bold border-b-2 border-blue-600 text-blue-600 flex items-center gap-2 transition-all';
+                btn.className = (t === 'profit') 
+                    ? 'tab-btn py-3 px-4 text-xs font-bold border-b-2 border-emerald-600 text-emerald-600 flex items-center gap-2 transition-all'
+                    : 'tab-btn py-3 px-4 text-xs font-bold border-b-2 border-blue-600 text-blue-600 flex items-center gap-2 transition-all';
             }
         } else {
             if (el) el.classList.add('hidden');
@@ -33,6 +35,9 @@ function switchDetailTab(tabName) {
 
     if (tabName === 'info' && typeof initTabInfoCharts === 'function') {
         setTimeout(initTabInfoCharts, 50);
+    }
+    if (tabName === 'profit' && typeof initTabProfitCharts === 'function') {
+        setTimeout(initTabProfitCharts, 50);
     }
 
     if (window.history && window.history.replaceState) {
@@ -50,7 +55,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
     const h = (window.location.hash || '').replace('#', '');
-    const validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen'];
+    const validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen', 'profit'];
     const target = (validTabs.includes(tabParam)) ? tabParam : (validTabs.includes(h) ? h : '');
     if (target) {
         switchDetailTab(target);
