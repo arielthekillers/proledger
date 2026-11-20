@@ -29,10 +29,11 @@
                 <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200/90 tracking-wider">
                     <tr>
                         <th class="py-2.5 px-3 w-8 text-center">NO</th>
-                        <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
+                        <th class="py-2.5 px-3 min-w-[160px]">TUJUAN PENERIMA</th>
                         <th class="py-2.5 px-3 min-w-[140px]">KOMPONEN BARANG</th>
-                        <th class="py-2.5 px-3 min-w-[180px]">NAMA BARANG PESANAN (TOKO)</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[70px]">JUMLAH</th>
+                        <th class="py-2.5 px-3 text-right min-w-[120px]">HARGA SATUAN</th>
+                        <th class="py-2.5 px-3 min-w-[180px]">NAMA BARANG PESANAN (TOKO)</th>
                         <th class="py-2.5 px-3 text-right min-w-[120px]">HARGA BELI SATUAN</th>
                         <th class="py-2.5 px-3 text-right min-w-[130px]">TOTAL MODAL BELI</th>
                         <th class="py-2.5 px-3 min-w-[140px]">STATUS BARANG</th>
@@ -42,7 +43,7 @@
                 <tbody class="divide-y divide-slate-100">
                     <?php if (empty($distribusiList)): ?>
                         <tr>
-                            <td colspan="9" class="py-8 text-center text-slate-400">
+                            <td colspan="10" class="py-8 text-center text-slate-400">
                                 <div class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl text-slate-300">
                                     <ion-icon name="bag-handle-outline"></ion-icon>
                                 </div>
@@ -59,10 +60,13 @@
                         <?php 
                         $no = 1; 
                         $totalPesananSudah = 0;
+                        $totalNilaiKontrakDist = 0;
                         foreach ($distribusiList as $dist): 
                             $isOrdered = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
                             if ($isOrdered) $totalPesananSudah++;
                             $qty = (float)$dist['jumlah'];
+                            $itemHargaSatuan = (float)($dist['item_harga_satuan'] ?? 0);
+                            $totalNilaiKontrakDist += ($qty * $itemHargaSatuan);
                             $hargaSatuan = (float)($dist['harga_satuan'] ?? 0);
                             $subtotalBeli = $qty * $hargaSatuan;
                         ?>
@@ -80,6 +84,20 @@
                                 <!-- Komponen Barang -->
                                 <td class="py-2 px-3 whitespace-nowrap text-xs text-slate-700">
                                     <?= htmlspecialchars($dist['nama_komponen'] ?: '-') ?>
+                                </td>
+
+                                <!-- Satuan & Jumlah -->
+                                <td class="py-2 px-2.5 text-center whitespace-nowrap bg-indigo-50/20 font-mono font-bold text-slate-900 text-xs">
+                                    <?= $qty ?> <span class="text-[10px] text-slate-500 font-normal"><?= htmlspecialchars($dist['satuan'] ?: 'Unit') ?></span>
+                                </td>
+
+                                <!-- HARGA SATUAN (KONTRAK) -->
+                                <td class="py-2 px-3 text-right whitespace-nowrap font-mono text-xs font-semibold text-slate-800">
+                                    <?php if ($itemHargaSatuan > 0): ?>
+                                        <?= formatRupiah($itemHargaSatuan) ?>
+                                    <?php else: ?>
+                                        <span class="text-slate-300 font-normal">-</span>
+                                    <?php endif; ?>
                                 </td>
 
                                 <!-- Nama Barang Pesanan Toko -->
@@ -106,15 +124,10 @@
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Satuan & Jumlah -->
-                                <td class="py-2 px-2.5 text-center whitespace-nowrap bg-indigo-50/20 font-mono font-bold text-slate-900 text-xs">
-                                    <?= $qty ?> <span class="text-[10px] text-slate-500 font-normal"><?= htmlspecialchars($dist['satuan'] ?: 'Unit') ?></span>
-                                </td>
-
-                                <!-- Harga Beli Satuan -->
+                                <!-- Harga Beli Satuan Toko -->
                                 <td class="py-2 px-3 text-right whitespace-nowrap font-mono text-xs">
                                     <?php if ($hargaSatuan > 0): ?>
-                                        <span class="font-semibold text-slate-700"><?= formatRupiah($hargaSatuan) ?></span>
+                                        <span class="font-semibold text-indigo-700"><?= formatRupiah($hargaSatuan) ?></span>
                                     <?php else: ?>
                                         <span class="text-slate-400 italic text-[11px]">Rp 0</span>
                                     <?php endif; ?>
@@ -172,15 +185,19 @@
                 <?php if (!empty($distribusiList)): ?>
                     <tfoot class="bg-slate-50/90 font-bold text-slate-700 border-t-2 border-slate-200 text-xs">
                         <tr>
-                            <td colspan="4" class="py-2.5 px-3 text-right uppercase text-[10px] tracking-wider text-slate-500">
-                                Total Pemesanan Barang:
+                            <td colspan="3" class="py-2.5 px-3 text-right uppercase text-[10px] tracking-wider text-slate-500">
+                                Total:
                             </td>
                             <td class="py-2.5 px-2.5 text-center font-mono text-xs text-indigo-700 bg-indigo-50/60 font-extrabold whitespace-nowrap">
                                 <?= (float)($distribusiSummary['total_qty_dialokasikan'] ?? 0) ?> Unit
                             </td>
-                            <td class="py-2.5 px-3 text-right text-slate-400 text-[10px] uppercase font-semibold">
-                                Total Modal Beli (HPP):
+                            <td class="py-2.5 px-3 text-right font-mono text-xs font-bold text-slate-700 whitespace-nowrap">
+                                <?= formatRupiah($totalNilaiKontrakDist) ?>
                             </td>
+                            <td class="py-2.5 px-3 text-right text-slate-400 text-[10px] uppercase font-semibold">
+                                Total Modal Beli:
+                            </td>
+                            <td class="py-2.5 px-3 text-right font-mono text-xs font-semibold text-slate-400">-</td>
                             <td class="py-2.5 px-3 text-right font-mono font-extrabold text-indigo-700 bg-indigo-50/60 text-xs whitespace-nowrap">
                                 <?= formatRupiah($totalBeliBarang) ?>
                             </td>

@@ -631,6 +631,12 @@ function openModalUpdateStatusBarang(dist) {
     const qtyText = (parseFloat(dist.jumlah) || 1) + ' ' + (dist.satuan || 'Unit');
     document.getElementById('status_barang_modal_item').textContent = (dist.nama_komponen || '-') + ' (' + qtyText + ')';
 
+    const itemHargaKontrak = (dist.item_harga_satuan && parseFloat(dist.item_harga_satuan) > 0) 
+        ? formatRupiahString(parseFloat(dist.item_harga_satuan)) 
+        : '-';
+    const elHargaKontrak = document.getElementById('status_barang_modal_harga_kontrak');
+    if (elHargaKontrak) elHargaKontrak.textContent = itemHargaKontrak;
+
     const isSudah = (dist.status_barang === 'Sudah Dipesan');
     const optBelum = document.getElementById('opt_status_belum_pesan');
     const optSudah = document.getElementById('opt_status_sudah_pesan');

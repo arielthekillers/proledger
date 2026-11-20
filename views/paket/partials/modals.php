@@ -578,6 +578,10 @@
                 <div class="text-slate-400 text-[10px] font-medium uppercase tracking-wider">Tujuan Penerima:</div>
                 <div class="font-bold text-slate-800 mt-0.5" id="status_barang_modal_tujuan">-</div>
                 <div class="text-slate-600 text-[11px] mt-0.5" id="status_barang_modal_item">-</div>
+                <div class="text-[11px] text-slate-500 mt-1 pt-1 border-t border-slate-200/60 flex items-center justify-between">
+                    <span>Harga Satuan Kontrak:</span>
+                    <strong class="font-mono text-slate-800" id="status_barang_modal_harga_kontrak">-</strong>
+                </div>
             </div>
 
             <!-- Radio Pilihan Status Barang -->
