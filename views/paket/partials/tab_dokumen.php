@@ -166,6 +166,23 @@
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
+
+                <!-- Footer Summary Row -->
+                <?php if (!empty($groupedDistribusi)): ?>
+                    <tfoot class="bg-slate-50/90 font-bold text-slate-700 border-t-2 border-slate-200">
+                        <tr>
+                            <td colspan="3" class="py-2 px-3 text-right uppercase text-[10px] tracking-wider text-slate-500">
+                                Ringkasan Dokumen BAST:
+                            </td>
+                            <td class="py-2 px-2.5 text-center font-mono text-xs text-amber-700 bg-amber-50/60 font-extrabold">
+                                <?= (float)($distribusiSummary['total_qty_dialokasikan'] ?? 0) ?> Unit
+                            </td>
+                            <td colspan="2" class="py-2 px-3 text-slate-500 text-[10px] font-normal">
+                                <span class="font-bold text-amber-700"><?= count($uploadedBastByTujuan) ?></span> dari <?= count($groupedDistribusi) ?> berkas BAST telah diupload (<?= (int)(count($groupedDistribusi) - count($uploadedBastByTujuan)) ?> pending)
+                            </td>
+                        </tr>
+                    </tfoot>
+                <?php endif; ?>
             </table>
         </div>
     </div>
