@@ -326,6 +326,50 @@ class PaketController {
             }
         }
 
+        // Financial & Purchase Calculation
+        $hasNego = (!empty($paket['pagu_nego']) && (float)$paket['pagu_nego'] > 0);
+        $acuanPagu = $hasNego ? (float)$paket['pagu_nego'] : (float)$paket['pagu'];
+        $dppNilai = !empty($paket['dpp']) ? (float)$paket['dpp'] : calculateDPP($acuanPagu);
+        $persenPasal = isset($paket['persen_pasal']) && $paket['persen_pasal'] !== '' ? (float)$paket['persen_pasal'] : 13.0;
+        $persenAdmin = isset($paket['persen_admin']) && $paket['persen_admin'] !== '' ? (float)$paket['persen_admin'] : 2.0;
+        $basisPotongan = (($paket['tipe_potongan'] ?? 'dpp') === 'kontrak') ? $acuanPagu : $dppNilai;
+        $pasalVal = !empty($paket['pasal_13']) ? (float)$paket['pasal_13'] : calculatePasal($basisPotongan, $persenPasal);
+        $adminVal = isset($paket['admin_2']) ? (float)$paket['admin_2'] : calculateAdmin($basisPotongan, $persenAdmin);
+        $totalPasalVal = !empty($paket['total_pasal']) ? (float)$paket['total_pasal'] : ($pasalVal + $adminVal);
+
+        $totalBeliBarang = 0;
+        $statusDistBreakdown = [
+            'tiba_tujuan' => 0,
+            'tiba_gudang' => 0,
+            'tiba_kantor' => 0,
+            'belum_dipesan' => 0,
+            'dalam_pengiriman' => 0
+        ];
+
+        foreach ($distribusiList as $dist) {
+            $isOrdered = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
+            $sDist = $dist['status_distribusi'] ?? '';
+
+            if ($isOrdered && (float)($dist['harga_satuan'] ?? 0) > 0) {
+                $totalBeliBarang += ((float)$dist['harga_satuan'] * (float)$dist['jumlah']);
+            }
+
+            if (!$isOrdered) {
+                $statusDistBreakdown['belum_dipesan']++;
+            } elseif ($sDist === 'Tiba di Tujuan') {
+                $statusDistBreakdown['tiba_tujuan']++;
+            } elseif ($sDist === 'Tiba di Gudang') {
+                $statusDistBreakdown['tiba_gudang']++;
+            } elseif ($sDist === 'Tiba dirumah/kantor' || $sDist === 'Tiba di Rumah/Kantor') {
+                $statusDistBreakdown['tiba_kantor']++;
+            } else {
+                $statusDistBreakdown['dalam_pengiriman']++;
+            }
+        }
+
+        $estimasiProfit = max(0, $acuanPagu - $totalPasalVal - $totalBeliBarang);
+        $profitMarginPct = ($acuanPagu > 0) ? round(($estimasiProfit / $acuanPagu) * 100, 1) : 0;
+
         $tabProgress = [
             'items'       => ['done' => $itemsDone, 'total' => $totalItems],
             'distribusi'  => ['done' => $distDone, 'total' => $totalDist],
@@ -347,6 +391,10 @@ class PaketController {
             'dokumentasiMap' => $dokumentasiMap,
             'totalDokumentasiFoto' => $totalDokumentasiFoto,
             'tabProgress' => $tabProgress,
+            'statusDistBreakdown' => $statusDistBreakdown,
+            'totalBeliBarang' => $totalBeliBarang,
+            'estimasiProfit' => $estimasiProfit,
+            'profitMarginPct' => $profitMarginPct,
             'lokasiList' => $lokasiList,
             'kabupatenList' => $kabupatenList,
             'dokumenList' => $dokumenList,

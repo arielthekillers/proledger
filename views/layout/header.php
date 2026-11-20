@@ -45,6 +45,9 @@
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>window.APP_URL = '<?= APP_URL ?>';</script>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased font-sans text-sm">

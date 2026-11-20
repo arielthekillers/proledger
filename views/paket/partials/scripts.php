@@ -31,6 +31,10 @@ function switchDetailTab(tabName) {
         }
     });
 
+    if (tabName === 'info' && typeof initTabInfoCharts === 'function') {
+        setTimeout(initTabInfoCharts, 50);
+    }
+
     if (window.history && window.history.replaceState) {
         const u = new URL(window.location.href);
         u.searchParams.set('tab', tabName);

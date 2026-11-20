@@ -1,220 +1,479 @@
 <!-- ========================================== -->
-<!-- 3. TAB 1: INFORMASI PAKET                  -->
+<!-- 3. TAB 1: INFORMASI PAKET (EXECUTIVE SUMMARY)-->
 <!-- ========================================== -->
-<div id="tabContent_info" class="<?= ($activeTab === 'info') ? '' : 'hidden ' ?>space-y-6">
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-            <!-- Left Column: Financial & Tax Calculation -->
+<div id="tabContent_info" class="<?= ($activeTab === 'info') ? '' : 'hidden ' ?>space-y-4">
+
+    <!-- 1. TOP WORKFLOW PROGRESS STRIP (Rekapitulasi 4 Tahap Utama) -->
+    <?php
+    $itP   = $tabProgress['items'] ?? ['done' => 0, 'total' => 0];
+    $distP = $tabProgress['distribusi'] ?? ['done' => 0, 'total' => 0];
+    $dokP  = $tabProgress['dokumentasi'] ?? ['done' => 0, 'total' => 0];
+    $bastP = $tabProgress['dokumen'] ?? ['done' => 0, 'total' => 0];
+
+    // Persentase keseluruhan
+    $totalSteps = max(1, ($itP['total'] + $distP['total'] + $dokP['total'] + $bastP['total']));
+    $doneSteps  = ($itP['done'] + $distP['done'] + $dokP['done'] + $bastP['done']);
+    $overallProgress = min(100, round(($doneSteps / $totalSteps) * 100));
+    ?>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5 pb-3 border-b border-slate-100">
             <div>
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                        <ion-icon name="calculator-outline" class="text-base text-blue-600"></ion-icon>
-                        <span>Rincian Anggaran & Nilai Kontrak</span>
-                    </h3>
-                    <span class="text-[11px] text-slate-400 font-mono">Kode: #<?= htmlspecialchars($paket['kode_paket'] ?: $paket['id']) ?></span>
+                <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <ion-icon name="git-branch-outline" class="text-blue-600 text-sm"></ion-icon>
+                    <span>Status & Alur Pengerjaan Paket</span>
+                </h3>
+                <p class="text-[11px] text-slate-400 mt-0.5">Ringkasan progres terintegrasi dari alokasi barang hingga penerbitan BAST.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-500">Progres Keseluruhan:</span>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold <?= ($overallProgress >= 100) ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-50 text-blue-700 border border-blue-200/60' ?>">
+                    <?= $overallProgress ?>%
+                </span>
+            </div>
+        </div>
+
+        <!-- Flow Pipeline -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+            <!-- Step 1: Item / Spesifikasi -->
+            <button type="button" onclick="switchDetailTab('items')" 
+                    class="p-2.5 rounded-xl border text-left transition-all hover:scale-[1.01] cursor-pointer <?= ($itP['total'] > 0 && $itP['done'] >= $itP['total']) ? 'bg-emerald-50/50 border-emerald-200 hover:bg-emerald-50' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100' ?>">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                        <ion-icon name="list-outline" class="text-xs"></ion-icon>
+                        <span>1. Alokasi Item</span>
+                    </span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.2 rounded font-mono <?= ($itP['total'] > 0 && $itP['done'] >= $itP['total']) ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-700' ?>">
+                        <?= $itP['done'] ?>/<?= $itP['total'] ?>
+                    </span>
                 </div>
-                
-                <!-- Pagu & Nego Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                        <div class="text-xs text-slate-500 mb-1">Nilai Pagu Awal</div>
-                        <div class="font-bold text-slate-800 text-lg font-mono"><?= formatRupiah($paket['pagu']) ?></div>
-                    </div>
-                    <div class="p-4 rounded-xl <?= $hasNego ? 'bg-emerald-50/70 border-emerald-200' : 'bg-slate-50 border-slate-200/80' ?>">
-                        <div class="text-xs <?= $hasNego ? 'text-emerald-700 font-bold' : 'text-slate-500' ?> mb-1">
-                            Pagu Akhir (Hasil Nego) <?= $hasNego ? '<span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded ml-1 font-semibold">Acuan Aktif</span>' : '' ?>
-                        </div>
-                        <div class="font-bold <?= $hasNego ? 'text-emerald-700' : 'text-slate-400' ?> text-lg font-mono">
-                            <?= $hasNego ? formatRupiah($paket['pagu_nego']) : 'Tidak ada negosiasi' ?>
-                        </div>
+                <div class="text-xs font-bold text-slate-800 truncate"><?= (float)($itemSummary['total_qty'] ?? 0) ?> Unit Barang</div>
+                <div class="text-[10px] text-slate-400 mt-0.5"><?= (int)($itemSummary['total_item'] ?? 0) ?> Jenis Komponen</div>
+            </button>
+
+            <!-- Step 2: Distribusi -->
+            <button type="button" onclick="switchDetailTab('distribusi')" 
+                    class="p-2.5 rounded-xl border text-left transition-all hover:scale-[1.01] cursor-pointer <?= ($distP['total'] > 0 && $distP['done'] >= $distP['total']) ? 'bg-emerald-50/50 border-emerald-200 hover:bg-emerald-50' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100' ?>">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                        <ion-icon name="navigate-outline" class="text-xs"></ion-icon>
+                        <span>2. Distribusi</span>
+                    </span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.2 rounded font-mono <?= ($distP['total'] > 0 && $distP['done'] >= $distP['total']) ? 'bg-emerald-200 text-emerald-800' : 'bg-indigo-100 text-indigo-700' ?>">
+                        <?= $distP['done'] ?>/<?= $distP['total'] ?>
+                    </span>
+                </div>
+                <div class="text-xs font-bold text-slate-800 truncate"><?= $statusDistBreakdown['tiba_tujuan'] ?> Lokasi Tiba</div>
+                <div class="text-[10px] text-slate-400 mt-0.5"><?= $statusDistBreakdown['tiba_gudang'] ?> di Gudang &bull; <?= $statusDistBreakdown['belum_dipesan'] ?> Belum Pesan</div>
+            </button>
+
+            <!-- Step 3: Dokumentasi -->
+            <button type="button" onclick="switchDetailTab('dokumentasi')" 
+                    class="p-2.5 rounded-xl border text-left transition-all hover:scale-[1.01] cursor-pointer <?= ($dokP['total'] > 0 && $dokP['done'] >= $dokP['total']) ? 'bg-emerald-50/50 border-emerald-200 hover:bg-emerald-50' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100' ?>">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                        <ion-icon name="camera-outline" class="text-xs"></ion-icon>
+                        <span>3. Dokumentasi</span>
+                    </span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.2 rounded font-mono <?= ($dokP['total'] > 0 && $dokP['done'] >= $dokP['total']) ? 'bg-emerald-200 text-emerald-800' : 'bg-teal-100 text-teal-800' ?>">
+                        <?= $dokP['done'] ?>/<?= $dokP['total'] ?>
+                    </span>
+                </div>
+                <div class="text-xs font-bold text-slate-800 truncate"><?= (int)($totalDokumentasiFoto ?? 0) ?> Foto Terunggah</div>
+                <div class="text-[10px] text-slate-400 mt-0.5"><?= $dokP['done'] ?> dari <?= $dokP['total'] ?> Titik Lengkap</div>
+            </button>
+
+            <!-- Step 4: Dokumen BAST -->
+            <button type="button" onclick="switchDetailTab('dokumen')" 
+                    class="p-2.5 rounded-xl border text-left transition-all hover:scale-[1.01] cursor-pointer <?= ($bastP['total'] > 0 && $bastP['done'] >= $bastP['total']) ? 'bg-emerald-50/50 border-emerald-200 hover:bg-emerald-50' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100' ?>">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                        <ion-icon name="document-text-outline" class="text-xs"></ion-icon>
+                        <span>4. Berkas BAST</span>
+                    </span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.2 rounded font-mono <?= ($bastP['total'] > 0 && $bastP['done'] >= $bastP['total']) ? 'bg-emerald-200 text-emerald-800' : 'bg-amber-100 text-amber-800' ?>">
+                        <?= $bastP['done'] ?>/<?= $bastP['total'] ?>
+                    </span>
+                </div>
+                <div class="text-xs font-bold text-slate-800 truncate"><?= $bastP['done'] ?> BAST Diupload</div>
+                <div class="text-[10px] text-slate-400 mt-0.5"><?= max(0, $bastP['total'] - $bastP['done']) ?> Berkas Menunggu</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. GRAFIK VISUALISASI INTERAKTIF (Chart.js) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Grafik 1: Status Distribusi & Pengiriman (Donut Chart) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <ion-icon name="pie-chart-outline" class="text-indigo-600 text-sm"></ion-icon>
+                        <span>Monitoring Logistik Distribusi</span>
+                    </h4>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Sebaran status titik alokasi pengiriman barang.</p>
+                </div>
+                <span class="text-[11px] font-semibold text-slate-500 font-mono"><?= count($distribusiList) ?> Titik Total</span>
+            </div>
+
+            <!-- Canvas & Legend -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 py-4 my-auto">
+                <div class="relative w-36 h-36 shrink-0 flex items-center justify-center">
+                    <canvas id="chartStatusDistribusi" width="144" height="144"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span class="text-base font-extrabold text-slate-800 font-mono" id="chartDistPercent">
+                            <?= (count($distribusiList) > 0) ? round(($statusDistBreakdown['tiba_tujuan'] / count($distribusiList)) * 100) : 0 ?>%
+                        </span>
+                        <span class="text-[9px] text-slate-400 font-medium uppercase tracking-tight">Sampai</span>
                     </div>
                 </div>
 
-                <!-- Breakdown Perpajakan & Pasal Grid -->
-                <div class="p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-blue-50/30 border border-slate-200/80 space-y-3.5">
-                    <div class="flex items-center justify-between text-xs pb-2 border-b border-slate-200/60">
-                        <span class="text-slate-600 font-medium">Nilai Acuan Kontrak:</span>
-                        <span class="font-bold text-slate-800 font-mono text-sm"><?= formatRupiah($acuan) ?></span>
+                <!-- Clean Legend -->
+                <div class="space-y-1.5 text-xs w-full sm:w-auto">
+                    <div class="flex items-center justify-between sm:justify-start gap-3">
+                        <span class="flex items-center gap-2 text-slate-600">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+                            <span>Tiba di Tujuan</span>
+                        </span>
+                        <strong class="font-mono text-slate-800"><?= $statusDistBreakdown['tiba_tujuan'] ?></strong>
                     </div>
-                    <div class="flex items-center justify-between text-xs pb-2 border-b border-slate-200/60">
-                        <div>
-                            <span class="text-slate-600 font-medium">DPP (Dasar Pengenaan Pajak)</span>
-                            <span class="text-[10px] text-slate-400 block">Setelah dikurangi PPN 11% (Nilai / 1.11)</span>
-                        </div>
-                        <span class="font-bold text-slate-800 font-mono text-sm"><?= formatRupiah($dpp) ?></span>
+                    <div class="flex items-center justify-between sm:justify-start gap-3">
+                        <span class="flex items-center gap-2 text-slate-600">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
+                            <span>Tiba di Gudang Transit</span>
+                        </span>
+                        <strong class="font-mono text-slate-800"><?= $statusDistBreakdown['tiba_gudang'] ?></strong>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 pt-1">
-                        <div class="p-3 rounded-xl bg-white border border-slate-100 shadow-2xs">
-                            <div class="text-[11px] text-slate-500 font-medium">Potongan Pasal (<?= (float)$persenPasal ?>% <?= $basisLabel ?>)</div>
-                            <div class="font-bold text-slate-800 font-mono text-sm mt-0.5"><?= formatRupiah($pasalVal) ?></div>
-                        </div>
-                        <div class="p-3 rounded-xl bg-white border border-slate-100 shadow-2xs">
-                            <div class="text-[11px] text-slate-500 font-medium">Admin (<?= (float)$persenAdmin ?>% <?= $basisLabel ?>)</div>
-                            <div class="font-bold text-slate-800 font-mono text-sm mt-0.5">
-                                <?= ($persenAdmin > 0) ? formatRupiah($adminVal) : '<span class="text-slate-400">-</span>' ?>
-                            </div>
-                        </div>
+                    <div class="flex items-center justify-between sm:justify-start gap-3">
+                        <span class="flex items-center gap-2 text-slate-600">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0"></span>
+                            <span>Tiba di Rumah/Kantor</span>
+                        </span>
+                        <strong class="font-mono text-slate-800"><?= $statusDistBreakdown['tiba_kantor'] ?></strong>
                     </div>
-                    <div class="flex items-center justify-between text-xs pt-3 border-t border-slate-200/60">
-                        <span class="text-amber-900 font-bold">Total Pasal (<?= (float)$totalPersen ?>% dari <?= $basisLabel ?>):</span>
-                        <span class="font-extrabold text-amber-700 font-mono text-lg"><?= formatRupiah($totalPasal) ?></span>
+                    <div class="flex items-center justify-between sm:justify-start gap-3">
+                        <span class="flex items-center gap-2 text-slate-600">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-300 shrink-0"></span>
+                            <span>Belum Dipesan / OTW</span>
+                        </span>
+                        <strong class="font-mono text-slate-800"><?= ($statusDistBreakdown['belum_dipesan'] + $statusDistBreakdown['dalam_pengiriman']) ?></strong>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Project & Execution Metadata -->
-            <div class="space-y-6">
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                <span>Rute tujuan tercatat: <?= (int)($distribusiSummary['total_tujuan'] ?? 0) ?> sekolah</span>
+                <button type="button" onclick="switchDetailTab('distribusi')" class="text-blue-600 hover:underline font-semibold">Kelola Rute &rarr;</button>
+            </div>
+        </div>
+
+        <!-- Grafik 2: Finansial & Estimasi Keuntungan (Bar / Donut Chart) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <ion-icon name="information-circle-outline" class="text-base text-blue-600"></ion-icon>
-                        <span>Informasi Pelaksana & Status</span>
-                    </h3>
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <ion-icon name="wallet-outline" class="text-emerald-600 text-sm"></ion-icon>
+                        <span>Finansial & Estimasi Margin Profit</span>
+                    </h4>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Komposisi nilai kontrak, modal barang, dan estimasi keuntungan bersih.</p>
+                </div>
+                <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                    Margin: <?= $profitMarginPct ?>%
+                </span>
+            </div>
 
-                    <!-- Perusahaan Card -->
-                    <?php if(!empty($paket['perusahaan'])): ?>
-                        <a href="<?= APP_URL ?>/perusahaan/detail/<?= $paket['perusahaan_id'] ?>" class="block p-4 rounded-xl bg-slate-50 border border-slate-200/80 hover:bg-blue-50 hover:border-blue-200 transition-all group mb-4">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-blue-600/20">
-                                    <?= strtoupper(substr($paket['perusahaan'], 0, 2)) ?>
-                                </div>
-                                <div>
-                                    <div class="font-bold text-slate-800 group-hover:text-blue-700 transition-colors"><?= htmlspecialchars($paket['perusahaan']) ?></div>
-                                    <div class="text-xs text-slate-500 group-hover:text-blue-500 flex items-center gap-1">
-                                        <span>Lihat Profil Perusahaan</span>
-                                        <ion-icon name="arrow-forward"></ion-icon>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    <?php endif; ?>
-
-                    <!-- Status, Progres, PJ & Tanggal Grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200/80">
-                        <div>
-                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1.5">Penanggung Jawab</div>
-                            <div><?= getPenanggungJawabBadge($paket['penanggung_jawab'] ?? '') ?></div>
-                        </div>
-                        <div>
-                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1.5">Progres Barang</div>
-                            <div><?= getProgresBarangBadge($paket['progres_barang'] ?? 'Belum') ?></div>
-                        </div>
-                        <div>
-                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1.5">Status Kas</div>
-                            <div><?= getStatusBadge($paket['status'] ?? 'Proses') ?></div>
-                        </div>
-                        <div>
-                            <div class="text-xs font-semibold text-slate-500 uppercase mb-1.5">Tanggal Dibuat</div>
-                            <div class="font-medium text-slate-800 text-xs mt-1"><?= formatTanggal($paket['created_at']) ?></div>
-                        </div>
+            <!-- Canvas & Legend -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 py-4 my-auto">
+                <div class="relative w-36 h-36 shrink-0 flex items-center justify-center">
+                    <canvas id="chartFinancial" width="144" height="144"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span class="text-xs font-bold text-slate-400 font-mono">Pagu</span>
+                        <span class="text-[11px] font-extrabold text-slate-700 font-mono truncate max-w-[100px] text-center" title="<?= formatRupiah($acuan) ?>">
+                            <?= formatRupiah($acuan) ?>
+                        </span>
                     </div>
                 </div>
 
-                <!-- Group Paket Info -->
-                <div class="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-lg">
-                            <ion-icon name="folder-open-outline"></ion-icon>
-                        </div>
-                        <div>
-                            <div class="text-[11px] font-bold text-indigo-500 uppercase">Group Paket</div>
-                            <div class="text-sm font-bold text-slate-800">
-                                <?= !empty($paket['nama_group']) ? htmlspecialchars($paket['nama_group']) : 'Paket Mandiri (Tanpa Group)' ?>
-                            </div>
-                        </div>
+                <!-- Clean Legend -->
+                <div class="space-y-1.5 text-xs w-full sm:w-auto">
+                    <div class="flex items-center justify-between sm:justify-start gap-3">
+                        <span class="flex items-center gap-2 text-slate-600">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 shrink-0"></span>
+                            <span>Est. Keuntungan Bersih</span>
+                        </span>
+                        <strong class="font-mono text-emerald-700 font-bold"><?= formatRupiah($estimasiProfit) ?></strong>
                     </div>
-                    <?php if (!empty($paket['group_id'])): ?>
-                        <a href="<?= APP_URL ?>/group/detail/<?= $paket['group_id'] ?>" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
-                            <span>Buka Group</span>
-                            <ion-icon name="arrow-forward"></ion-icon>
-                        </a>
-                    <?php endif; ?>
+                    <div class="flex items-center justify-between sm:justify-start gap-3">
+                        <span class="flex items-center gap-2 text-slate-600">
+                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 shrink-0"></span>
+                            <span>Modal Beli Barang</span>
+                        </span>
+                        <strong class="font-mono text-slate-800"><?= formatRupiah($totalBeliBarang) ?></strong>
+                    </div>
+                    <div class="flex items-center justify-between sm:justify-start gap-3">
+                        <span class="flex items-center gap-2 text-slate-600">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
+                            <span>Beban Pajak & Potongan</span>
+                        </span>
+                        <strong class="font-mono text-slate-800"><?= formatRupiah($totalPasal) ?></strong>
+                    </div>
                 </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                <span>Nilai DPP: <?= formatRupiah($dpp) ?></span>
+                <span class="font-medium text-slate-600">Potongan: <?= (float)$totalPersen ?>%</span>
             </div>
         </div>
     </div>
 
-    <!-- Ringkasan Item & Distribusi Pengadaan (Summary Terpusat) -->
-    <?php
-    $totalReqQty = (float)($itemSummary['total_qty'] ?? 0);
-    $totalDistQty = (float)($distribusiSummary['total_qty_dialokasikan'] ?? 0);
-    $isComplete = ($totalDistQty >= $totalReqQty && $totalReqQty > 0);
-    $pctDist = ($totalReqQty > 0) ? min(100, round(($totalDistQty / $totalReqQty) * 100)) : 100;
-    ?>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Ringkasan Item & Komponen -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shadow-2xs">
-                        <ion-icon name="list-outline"></ion-icon>
+    <!-- 3. DETAIL METRIK COMPACT (Tabel Tanpa Kotak-kotak Bertumpuk) -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+            <!-- Kolom Kiri: Rincian Finansial & Pajak -->
+            <div class="p-4 sm:p-5 space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <ion-icon name="calculator-outline" class="text-blue-600 text-sm"></ion-icon>
+                        <span>Rincian Finansial & Perpajakan</span>
+                    </h4>
+                    <span class="text-[11px] text-slate-400 font-mono">Kode: #<?= htmlspecialchars($paket['kode_paket'] ?: $paket['id']) ?></span>
+                </div>
+
+                <div class="divide-y divide-slate-100 text-xs">
+                    <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Nilai Pagu Awal Kontrak</span>
+                        <span class="font-mono font-bold text-slate-800"><?= formatRupiah($paket['pagu']) ?></span>
                     </div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">Ringkasan Item & Spesifikasi</h4>
-                        <p class="text-[11px] text-slate-400">Total volume dan nilai realisasi barang</p>
+
+                    <?php if ($hasNego): ?>
+                        <div class="py-2 flex items-center justify-between">
+                            <span class="text-emerald-700 font-semibold flex items-center gap-1">
+                                <span>Nilai Hasil Negosiasi (Pagu Akhir)</span>
+                                <span class="text-[9px] bg-emerald-100 px-1 py-0.2 rounded font-bold">Acuan</span>
+                            </span>
+                            <span class="font-mono font-bold text-emerald-700"><?= formatRupiah($paket['pagu_nego']) ?></span>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="py-2 flex items-center justify-between">
+                        <div>
+                            <span class="text-slate-600">DPP (Dasar Pengenaan Pajak)</span>
+                            <span class="text-[10px] text-slate-400 block">Nilai dikurangi PPN 11% (Nilai / 1.11)</span>
+                        </div>
+                        <span class="font-mono font-bold text-slate-800"><?= formatRupiah($dpp) ?></span>
+                    </div>
+
+                    <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Potongan Pasal (<?= (float)$persenPasal ?>% <?= $basisLabel ?>)</span>
+                        <span class="font-mono font-semibold text-slate-700"><?= formatRupiah($pasalVal) ?></span>
+                    </div>
+
+                    <?php if ($persenAdmin > 0): ?>
+                        <div class="py-2 flex items-center justify-between">
+                            <span class="text-slate-500">Biaya Administrasi (<?= (float)$persenAdmin ?>% <?= $basisLabel ?>)</span>
+                            <span class="font-mono font-semibold text-slate-700"><?= formatRupiah($adminVal) ?></span>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="py-2.5 flex items-center justify-between bg-amber-50/50 -mx-4 px-4 sm:-mx-5 sm:px-5">
+                        <span class="font-bold text-amber-900">Total Potongan (<?= (float)$totalPersen ?>% dari <?= $basisLabel ?>)</span>
+                        <span class="font-mono font-extrabold text-amber-700 text-sm"><?= formatRupiah($totalPasal) ?></span>
                     </div>
                 </div>
-                <button type="button" onclick="switchDetailTab('items')" class="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors">
-                    <span>Ke Tab Item</span>
-                    <ion-icon name="arrow-forward"></ion-icon>
-                </button>
             </div>
 
-            <div class="grid grid-cols-3 gap-3">
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
-                    <span class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Total Item</span>
-                    <span class="font-bold text-slate-800 text-base mt-0.5 block"><?= (int)$itemSummary['total_item'] ?> <span class="text-[11px] font-normal text-slate-400">Jenis</span></span>
+            <!-- Kolom Kanan: Rekapitulasi Operasional & Metadata Pelaksana -->
+            <div class="p-4 sm:p-5 space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <ion-icon name="briefcase-outline" class="text-slate-600 text-sm"></ion-icon>
+                        <span>Informasi Pelaksana & Rekap 4 Tab</span>
+                    </h4>
+                    <span class="text-[11px] text-slate-400">Status Terkini</span>
                 </div>
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
-                    <span class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Total Kuantitas</span>
-                    <span class="font-bold text-slate-800 text-base mt-0.5 block"><?= (float)$itemSummary['total_qty'] ?> <span class="text-[11px] font-normal text-slate-400">Unit</span></span>
-                </div>
-                <div class="p-3 bg-blue-50/80 rounded-xl border border-blue-200/70">
-                    <span class="block text-[10px] font-bold text-blue-700 uppercase tracking-wider">Total Nilai Item</span>
-                    <span class="font-extrabold text-blue-700 font-mono text-xs sm:text-sm mt-0.5 block truncate" title="<?= formatRupiah($itemSummary['grand_total']) ?>">
-                        <?= formatRupiah($itemSummary['grand_total']) ?>
-                    </span>
-                </div>
-            </div>
-        </div>
 
-        <!-- Ringkasan Alokasi & Distribusi -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shadow-2xs">
-                        <ion-icon name="navigate-outline"></ion-icon>
+                <div class="divide-y divide-slate-100 text-xs">
+                    <!-- Perusahaan & Group -->
+                    <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Perusahaan Pelaksana</span>
+                        <?php if (!empty($paket['perusahaan'])): ?>
+                            <a href="<?= APP_URL ?>/perusahaan/detail/<?= $paket['perusahaan_id'] ?>" class="font-semibold text-blue-600 hover:underline inline-flex items-center gap-1">
+                                <span><?= htmlspecialchars($paket['perusahaan']) ?></span>
+                                <ion-icon name="open-outline" class="text-[10px]"></ion-icon>
+                            </a>
+                        <?php else: ?>
+                            <span class="text-slate-400">-</span>
+                        <?php endif; ?>
                     </div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 text-sm">Ringkasan Alokasi Distribusi</h4>
-                        <p class="text-[11px] text-slate-400">Penyaluran ke lokasi penerima</p>
-                    </div>
-                </div>
-                <button type="button" onclick="switchDetailTab('distribusi')" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors">
-                    <span>Ke Tab Distribusi</span>
-                    <ion-icon name="arrow-forward"></ion-icon>
-                </button>
-            </div>
 
-            <div class="grid grid-cols-3 gap-3">
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
-                    <span class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Titik Penerima</span>
-                    <span class="font-bold text-slate-800 text-base mt-0.5 block"><?= (int)($distribusiSummary['total_tujuan'] ?? 0) ?> <span class="text-[11px] font-normal text-slate-400">Lokasi</span></span>
-                </div>
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/70">
-                    <span class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Teralokasi</span>
-                    <span class="font-bold text-slate-800 text-base mt-0.5 block">
-                        <?= (float)($distribusiSummary['total_qty_dialokasikan'] ?? 0) ?><span class="text-[11px] font-normal text-slate-400">/<?= (float)$itemSummary['total_qty'] ?></span>
-                    </span>
-                </div>
-                <div class="p-3 <?= $isComplete ? 'bg-emerald-50/80 border-emerald-200/70' : 'bg-amber-50/80 border-amber-200/70' ?> rounded-xl border">
-                    <span class="block text-[10px] font-bold <?= $isComplete ? 'text-emerald-700' : 'text-amber-700' ?> uppercase tracking-wider">Status Alokasi</span>
-                    <div class="flex items-center gap-1 mt-1">
-                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold <?= $isComplete ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' ?>">
-                            <?= $pctDist ?>% <?= $isComplete ? 'Lengkap' : 'Sebagian' ?>
+                    <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Group Paket</span>
+                        <span class="font-semibold text-slate-800">
+                            <?= !empty($paket['nama_group']) ? htmlspecialchars($paket['nama_group']) : 'Paket Mandiri' ?>
                         </span>
+                    </div>
+
+                    <!-- Shortcut Rekap Tab Item -->
+                    <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Total Komponen Barang</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono font-bold text-slate-800"><?= (int)$itemSummary['total_item'] ?> Item (<?= (float)$itemSummary['total_qty'] ?> Unit)</span>
+                            <button type="button" onclick="switchDetailTab('items')" class="text-blue-600 hover:text-blue-800 text-[11px] font-semibold flex items-center">
+                                <span>Lihat</span>
+                                <ion-icon name="chevron-forward-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Shortcut Rekap Tab Distribusi -->
+                    <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Penyaluran Distribusi</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono font-bold text-slate-800"><?= $statusDistBreakdown['tiba_tujuan'] ?>/<?= count($distribusiList) ?> Tiba di Tujuan</span>
+                            <button type="button" onclick="switchDetailTab('distribusi')" class="text-blue-600 hover:text-blue-800 text-[11px] font-semibold flex items-center">
+                                <span>Lihat</span>
+                                <ion-icon name="chevron-forward-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Shortcut Rekap Tab Dokumentasi -->
+                    <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Foto Dokumentasi</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono font-bold text-slate-800"><?= $dokP['done'] ?>/<?= $dokP['total'] ?> Lokasi (<?= (int)$totalDokumentasiFoto ?> Foto)</span>
+                            <button type="button" onclick="switchDetailTab('dokumentasi')" class="text-blue-600 hover:text-blue-800 text-[11px] font-semibold flex items-center">
+                                <span>Lihat</span>
+                                <ion-icon name="chevron-forward-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Shortcut Rekap Tab BAST -->
+                    <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Berkas BAST Terbit</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono font-bold text-slate-800"><?= $bastP['done'] ?>/<?= $bastP['total'] ?> Berkas Terupload</span>
+                            <button type="button" onclick="switchDetailTab('dokumen')" class="text-blue-600 hover:text-blue-800 text-[11px] font-semibold flex items-center">
+                                <span>Lihat</span>
+                                <ion-icon name="chevron-forward-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status Kas & Tanggal -->
+                    <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Status Kas & Dibuat</span>
+                        <div class="flex items-center gap-2">
+                            <div><?= getStatusBadge($paket['status'] ?? 'Proses') ?></div>
+                            <span class="text-slate-400 text-[11px]">&bull; <?= formatTanggal($paket['created_at']) ?></span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- SCRIPT INIT CHART.JS -->
+<script>
+let chartDistInstance = null;
+let chartFinInstance = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initTabInfoCharts();
+});
+
+function initTabInfoCharts() {
+    if (typeof Chart === 'undefined') return;
+
+    // 1. Chart Donut Status Distribusi
+    const ctxDist = document.getElementById('chartStatusDistribusi');
+    if (ctxDist) {
+        if (chartDistInstance) {
+            chartDistInstance.destroy();
+            chartDistInstance = null;
+        }
+
+        const dataDist = [
+            <?= (int)$statusDistBreakdown['tiba_tujuan'] ?>,
+            <?= (int)$statusDistBreakdown['tiba_gudang'] ?>,
+            <?= (int)$statusDistBreakdown['tiba_kantor'] ?>,
+            <?= (int)($statusDistBreakdown['belum_dipesan'] + $statusDistBreakdown['dalam_pengiriman']) ?>
+        ];
+        const isAllZero = dataDist.every(v => v === 0);
+
+        chartDistInstance = new Chart(ctxDist, {
+            type: 'doughnut',
+            data: {
+                labels: ['Tiba di Tujuan', 'Tiba di Gudang', 'Tiba di Rumah/Kantor', 'Belum Dipesan / OTW'],
+                datasets: [{
+                    data: isAllZero ? [0, 0, 0, 1] : dataDist,
+                    backgroundColor: isAllZero ? ['#E2E8F0', '#E2E8F0', '#E2E8F0', '#CBD5E1'] : ['#10B981', '#F59E0B', '#3B82F6', '#CBD5E1'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: !isAllZero,
+                        callbacks: {
+                            label: function(c) {
+                                return ' ' + c.label + ': ' + c.raw + ' titik';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Chart Donut Finansial & Profit
+    const ctxFin = document.getElementById('chartFinancial');
+    if (ctxFin) {
+        if (chartFinInstance) {
+            chartFinInstance.destroy();
+            chartFinInstance = null;
+        }
+
+        const estProfit = <?= (float)$estimasiProfit ?>;
+        const totalBeli = <?= (float)$totalBeliBarang ?>;
+        const totalPajak = <?= (float)$totalPasal ?>;
+
+        chartFinInstance = new Chart(ctxFin, {
+            type: 'doughnut',
+            data: {
+                labels: ['Est. Keuntungan Bersih', 'Modal Beli Barang', 'Beban Pajak & Potongan'],
+                datasets: [{
+                    data: [estProfit, totalBeli, totalPajak],
+                    backgroundColor: ['#059669', '#6366F1', '#F59E0B'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(c) {
+                                return ' ' + c.label + ': Rp ' + Number(c.raw).toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+</script>
