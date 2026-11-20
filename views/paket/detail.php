@@ -63,45 +63,17 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
 <!-- ========================================== -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
     <div class="min-w-0">
-        <div class="flex items-center gap-2 flex-wrap">
-            <h1 class="text-lg md:text-xl font-bold text-slate-800 leading-snug">
-                <?= htmlspecialchars($paket['nama_paket']) ?>
-            </h1>
-            <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/80 font-mono font-bold text-[11px] tracking-wide shrink-0">
-                #<?= htmlspecialchars($paket['kode_paket'] ?: $paket['id']) ?>
-            </span>
-        </div>
-        <div class="flex items-center gap-2 mt-1 text-xs text-slate-500 flex-wrap">
-            <?php if (!empty($paket['perusahaan'])): ?>
-                <a href="<?= APP_URL ?>/perusahaan/detail/<?= $paket['perusahaan_id'] ?>" class="text-slate-600 font-medium inline-flex items-center gap-1 hover:text-blue-600 transition-colors">
-                    <ion-icon name="business-outline" class="text-slate-400 text-xs"></ion-icon>
-                    <span><?= htmlspecialchars($paket['perusahaan']) ?></span>
-                </a>
-            <?php endif; ?>
-
-            <?php if (!empty($paket['nama_group'])): ?>
-                <span class="text-slate-300">&bull;</span>
-                <a href="<?= APP_URL ?>/group/detail/<?= $paket['group_id'] ?>" class="text-slate-600 hover:text-indigo-600 inline-flex items-center gap-1 transition-colors">
+        <h1 class="text-lg md:text-xl font-bold text-slate-800 leading-snug">
+            <?= htmlspecialchars($paket['nama_paket']) ?>
+        </h1>
+        <?php if (!empty($paket['nama_group'])): ?>
+            <div class="mt-0.5">
+                <a href="<?= APP_URL ?>/group/detail/<?= $paket['group_id'] ?>" class="text-xs text-slate-500 hover:text-indigo-600 inline-flex items-center gap-1 transition-colors">
                     <ion-icon name="folder-outline" class="text-slate-400 text-xs"></ion-icon>
                     <span>Group: <?= htmlspecialchars($paket['nama_group']) ?></span>
                 </a>
-            <?php endif; ?>
-
-            <?php if (!empty($paket['nomor_sp'])): ?>
-                <span class="text-slate-300">&bull;</span>
-                <span class="text-slate-500 font-mono text-[11px] inline-flex items-center gap-1" title="Nomor Surat Pesanan / SPK">
-                    <span>No. SP: <?= htmlspecialchars($paket['nomor_sp']) ?></span>
-                </span>
-            <?php endif; ?>
-
-            <?php if (!empty($paket['kab_kota'])): ?>
-                <span class="text-slate-300">&bull;</span>
-                <span class="text-slate-500 inline-flex items-center gap-1">
-                    <ion-icon name="location-outline" class="text-slate-400 text-xs"></ion-icon>
-                    <span><?= htmlspecialchars($paket['kab_kota']) ?></span>
-                </span>
-            <?php endif; ?>
-        </div>
+            </div>
+        <?php endif; ?>
     </div>
     
     <div class="flex items-center gap-2 shrink-0">
