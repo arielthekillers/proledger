@@ -687,11 +687,17 @@ function submitUpdateStatusBarang(e) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            window.ProToast?.show?.(data.message || 'Status barang berhasil disimpan!', 'success');
-            const targetUrl = new URL(window.location.href);
-            targetUrl.searchParams.set('tab', 'distribusi');
-            targetUrl.hash = 'distribusi';
-            window.location.href = targetUrl.toString();
+            window.ProToast?.success ? window.ProToast.success(data.message || 'Status barang berhasil disimpan!') : window.ProToast?.show?.('success', data.message || 'Status barang berhasil disimpan!');
+            window.ProModal.close('modalUpdateStatusBarang');
+            if (window.history && window.history.replaceState) {
+                const targetUrl = new URL(window.location.href);
+                targetUrl.searchParams.set('tab', 'distribusi');
+                targetUrl.hash = 'distribusi';
+                window.history.replaceState(null, '', targetUrl.toString());
+            }
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
         } else {
             alert(data.message || 'Gagal menyimpan status barang.');
             if (btn) {
@@ -759,11 +765,17 @@ function submitUpdateStatusDistribusi(e) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            window.ProToast?.show?.(data.message || 'Status distribusi berhasil disimpan!', 'success');
-            const targetUrl = new URL(window.location.href);
-            targetUrl.searchParams.set('tab', 'distribusi');
-            targetUrl.hash = 'distribusi';
-            window.location.href = targetUrl.toString();
+            window.ProToast?.success ? window.ProToast.success(data.message || 'Status distribusi berhasil disimpan!') : window.ProToast?.show?.('success', data.message || 'Status distribusi berhasil disimpan!');
+            window.ProModal.close('modalUpdateStatusDistribusi');
+            if (window.history && window.history.replaceState) {
+                const targetUrl = new URL(window.location.href);
+                targetUrl.searchParams.set('tab', 'distribusi');
+                targetUrl.hash = 'distribusi';
+                window.history.replaceState(null, '', targetUrl.toString());
+            }
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
         } else {
             alert(data.message || 'Gagal menyimpan status distribusi.');
             if (btn) {
