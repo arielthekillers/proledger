@@ -26,8 +26,8 @@
                 <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200/90 tracking-wider">
                     <tr>
                         <th class="py-2.5 px-3 w-8 text-center">NO</th>
-                        <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
                         <th class="py-2.5 px-3 min-w-[150px]">KOMPONEN BARANG</th>
+                        <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[70px]">SATUAN</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[60px]">JUMLAH</th>
                         <th class="py-2.5 px-3 min-w-[130px]">STATUS DISTRIBUSI</th>
@@ -68,14 +68,17 @@
                                     <?= $no++ ?>
                                 </td>
 
-                                <!-- Tujuan Penerima -->
-                                <td class="py-2 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
-                                    <?= htmlspecialchars($dist['nama_tujuan']) ?>
+                                <!-- Komponen Barang -->
+                                <td class="py-2 px-3 whitespace-nowrap text-xs font-bold text-slate-800">
+                                    <?= htmlspecialchars($dist['nama_komponen'] ?: '-') ?>
                                 </td>
 
-                                <!-- Komponen Barang (Normal / Tidak Bold) -->
+                                <!-- Tujuan Penerima -->
                                 <td class="py-2 px-3 whitespace-nowrap text-xs text-slate-700">
-                                    <?= htmlspecialchars($dist['nama_komponen'] ?: '-') ?>
+                                    <div class="font-semibold text-slate-800"><?= htmlspecialchars($dist['nama_tujuan']) ?></div>
+                                    <?php if (!empty($dist['kab_kota'])): ?>
+                                        <div class="text-[10px] text-slate-400 font-normal"><?= htmlspecialchars($dist['kab_kota']) ?></div>
+                                    <?php endif; ?>
                                 </td>
 
                                 <!-- Satuan -->

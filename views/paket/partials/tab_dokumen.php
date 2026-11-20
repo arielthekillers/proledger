@@ -37,8 +37,8 @@
                 <thead class="bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                     <tr>
                         <th class="py-2.5 px-3 w-8 text-center">NO</th>
-                        <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
                         <th class="py-2.5 px-3 min-w-[180px]">ITEM KOMPONEN</th>
+                        <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[70px]">TOTAL QTY</th>
                         <th class="py-2.5 px-3 text-center min-w-[140px]">STATUS PENERIMAAN</th>
                         <th class="py-2.5 px-3 text-right min-w-[200px]">AKSI BAST</th>
@@ -71,14 +71,14 @@
                                     <?= $grpNo++ ?>
                                 </td>
 
-                                <!-- Tujuan Penerima (Hanya nama sekolah / tujuan, tanpa info kepsek & alamat) -->
-                                <td class="py-2 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
-                                    <?= htmlspecialchars($grp['nama_tujuan']) ?>
+                                <!-- Daftar Item Komponen -->
+                                <td class="py-2 px-3 whitespace-nowrap text-xs font-bold text-slate-800 max-w-xs truncate" title="<?= $itemsText ?>">
+                                    <?= $itemsText ?>
                                 </td>
 
-                                <!-- Daftar Item Komponen -->
-                                <td class="py-2 px-3 whitespace-nowrap text-xs text-slate-700 max-w-xs truncate" title="<?= $itemsText ?>">
-                                    <?= $itemsText ?>
+                                <!-- Tujuan Penerima -->
+                                <td class="py-2 px-3 whitespace-nowrap text-xs text-slate-700">
+                                    <div class="font-semibold text-slate-800"><?= htmlspecialchars($grp['nama_tujuan']) ?></div>
                                 </td>
 
                                 <!-- Total Qty -->

@@ -166,8 +166,8 @@
                                             <table class="w-full text-left text-[11px]">
                                                 <thead class="bg-slate-50 text-[10px] text-slate-500 uppercase font-bold border-b border-slate-100">
                                                     <tr>
-                                                        <th class="py-1.5 px-3">Tujuan Penerima</th>
                                                         <th class="py-1.5 px-3">Barang Pesanan Toko</th>
+                                                        <th class="py-1.5 px-3">Tujuan Penerima</th>
                                                         <th class="py-1.5 px-2.5 text-center">Satuan</th>
                                                         <th class="py-1.5 px-2.5 text-center">Qty</th>
                                                         <th class="py-1.5 px-3 text-right">Harga Beli Satuan</th>
@@ -182,11 +182,11 @@
                                                         $dSubtotal = $dQty * $dHppSatuan;
                                                     ?>
                                                         <tr>
+                                                            <td class="py-2 px-3 text-slate-700 font-medium">
+                                                                <?= !empty($d['nama_barang']) ? htmlspecialchars($d['nama_barang']) : '<span class="text-slate-400 italic">Sesuai komponen</span>' ?>
+                                                            </td>
                                                             <td class="py-2 px-3 font-medium text-slate-800">
                                                                 <?= htmlspecialchars($d['nama_tujuan']) ?>
-                                                            </td>
-                                                            <td class="py-2 px-3 text-slate-600">
-                                                                <?= !empty($d['nama_barang']) ? htmlspecialchars($d['nama_barang']) : '<span class="text-slate-400 italic">Sesuai komponen</span>' ?>
                                                             </td>
                                                             <td class="py-2 px-2.5 text-center">
                                                                 <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-xs">
