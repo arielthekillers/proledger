@@ -75,13 +75,13 @@
 
                                 <!-- Satuan -->
                                 <td class="py-1.5 px-2.5 text-center whitespace-nowrap">
-                                    <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[10px]">
+                                    <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold text-xs">
                                         <?= htmlspecialchars($item['satuan'] ?: 'Unit') ?>
                                     </span>
                                 </td>
 
                                 <!-- Jumlah -->
-                                <td class="py-1.5 px-2.5 text-center font-mono font-bold text-slate-800 text-xs whitespace-nowrap">
+                                <td class="py-1.5 px-2.5 text-center font-bold text-slate-800 text-xs whitespace-nowrap">
                                     <?= (float)$item['jumlah'] ?>
                                 </td>
 

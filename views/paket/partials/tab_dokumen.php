@@ -82,8 +82,8 @@
                                 </td>
 
                                 <!-- Total Qty -->
-                                <td class="py-1.5 px-2.5 text-center whitespace-nowrap bg-indigo-50/20 font-mono font-bold text-slate-900 text-xs">
-                                    <?= (float)$grp['total_qty'] ?> <span class="text-[10px] text-slate-500 font-medium">Unit</span>
+                                <td class="py-1.5 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
+                                    <?= (float)$grp['total_qty'] ?> Unit
                                 </td>
 
                                 <!-- Status Penerimaan (Semua barang harus Tiba di Gudang atau Tiba di Tujuan) -->
@@ -174,7 +174,7 @@
                             <td colspan="3" class="py-2 px-3 text-right uppercase text-[10px] tracking-wider text-slate-500">
                                 Ringkasan Dokumen BAST:
                             </td>
-                            <td class="py-2 px-2.5 text-center font-mono text-xs text-amber-700 bg-amber-50/60 font-extrabold">
+                            <td class="py-2 px-2.5 text-center font-bold text-slate-800 text-xs whitespace-nowrap">
                                 <?= (float)($distribusiSummary['total_qty_dialokasikan'] ?? 0) ?> Unit
                             </td>
                             <td colspan="2" class="py-2 px-3 text-slate-500 text-[10px] font-normal">

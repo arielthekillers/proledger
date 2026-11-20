@@ -28,7 +28,8 @@
                         <th class="py-2 px-3 w-8 text-center">NO</th>
                         <th class="py-2 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
                         <th class="py-2 px-3 min-w-[150px]">KOMPONEN BARANG</th>
-                        <th class="py-2 px-2.5 text-center min-w-[70px]">JUMLAH</th>
+                        <th class="py-2 px-2.5 text-center min-w-[70px]">SATUAN</th>
+                        <th class="py-2 px-2.5 text-center min-w-[60px]">JUMLAH</th>
                         <th class="py-2 px-3 min-w-[130px]">STATUS DISTRIBUSI</th>
                         <th class="py-2 px-3 min-w-[180px]">FOTO DOKUMENTASI</th>
                         <th class="py-2 px-2.5 text-right w-28">AKSI</th>
@@ -37,7 +38,7 @@
                 <tbody class="divide-y divide-slate-100">
                     <?php if (empty($distribusiList)): ?>
                         <tr>
-                            <td colspan="7" class="py-8 text-center text-slate-400">
+                            <td colspan="8" class="py-8 text-center text-slate-400">
                                 <div class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl text-slate-300">
                                     <ion-icon name="camera-outline"></ion-icon>
                                 </div>
@@ -77,14 +78,16 @@
                                     <?= htmlspecialchars($dist['nama_komponen'] ?: '-') ?>
                                 </td>
 
-                                <!-- Jumlah -->
-                                <td class="py-1.5 px-2.5 text-center whitespace-nowrap bg-teal-50/20">
-                                    <span class="font-mono font-bold text-slate-900 text-xs">
-                                        <?= (float)$dist['jumlah'] ?>
-                                    </span>
-                                    <span class="text-[10px] text-slate-500 font-medium ml-0.5">
+                                <!-- Satuan -->
+                                <td class="py-1.5 px-2.5 text-center whitespace-nowrap">
+                                    <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold text-xs">
                                         <?= htmlspecialchars($dist['satuan'] ?: 'Unit') ?>
                                     </span>
+                                </td>
+
+                                <!-- Jumlah -->
+                                <td class="py-1.5 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
+                                    <?= (float)$dist['jumlah'] ?>
                                 </td>
 
                                 <!-- Status Distribusi -->
@@ -154,15 +157,15 @@
 
                 <!-- Footer Summary Row -->
                 <?php if (!empty($distribusiList)): ?>
-                    <tfoot class="bg-slate-50/90 font-bold text-slate-700 border-t-2 border-slate-200">
+                    <tfoot class="bg-slate-50/90 font-bold text-slate-700 border-t-2 border-slate-200 text-xs">
                         <tr>
-                            <td colspan="3" class="py-2 px-3 text-right uppercase text-[10px] tracking-wider text-slate-500">
-                                Ringkasan Dokumentasi:
+                            <td colspan="4" class="py-2.5 px-3 text-right uppercase text-[10px] tracking-wider text-slate-500">
+                                Total:
                             </td>
-                            <td class="py-2 px-2.5 text-center font-mono text-xs text-teal-700 bg-teal-50/60 font-extrabold">
-                                <?= (float)($distribusiSummary['total_qty_dialokasikan'] ?? 0) ?> Unit
+                            <td class="py-2.5 px-2.5 text-center font-bold text-slate-800 text-xs whitespace-nowrap">
+                                <?= (float)($distribusiSummary['total_qty_dialokasikan'] ?? 0) ?>
                             </td>
-                            <td colspan="3" class="py-2 px-3 text-slate-500 text-[10px] font-normal">
+                            <td colspan="3" class="py-2.5 px-3 text-slate-500 text-[10px] font-normal">
                                 <span class="font-bold text-teal-700"><?= $itemsWithDocs ?></span> dari <?= count($distribusiList) ?> titik alokasi telah memiliki foto dokumentasi (Total: <span class="font-bold text-teal-700" id="footerTotalFotoCount"><?= (int)($totalDokumentasiFoto ?? 0) ?></span> foto)
                             </td>
                         </tr>

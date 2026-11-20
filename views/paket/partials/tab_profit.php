@@ -58,7 +58,8 @@
                     <tr class="bg-[#24543b] text-white text-[11px] font-bold uppercase tracking-wider">
                         <th class="py-3 px-3 text-center w-10 border-b border-[#1b3f2c]">NO</th>
                         <th class="py-3 px-3 min-w-[200px] border-b border-[#1b3f2c]">KOMPONEN BARANG</th>
-                        <th class="py-3 px-3 text-center min-w-[110px] border-b border-[#1b3f2c]">JUMLAH UNIT</th>
+                        <th class="py-3 px-2.5 text-center min-w-[70px] border-b border-[#1b3f2c]">SATUAN</th>
+                        <th class="py-3 px-2.5 text-center min-w-[60px] border-b border-[#1b3f2c]">JUMLAH</th>
                         <th class="py-3 px-3 text-right min-w-[130px] border-b border-[#1b3f2c]">HARGA SATUAN</th>
                         <th class="py-3 px-3 text-right min-w-[130px] border-b border-[#1b3f2c]">#</th>
                         <th class="py-3 px-3 text-right min-w-[130px] border-b border-[#1b3f2c]">HPP</th>
@@ -68,7 +69,7 @@
                 <tbody class="divide-y divide-slate-100 text-slate-700">
                     <?php if (empty($itemsList)): ?>
                         <tr>
-                            <td colspan="7" class="py-8 text-center text-slate-400">
+                            <td colspan="8" class="py-8 text-center text-slate-400">
                                 <ion-icon name="cube-outline" class="text-3xl text-slate-300 mb-1"></ion-icon>
                                 <p class="text-xs font-semibold text-slate-600">Belum Ada Data Item / Spesifikasi</p>
                                 <p class="text-[11px] text-slate-400">Tambahkan item kegiatan di Tab Item / Spesifikasi untuk memulai analisa.</p>
@@ -110,9 +111,16 @@
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- JUMLAH UNIT -->
-                                <td class="py-2.5 px-3 text-center whitespace-nowrap font-mono font-bold text-slate-800 align-middle">
-                                    <?= $qty ?> <span class="text-[10px] font-normal text-slate-500"><?= htmlspecialchars($it['satuan'] ?: 'Unit') ?></span>
+                                <!-- SATUAN -->
+                                <td class="py-2.5 px-2.5 text-center whitespace-nowrap align-middle">
+                                    <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold text-xs">
+                                        <?= htmlspecialchars($it['satuan'] ?: 'Unit') ?>
+                                    </span>
+                                </td>
+
+                                <!-- JUMLAH -->
+                                <td class="py-2.5 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs align-middle">
+                                    <?= (float)$qty ?>
                                 </td>
 
                                 <!-- HARGA SATUAN -->
@@ -149,7 +157,7 @@
                             <!-- Sub-Row Rincian Distribusi (Collapsed by Default) -->
                             <?php if ($hasDists): ?>
                                 <tr id="detail_profit_<?= $it['id'] ?>" class="hidden bg-slate-50/70 border-y border-slate-100">
-                                    <td colspan="7" class="py-2.5 px-4 pl-12">
+                                    <td colspan="8" class="py-2.5 px-4 pl-12">
                                         <div class="text-[11px] font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
                                             <ion-icon name="storefront-outline" class="text-xs text-indigo-600"></ion-icon>
                                             <span>Rincian Pembelian Toko & Alokasi Tujuan:</span>
@@ -160,6 +168,7 @@
                                                     <tr>
                                                         <th class="py-1.5 px-3">Tujuan Penerima</th>
                                                         <th class="py-1.5 px-3">Barang Pesanan Toko</th>
+                                                        <th class="py-1.5 px-2.5 text-center">Satuan</th>
                                                         <th class="py-1.5 px-2.5 text-center">Qty</th>
                                                         <th class="py-1.5 px-3 text-right">Harga Beli Satuan</th>
                                                         <th class="py-1.5 px-3 text-right">Total HPP</th>
@@ -179,8 +188,13 @@
                                                             <td class="py-1.5 px-3 text-slate-600">
                                                                 <?= !empty($d['nama_barang']) ? htmlspecialchars($d['nama_barang']) : '<span class="text-slate-400 italic">Sesuai komponen</span>' ?>
                                                             </td>
-                                                            <td class="py-1.5 px-2.5 text-center font-mono font-bold text-slate-700">
-                                                                <?= $dQty ?> <?= htmlspecialchars($it['satuan'] ?: 'Unit') ?>
+                                                            <td class="py-1.5 px-2.5 text-center">
+                                                                <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-xs">
+                                                                    <?= htmlspecialchars($it['satuan'] ?: 'Unit') ?>
+                                                                </span>
+                                                            </td>
+                                                            <td class="py-1.5 px-2.5 text-center font-bold text-slate-700 text-xs">
+                                                                <?= $dQty ?>
                                                             </td>
                                                             <td class="py-1.5 px-3 text-right font-mono text-slate-600">
                                                                 <?= $dHppSatuan > 0 ? formatRupiah($dHppSatuan) : '<span class="text-slate-400 italic">Belum diinput</span>' ?>
@@ -209,11 +223,11 @@
                 <tfoot class="border-t-2 border-slate-300">
                     <!-- Baris 1: Subtotal Item & Modal HPP -->
                     <tr class="bg-slate-50 text-slate-800 font-bold text-xs border-b border-slate-200">
-                        <td colspan="2" class="py-2.5 px-3 text-right uppercase text-[11px] tracking-wider text-slate-600">
+                        <td colspan="3" class="py-2.5 px-3 text-right uppercase text-[11px] tracking-wider text-slate-600">
                             Subtotal Nilai Item & HPP:
                         </td>
-                        <td class="py-2.5 px-3 text-center font-mono font-bold text-slate-800 whitespace-nowrap">
-                            <?= $totalQtyAllItems ?> <span class="text-[10px] font-normal text-slate-500">Unit</span>
+                        <td class="py-2.5 px-2.5 text-center font-bold text-slate-800 whitespace-nowrap">
+                            <?= $totalQtyAllItems ?>
                         </td>
                         <td class="py-2.5 px-3 text-right text-slate-400 font-mono">-</td>
                         <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-800 whitespace-nowrap">
@@ -229,7 +243,7 @@
 
                     <!-- Baris 2: Beban Potongan Pajak & Admin (15%) -->
                     <tr class="bg-amber-50/40 text-amber-900 font-semibold text-xs border-b border-slate-200">
-                        <td colspan="4" class="py-2 px-3 text-right text-[11px] uppercase tracking-wider text-amber-800">
+                        <td colspan="5" class="py-2 px-3 text-right text-[11px] uppercase tracking-wider text-amber-800">
                             Potongan (Pasal <?= (float)$persenPasal ?>% + Admin <?= (float)$persenAdmin ?>% dari <?= $basisLabel ?>):
                         </td>
                         <td class="py-2 px-3 text-right font-mono text-slate-400">-</td>
@@ -241,11 +255,11 @@
 
                     <!-- Baris 3: ESTIMASI UNTUNG BERSIH (NET PROFIT) -->
                     <tr class="<?= $isLoss ? 'bg-rose-50 text-rose-950' : ($isProfit ? 'bg-emerald-50 text-emerald-950' : 'bg-slate-100 text-slate-900') ?> text-xs font-bold border-b-2 border-slate-300">
-                        <td colspan="2" class="py-3 px-3 text-right uppercase tracking-wider font-extrabold text-xs">
+                        <td colspan="3" class="py-3 px-3 text-right uppercase tracking-wider font-extrabold text-xs">
                             ESTIMASI UNTUNG BERSIH (NET PROFIT):
                         </td>
-                        <td class="py-3 px-3 text-center font-mono font-extrabold text-xs">
-                            <?= $totalQtyAllItems ?> Unit
+                        <td class="py-3 px-2.5 text-center font-extrabold text-xs">
+                            <?= $totalQtyAllItems ?>
                         </td>
                         <td class="py-3 px-3 text-right text-slate-400 font-mono">-</td>
                         <td class="py-3 px-3 text-right font-mono font-extrabold text-xs whitespace-nowrap" title="Nilai Kontrak Acuan: <?= formatRupiah($acuanPagu) ?>">
