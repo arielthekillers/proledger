@@ -25,7 +25,7 @@ $dokumenList = $dokumenList ?? [];
 $lokasiList = $lokasiList ?? [];
 
 $activeTab = $activeTab ?? ($_GET['tab'] ?? 'info');
-$validTabs = ['info', 'items', 'distribusi', 'dokumen'];
+$validTabs = ['info', 'items', 'pemesanan', 'distribusi', 'dokumentasi', 'dokumen', 'profit'];
 if (!in_array($activeTab, $validTabs)) {
     $activeTab = 'info';
 }
@@ -133,7 +133,19 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
             </span>
         </button>
 
-        <!-- Tab 3: Distribusi -->
+        <!-- Tab 3: Pemesanan Barang -->
+        <?php $pesanP = $tabProgress['pemesanan'] ?? ['done' => 0, 'total' => count($distribusiList)]; ?>
+        <?php $pesanDone = ($pesanP['total'] > 0 && $pesanP['done'] >= $pesanP['total']); ?>
+        <button type="button" onclick="switchDetailTab('pemesanan')" id="tabBtn_pemesanan"
+                class="tab-btn py-3 px-4 text-xs <?= ($activeTab === 'pemesanan') ? 'font-bold border-b-2 border-blue-600 text-blue-600' : 'font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300' ?> flex items-center gap-2 transition-all">
+            <ion-icon name="bag-check-outline" class="text-base"></ion-icon>
+            <span>Pemesanan</span>
+            <span id="tabBadge_pemesananCount" class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= $pesanDone ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800' ?>" title="<?= $pesanP['done'] ?> dari <?= $pesanP['total'] ?> barang telah dipesan di toko/supplier">
+                <?= $pesanP['done'] ?>/<?= $pesanP['total'] ?>
+            </span>
+        </button>
+
+        <!-- Tab 4: Distribusi -->
         <?php $distP = $tabProgress['distribusi'] ?? ['done' => 0, 'total' => count($distribusiList)]; ?>
         <?php $distDone = ($distP['total'] > 0 && $distP['done'] >= $distP['total']); ?>
         <button type="button" onclick="switchDetailTab('distribusi')" id="tabBtn_distribusi"
@@ -145,7 +157,7 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
             </span>
         </button>
 
-        <!-- Tab 4: Dokumentasi -->
+        <!-- Tab 5: Dokumentasi -->
         <?php $dokP = $tabProgress['dokumentasi'] ?? ['done' => 0, 'total' => count($distribusiList)]; ?>
         <?php $dokDone = ($dokP['total'] > 0 && $dokP['done'] >= $dokP['total']); ?>
         <button type="button" onclick="switchDetailTab('dokumentasi')" id="tabBtn_dokumentasi"
@@ -157,7 +169,7 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
             </span>
         </button>
 
-        <!-- Tab 5: Dokumen BAST -->
+        <!-- Tab 6: Dokumen BAST -->
         <?php $bastP = $tabProgress['dokumen'] ?? ['done' => 0, 'total' => count($groupedDistribusi ?? [])]; ?>
         <?php $bastDone = ($bastP['total'] > 0 && $bastP['done'] >= $bastP['total']); ?>
         <button type="button" onclick="switchDetailTab('dokumen')" id="tabBtn_dokumen"
@@ -169,7 +181,7 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
             </span>
         </button>
 
-        <!-- Tab 6: Estimasi Margin Profit -->
+        <!-- Tab 7: Estimasi Margin Profit -->
         <?php 
         $isProfitPositive = ($nilaiBersihProfit > 0);
         $isProfitLoss = ($nilaiBersihProfit < 0);
@@ -186,7 +198,7 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
 </div>
 <script>
 (function() {
-    var validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen', 'profit'];
+    var validTabs = ['info', 'items', 'pemesanan', 'distribusi', 'dokumentasi', 'dokumen', 'profit'];
     var hash = (window.location.hash || '').replace('#', '');
     var urlParams = new URLSearchParams(window.location.search);
     var tabParam = urlParams.get('tab');
@@ -196,7 +208,9 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
             var btn = document.getElementById('tabBtn_' + t);
             if (btn) {
                 if (t === active) {
-                    btn.className = 'tab-btn py-3 px-4 text-xs font-bold border-b-2 border-blue-600 text-blue-600 flex items-center gap-2 transition-all';
+                    btn.className = (t === 'profit')
+                        ? 'tab-btn py-3 px-4 text-xs font-bold border-b-2 border-emerald-600 text-emerald-600 flex items-center gap-2 transition-all'
+                        : 'tab-btn py-3 px-4 text-xs font-bold border-b-2 border-blue-600 text-blue-600 flex items-center gap-2 transition-all';
                 } else {
                     btn.className = 'tab-btn py-3 px-4 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 flex items-center gap-2 transition-all';
                 }
@@ -211,6 +225,7 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
 <!-- ========================================== -->
 <?php require __DIR__ . '/partials/tab_info.php'; ?>
 <?php require __DIR__ . '/partials/tab_items.php'; ?>
+<?php require __DIR__ . '/partials/tab_pemesanan.php'; ?>
 <?php require __DIR__ . '/partials/tab_distribusi.php'; ?>
 <?php require __DIR__ . '/partials/tab_dokumentasi.php'; ?>
 <?php require __DIR__ . '/partials/tab_dokumen.php'; ?>

@@ -3,16 +3,17 @@
 <!-- ========================================== -->
 <div id="tabContent_info" class="<?= ($activeTab === 'info') ? '' : 'hidden ' ?>space-y-4">
 
-    <!-- 1. TOP WORKFLOW PROGRESS STRIP (Rekapitulasi 4 Tahap Utama) -->
+    <!-- 1. TOP WORKFLOW PROGRESS STRIP (Rekapitulasi 5 Tahap Utama) -->
     <?php
-    $itP   = $tabProgress['items'] ?? ['done' => 0, 'total' => 0];
-    $distP = $tabProgress['distribusi'] ?? ['done' => 0, 'total' => 0];
-    $dokP  = $tabProgress['dokumentasi'] ?? ['done' => 0, 'total' => 0];
-    $bastP = $tabProgress['dokumen'] ?? ['done' => 0, 'total' => 0];
+    $itP    = $tabProgress['items'] ?? ['done' => 0, 'total' => 0];
+    $pesanP = $tabProgress['pemesanan'] ?? ['done' => 0, 'total' => 0];
+    $distP  = $tabProgress['distribusi'] ?? ['done' => 0, 'total' => 0];
+    $dokP   = $tabProgress['dokumentasi'] ?? ['done' => 0, 'total' => 0];
+    $bastP  = $tabProgress['dokumen'] ?? ['done' => 0, 'total' => 0];
 
     // Persentase keseluruhan
-    $totalSteps = max(1, ($itP['total'] + $distP['total'] + $dokP['total'] + $bastP['total']));
-    $doneSteps  = ($itP['done'] + $distP['done'] + $dokP['done'] + $bastP['done']);
+    $totalSteps = max(1, ($itP['total'] + $pesanP['total'] + $distP['total'] + $dokP['total'] + $bastP['total']));
+    $doneSteps  = ($itP['done'] + $pesanP['done'] + $distP['done'] + $dokP['done'] + $bastP['done']);
     $overallProgress = min(100, round(($doneSteps / $totalSteps) * 100));
     ?>
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5">
@@ -22,7 +23,7 @@
                     <ion-icon name="git-branch-outline" class="text-blue-600 text-sm"></ion-icon>
                     <span>Status & Alur Pengerjaan Paket</span>
                 </h3>
-                <p class="text-[11px] text-slate-400 mt-0.5">Ringkasan progres terintegrasi dari alokasi barang hingga penerbitan BAST.</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Ringkasan progres terintegrasi dari alokasi barang, pemesanan, distribusi, dokumentasi, hingga BAST.</p>
             </div>
             <div class="flex items-center gap-2">
                 <span class="text-xs font-semibold text-slate-500">Progres Keseluruhan:</span>
@@ -32,8 +33,8 @@
             </div>
         </div>
 
-        <!-- Flow Pipeline -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+        <!-- Flow Pipeline 5 Langkah -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
             <!-- Step 1: Item / Spesifikasi -->
             <button type="button" onclick="switchDetailTab('items')" 
                     class="p-2.5 rounded-xl border text-left transition-all hover:scale-[1.01] cursor-pointer <?= ($itP['total'] > 0 && $itP['done'] >= $itP['total']) ? 'bg-emerald-50/50 border-emerald-200 hover:bg-emerald-50' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100' ?>">
@@ -50,29 +51,45 @@
                 <div class="text-[10px] text-slate-400 mt-0.5"><?= (int)($itemSummary['total_item'] ?? 0) ?> Jenis Komponen</div>
             </button>
 
-            <!-- Step 2: Distribusi -->
+            <!-- Step 2: Pemesanan Barang -->
+            <button type="button" onclick="switchDetailTab('pemesanan')" 
+                    class="p-2.5 rounded-xl border text-left transition-all hover:scale-[1.01] cursor-pointer <?= ($pesanP['total'] > 0 && $pesanP['done'] >= $pesanP['total']) ? 'bg-emerald-50/50 border-emerald-200 hover:bg-emerald-50' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100' ?>">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                        <ion-icon name="bag-check-outline" class="text-xs"></ion-icon>
+                        <span>2. Pemesanan</span>
+                    </span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.2 rounded font-mono <?= ($pesanP['total'] > 0 && $pesanP['done'] >= $pesanP['total']) ? 'bg-emerald-200 text-emerald-800' : 'bg-amber-100 text-amber-800' ?>">
+                        <?= $pesanP['done'] ?>/<?= $pesanP['total'] ?>
+                    </span>
+                </div>
+                <div class="text-xs font-bold text-slate-800 truncate"><?= $pesanP['done'] ?> Selesai Dipesan</div>
+                <div class="text-[10px] text-slate-400 mt-0.5"><?= max(0, $pesanP['total'] - $pesanP['done']) ?> Belum Dipesan</div>
+            </button>
+
+            <!-- Step 3: Distribusi -->
             <button type="button" onclick="switchDetailTab('distribusi')" 
                     class="p-2.5 rounded-xl border text-left transition-all hover:scale-[1.01] cursor-pointer <?= ($distP['total'] > 0 && $distP['done'] >= $distP['total']) ? 'bg-emerald-50/50 border-emerald-200 hover:bg-emerald-50' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100' ?>">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
                         <ion-icon name="navigate-outline" class="text-xs"></ion-icon>
-                        <span>2. Distribusi</span>
+                        <span>3. Distribusi</span>
                     </span>
                     <span class="text-[10px] font-bold px-1.5 py-0.2 rounded font-mono <?= ($distP['total'] > 0 && $distP['done'] >= $distP['total']) ? 'bg-emerald-200 text-emerald-800' : 'bg-indigo-100 text-indigo-700' ?>">
                         <?= $distP['done'] ?>/<?= $distP['total'] ?>
                     </span>
                 </div>
                 <div class="text-xs font-bold text-slate-800 truncate"><?= $statusDistBreakdown['tiba_tujuan'] ?> Lokasi Tiba</div>
-                <div class="text-[10px] text-slate-400 mt-0.5"><?= $statusDistBreakdown['tiba_gudang'] ?> di Gudang &bull; <?= $statusDistBreakdown['belum_dipesan'] ?> Belum Pesan</div>
+                <div class="text-[10px] text-slate-400 mt-0.5"><?= $statusDistBreakdown['tiba_gudang'] ?> di Gudang &bull; <?= $statusDistBreakdown['tiba_kantor'] ?> di Kantor</div>
             </button>
 
-            <!-- Step 3: Dokumentasi -->
+            <!-- Step 4: Dokumentasi -->
             <button type="button" onclick="switchDetailTab('dokumentasi')" 
                     class="p-2.5 rounded-xl border text-left transition-all hover:scale-[1.01] cursor-pointer <?= ($dokP['total'] > 0 && $dokP['done'] >= $dokP['total']) ? 'bg-emerald-50/50 border-emerald-200 hover:bg-emerald-50' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100' ?>">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
                         <ion-icon name="camera-outline" class="text-xs"></ion-icon>
-                        <span>3. Dokumentasi</span>
+                        <span>4. Dokumentasi</span>
                     </span>
                     <span class="text-[10px] font-bold px-1.5 py-0.2 rounded font-mono <?= ($dokP['total'] > 0 && $dokP['done'] >= $dokP['total']) ? 'bg-emerald-200 text-emerald-800' : 'bg-teal-100 text-teal-800' ?>">
                         <?= $dokP['done'] ?>/<?= $dokP['total'] ?>
@@ -82,13 +99,13 @@
                 <div class="text-[10px] text-slate-400 mt-0.5"><?= $dokP['done'] ?> dari <?= $dokP['total'] ?> Titik Lengkap</div>
             </button>
 
-            <!-- Step 4: Dokumen BAST -->
+            <!-- Step 5: Dokumen BAST -->
             <button type="button" onclick="switchDetailTab('dokumen')" 
                     class="p-2.5 rounded-xl border text-left transition-all hover:scale-[1.01] cursor-pointer <?= ($bastP['total'] > 0 && $bastP['done'] >= $bastP['total']) ? 'bg-emerald-50/50 border-emerald-200 hover:bg-emerald-50' : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100' ?>">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
                         <ion-icon name="document-text-outline" class="text-xs"></ion-icon>
-                        <span>4. Berkas BAST</span>
+                        <span>5. Berkas BAST</span>
                     </span>
                     <span class="text-[10px] font-bold px-1.5 py-0.2 rounded font-mono <?= ($bastP['total'] > 0 && $bastP['done'] >= $bastP['total']) ? 'bg-emerald-200 text-emerald-800' : 'bg-amber-100 text-amber-800' ?>">
                         <?= $bastP['done'] ?>/<?= $bastP['total'] ?>
@@ -319,6 +336,18 @@
                         <div class="flex items-center gap-2">
                             <span class="font-mono font-bold text-slate-800"><?= (int)$itemSummary['total_item'] ?> Item (<?= (float)$itemSummary['total_qty'] ?> Unit)</span>
                             <button type="button" onclick="switchDetailTab('items')" class="text-blue-600 hover:text-blue-800 text-[11px] font-semibold flex items-center">
+                                <span>Lihat</span>
+                                <ion-icon name="chevron-forward-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Shortcut Rekap Tab Pemesanan -->
+                    <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Pemesanan Toko / Supplier</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono font-bold text-slate-800"><?= $pesanP['done'] ?>/<?= $pesanP['total'] ?> Dipesan</span>
+                            <button type="button" onclick="switchDetailTab('pemesanan')" class="text-blue-600 hover:text-blue-800 text-[11px] font-semibold flex items-center">
                                 <span>Lihat</span>
                                 <ion-icon name="chevron-forward-outline"></ion-icon>
                             </button>

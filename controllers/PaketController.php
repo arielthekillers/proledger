@@ -297,7 +297,15 @@ class PaketController {
             }
         }
 
-        // 2. Distribusi: Alokasi yang status distribusinya sudah tiba di tujuan
+        // 2. Pemesanan: Alokasi barang yang sudah dipesan di toko/supplier
+        $pesanDone = 0;
+        foreach ($distribusiList as $dist) {
+            if (($dist['status_barang'] ?? '') === 'Sudah Dipesan') {
+                $pesanDone++;
+            }
+        }
+
+        // 3. Distribusi: Alokasi yang status distribusinya sudah tiba di tujuan
         $totalDist = count($distribusiList);
         $distDone = 0;
         foreach ($distribusiList as $dist) {
@@ -306,7 +314,7 @@ class PaketController {
             }
         }
 
-        // 3. Dokumentasi: Alokasi tujuan yang sudah memiliki minimal 1 foto dokumentasi
+        // 4. Dokumentasi: Alokasi tujuan yang sudah memiliki minimal 1 foto dokumentasi
         $dokDone = 0;
         foreach ($distribusiList as $dist) {
             if (!empty($dokumentasiMap[$dist['id']])) {
@@ -314,7 +322,7 @@ class PaketController {
             }
         }
 
-        // 4. BAST: Titik sekolah penerima yang berkas BAST-nya sudah diupload
+        // 5. BAST: Titik sekolah penerima yang berkas BAST-nya sudah diupload
         $totalBast = count($groupedDistribusi);
         $bastDone = 0;
         foreach ($groupedDistribusi as $tujuanKey => $grpVal) {
@@ -425,6 +433,7 @@ class PaketController {
 
         $tabProgress = [
             'items'       => ['done' => $itemsDone, 'total' => $totalItems],
+            'pemesanan'   => ['done' => $pesanDone, 'total' => $totalDist],
             'distribusi'  => ['done' => $distDone, 'total' => $totalDist],
             'dokumentasi' => ['done' => $dokDone, 'total' => $totalDist],
             'dokumen'     => ['done' => $bastDone, 'total' => $totalBast],
@@ -972,7 +981,7 @@ class PaketController {
             flash('error', 'Gagal memperbarui status barang: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
+        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=pemesanan#pemesanan');
     }
 
     /**

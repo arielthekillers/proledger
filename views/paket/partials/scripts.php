@@ -8,7 +8,7 @@ const SPINNER_SVG = '<svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 inline-
  * Tab Switcher (info, items, distribusi, dokumentasi, dokumen)
  */
 function switchDetailTab(tabName) {
-    const validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen', 'profit'];
+    const validTabs = ['info', 'items', 'pemesanan', 'distribusi', 'dokumentasi', 'dokumen', 'profit'];
     if (!validTabs.includes(tabName)) tabName = 'info';
 
     // Hapus style preload jika ada agar kontrol display kembali normal
@@ -55,7 +55,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
     const h = (window.location.hash || '').replace('#', '');
-    const validTabs = ['info', 'items', 'distribusi', 'dokumentasi', 'dokumen', 'profit'];
+    const validTabs = ['info', 'items', 'pemesanan', 'distribusi', 'dokumentasi', 'dokumen', 'profit'];
     const target = (validTabs.includes(tabParam)) ? tabParam : (validTabs.includes(h) ? h : '');
     if (target) {
         switchDetailTab(target);
@@ -701,8 +701,8 @@ function submitUpdateStatusBarang(e) {
             window.ProModal.close('modalUpdateStatusBarang');
             if (window.history && window.history.replaceState) {
                 const targetUrl = new URL(window.location.href);
-                targetUrl.searchParams.set('tab', 'distribusi');
-                targetUrl.hash = 'distribusi';
+                targetUrl.searchParams.set('tab', 'pemesanan');
+                targetUrl.hash = 'pemesanan';
                 window.history.replaceState(null, '', targetUrl.toString());
             }
             setTimeout(() => {
@@ -718,7 +718,7 @@ function submitUpdateStatusBarang(e) {
     })
     .catch(err => {
         console.error(err);
-        form.action = '<?= APP_URL ?>/paket/updateStatusBarang/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId + '?tab=distribusi#distribusi';
+        form.action = '<?= APP_URL ?>/paket/updateStatusBarang/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId + '?tab=pemesanan#pemesanan';
         form.method = 'POST';
         form.submit();
     });
