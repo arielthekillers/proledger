@@ -1704,7 +1704,6 @@ document.addEventListener('keydown', function(e) {
         closeActionMenu();
     }
 });
-});
 
 function triggerMenuTab(tab) {
     if (!currentPaketData) return;
