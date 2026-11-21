@@ -339,6 +339,13 @@
                     </div>
 
                     <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Tahun Anggaran</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                            TA <?= htmlspecialchars($paket['tahun_anggaran'] ?? date('Y')) ?>
+                        </span>
+                    </div>
+
+                    <div class="py-2 flex items-center justify-between">
                         <span class="text-slate-500">Tags Paket</span>
                         <div class="flex flex-wrap items-center gap-1.5 justify-end">
                             <?php if (!empty($paket['tags'])): ?>

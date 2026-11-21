@@ -748,9 +748,9 @@
 <!-- MODAL 5: EDIT DATA PAKET (POPUP DI DETAIL) -->
 <!-- ========================================== -->
 <div id="modalEditPaket" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
-    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-2xl w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
         <!-- Header -->
-        <div class="px-6 py-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between shrink-0">
+        <div class="px-5 py-3.5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center text-lg shadow-xs">
                     <ion-icon name="create-outline"></ion-icon>
@@ -766,7 +766,7 @@
         </div>
 
         <!-- Body Form -->
-        <form id="formEditPaket" method="POST" action="<?= APP_URL ?>/paket/update/<?= $paket['kode_paket'] ?: $paket['id'] ?>" class="p-6 overflow-y-auto space-y-4 flex-1">
+        <form id="formEditPaket" method="POST" action="<?= APP_URL ?>/paket/update/<?= $paket['kode_paket'] ?: $paket['id'] ?>" class="p-5 overflow-y-auto space-y-3.5 flex-1">
             <?= csrfField() ?>
             <input type="hidden" name="perusahaan_id" value="<?= $paket['perusahaan_id'] ?? '' ?>">
             <input type="hidden" name="redirect_to" value="/paket/detail/<?= $paket['kode_paket'] ?: $paket['id'] ?>">
@@ -781,7 +781,7 @@
             <!-- Tags Paket -->
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                    Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Pisahkan dengan koma untuk mengelompokkan paket yang saling beririsan)</span>
+                    Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Pisahkan dengan koma)</span>
                 </label>
                 <div class="relative">
                     <ion-icon name="pricetags-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></ion-icon>
@@ -790,27 +790,23 @@
                 </div>
             </div>
 
-            <!-- Perusahaan & Group Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <!-- Perusahaan, Group & Tahun Anggaran Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Perusahaan</label>
-                    <div class="flex items-center gap-2 px-3 py-2 bg-slate-100/90 border border-slate-200 rounded-xl text-xs">
+                    <div class="flex items-center gap-1.5 px-2.5 py-2 bg-slate-100/90 border border-slate-200 rounded-xl text-xs">
                         <ion-icon name="business" class="text-blue-600 text-sm shrink-0"></ion-icon>
                         <span class="font-bold text-slate-800 truncate"><?= htmlspecialchars($paket['perusahaan'] ?? '-') ?></span>
-                        <span class="text-[10px] text-slate-400 ml-auto shrink-0 font-medium">Terkunci</span>
                     </div>
                 </div>
 
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="block text-xs font-semibold text-slate-700">Group Paket (Opsional)</label>
-                        <button type="button" onclick="openQuickAddGroup('edit_group_id')" class="text-[11px] text-blue-600 hover:underline font-semibold flex items-center gap-0.5">
-                            <ion-icon name="add-circle-outline"></ion-icon> Group Baru
-                        </button>
+                        <label class="block text-xs font-semibold text-slate-700">Group Paket</label>
                     </div>
                     <select name="group_id" id="edit_group_id" 
-                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer">
-                        <option value="">-- Tanpa Group (Paket Mandiri) --</option>
+                            class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer">
+                        <option value="">-- Mandiri --</option>
                         <?php foreach ($groups as $grp): ?>
                             <option value="<?= $grp['id'] ?>" <?= ($paket['group_id'] == $grp['id']) ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($grp['nama_group']) ?>
@@ -818,10 +814,27 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tahun Anggaran</label>
+                    <select name="tahun_anggaran" id="edit_tahun_anggaran" 
+                            class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer font-bold text-slate-800">
+                        <?php
+                        $curY = (int)date('Y');
+                        $pkgY = !empty($paket['tahun_anggaran']) ? (int)$paket['tahun_anggaran'] : $curY;
+                        $optYears = [$curY - 1, $curY, $curY + 1];
+                        if (!in_array($pkgY, $optYears)) $optYears[] = $pkgY;
+                        sort($optYears);
+                        foreach ($optYears as $y):
+                        ?>
+                            <option value="<?= $y ?>" <?= ($y === $pkgY) ? 'selected' : '' ?>><?= $y ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
 
-            <!-- Financials Grid: Pagu Awal & Pagu Nego (Persis Tambah Paket) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <!-- Financials Grid: Pagu Awal & Pagu Nego (Wajib) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <!-- Pagu Awal -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Kontrak / Pagu Awal <span class="text-red-500">*</span></label>
@@ -836,14 +849,14 @@
                 <!-- Pagu Akhir / Nego -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">
-                        Pagu Nego <span class="text-[10px] font-normal text-emerald-600 font-semibold">(Acuan Akhir jika ada)</span>
+                        Pagu Nego (Hasil Negosiasi) <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
-                        <input type="text" name="pagu_nego" id="edit_pagu_nego" oninput="formatRupiahInput(this)"
+                        <input type="text" name="pagu_nego" id="edit_pagu_nego" required oninput="formatRupiahInput(this)"
                                value="<?= ($hasNego) ? number_format((float)$paket['pagu_nego'], 0, ',', '.') : '' ?>"
-                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700"
-                               placeholder="Opsional">
+                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700 font-bold"
+                               placeholder="14.850.000">
                     </div>
                 </div>
             </div>

@@ -183,9 +183,16 @@ class PaketController {
         }
         
         try {
-            // Parse Rupiah
+            // Parse Rupiah & Validasi
+            if (empty($_POST['pagu'])) {
+                throw new Exception("Nilai Kontrak / Pagu Awal wajib diisi.");
+            }
+            if (empty($_POST['pagu_nego'])) {
+                throw new Exception("Pagu Negosiasi wajib diisi. Semua paket memerlukan nilai hasil negosiasi.");
+            }
             $pagu = parseRupiah($_POST['pagu']);
-            $paguNego = !empty($_POST['pagu_nego']) ? parseRupiah($_POST['pagu_nego']) : null;
+            $paguNego = parseRupiah($_POST['pagu_nego']);
+            $tahunAnggaran = !empty($_POST['tahun_anggaran']) ? (int)$_POST['tahun_anggaran'] : (int)date('Y');
 
             // Potongan standar bawaan saat buat paket baru
             $persenPasal = isset($_POST['persen_pasal']) && $_POST['persen_pasal'] !== '' ? (float)$_POST['persen_pasal'] : 13.0;
@@ -199,6 +206,7 @@ class PaketController {
                 'kab_kota' => !empty($_POST['kab_kota']) ? sanitize($_POST['kab_kota']) : null,
                 'perusahaan_id' => $activeCompany['id'],
                 'group_id' => !empty($_POST['group_id']) ? (int)$_POST['group_id'] : null,
+                'tahun_anggaran' => $tahunAnggaran,
                 'tags' => !empty($_POST['tags']) ? sanitize($_POST['tags']) : null,
                 'skema_id' => $skemaId,
                 'perusahaan' => $activeCompany['nama'],
@@ -530,9 +538,16 @@ class PaketController {
         
         try {
 
-            // Parse Rupiah & percentage values
+            // Parse Rupiah & Validasi
+            if (empty($_POST['pagu'])) {
+                throw new Exception("Nilai Kontrak / Pagu Awal wajib diisi.");
+            }
+            if (empty($_POST['pagu_nego'])) {
+                throw new Exception("Pagu Negosiasi wajib diisi. Semua paket memerlukan nilai hasil negosiasi.");
+            }
             $pagu = parseRupiah($_POST['pagu']);
-            $paguNego = !empty($_POST['pagu_nego']) ? parseRupiah($_POST['pagu_nego']) : null;
+            $paguNego = parseRupiah($_POST['pagu_nego']);
+            $tahunAnggaran = !empty($_POST['tahun_anggaran']) ? (int)$_POST['tahun_anggaran'] : (!empty($existing['tahun_anggaran']) ? (int)$existing['tahun_anggaran'] : (int)date('Y'));
 
             // Potongan: pertahankan nilai paket yang sudah ada jika tidak dikirim dalam form edit dasar
             $persenPasal = isset($_POST['persen_pasal']) && $_POST['persen_pasal'] !== '' ? (float)$_POST['persen_pasal'] : (float)($existing['persen_pasal'] ?? 13.0);
@@ -550,6 +565,7 @@ class PaketController {
                 'perusahaan_id' => $perusahaanId,
                 'perusahaan' => $perusahaanNama,
                 'group_id' => !empty($_POST['group_id']) ? (int)$_POST['group_id'] : null,
+                'tahun_anggaran' => $tahunAnggaran,
                 'tags' => !empty($_POST['tags']) ? sanitize($_POST['tags']) : null,
                 'skema_id' => $skemaId,
                 'penanggung_jawab' => !empty($_POST['penanggung_jawab']) ? sanitize($_POST['penanggung_jawab']) : ($existing['penanggung_jawab'] ?? null),

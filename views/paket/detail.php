@@ -72,6 +72,11 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
             <?= htmlspecialchars($paket['nama_paket']) ?>
         </h1>
         <div class="flex flex-wrap items-center gap-2 mt-1">
+            <?php if (!empty($paket['tahun_anggaran'])): ?>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                    TA <?= htmlspecialchars($paket['tahun_anggaran']) ?>
+                </span>
+            <?php endif; ?>
             <?php if (!empty($paket['nama_group'])): ?>
                 <a href="<?= APP_URL ?>/group/detail/<?= $paket['group_id'] ?>" class="text-xs text-slate-500 hover:text-indigo-600 inline-flex items-center gap-1 transition-colors">
                     <ion-icon name="folder-outline" class="text-slate-400 text-xs"></ion-icon>

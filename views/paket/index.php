@@ -130,6 +130,19 @@ foreach ($paket as $p) {
                 <?php endforeach; ?>
             </select>
 
+            <!-- Filter Tahun Anggaran -->
+            <select id="filterTahunSelect" onchange="filterPaketTable()" 
+                    class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-blue-500 transition-all cursor-pointer font-semibold">
+                <option value="">Semua Tahun</option>
+                <?php
+                $curY = (int)date('Y');
+                $yearsList = [$curY + 1, $curY, $curY - 1];
+                foreach ($yearsList as $yr):
+                ?>
+                    <option value="<?= $yr ?>">TA <?= $yr ?></option>
+                <?php endforeach; ?>
+            </select>
+
             <!-- Filter Tag -->
             <?php $allTags = $allTags ?? []; ?>
             <select id="filterTagSelect" onchange="filterPaketTable()" 
@@ -238,6 +251,7 @@ foreach ($paket as $p) {
                         <tr class="hover:bg-slate-50/70 transition-colors group"
                             data-group-name="<?= htmlspecialchars(strtolower($p['nama_group'] ?? '')) ?>"
                             data-tags="<?= htmlspecialchars(strtolower($p['tags'] ?? '')) ?>"
+                            data-tahun="<?= htmlspecialchars((string)($p['tahun_anggaran'] ?? date('Y'))) ?>"
                             data-progres="<?= htmlspecialchars(strtolower($p['progres_barang'] ?? 'belum')) ?>"
                             data-status="<?= htmlspecialchars($normStatus) ?>">
                             
@@ -256,8 +270,13 @@ foreach ($paket as $p) {
                                         <?= htmlspecialchars($p['nama_paket']) ?>
                                     </a>
                                 </div>
-                                <?php if (!empty($p['nama_group']) || !empty($p['tags'])): ?>
+                                <?php if (!empty($p['nama_group']) || !empty($p['tags']) || !empty($p['tahun_anggaran'])): ?>
                                     <div class="flex items-center gap-1.5 flex-wrap mt-1">
+                                        <?php if (!empty($p['tahun_anggaran'])): ?>
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-800 font-bold text-[9px] border border-amber-200" title="Tahun Anggaran <?= $p['tahun_anggaran'] ?>">
+                                                TA <?= htmlspecialchars($p['tahun_anggaran']) ?>
+                                            </span>
+                                        <?php endif; ?>
                                         <?php if (!empty($p['nama_group'])): ?>
                                             <a href="<?= APP_URL ?>/group/detail/<?= $p['group_id'] ?>" 
                                                 class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-[9px] border border-indigo-200 transition-colors"
@@ -446,16 +465,16 @@ foreach ($paket as $p) {
 <!-- MODAL 1: TAMBAH PAKET KEGIATAN (POPUP)     -->
 <!-- ========================================== -->
 <div id="modalTambahPaket" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
-    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-2xl w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
         <!-- Header -->
-        <div class="px-6 py-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between shrink-0">
+        <div class="px-5 py-3.5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-lg shadow-xs">
                     <ion-icon name="cube-outline"></ion-icon>
                 </div>
                 <div>
                     <h3 class="font-bold text-slate-800 text-sm">Tambah Paket Kegiatan</h3>
-                    <p class="text-[11px] text-slate-400">Input rincian paket, nilai kontrak, DPP, setor awal, dan pasal</p>
+                    <p class="text-[11px] text-slate-400">Input rincian paket, nilai kontrak, DPP, dan negosiasi</p>
                 </div>
             </div>
             <button type="button" data-modal-close="modalTambahPaket" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg transition-colors">
@@ -464,7 +483,7 @@ foreach ($paket as $p) {
         </div>
 
         <!-- Body Form -->
-        <form method="POST" action="<?= APP_URL ?>/paket/store" class="p-6 overflow-y-auto space-y-4 flex-1">
+        <form method="POST" action="<?= APP_URL ?>/paket/store" class="p-5 overflow-y-auto space-y-3.5 flex-1">
             <?= csrfField() ?>
             <!-- Nilai default saat paket baru dibuat (dikelola lebih lanjut di Edit Paket) -->
             <input type="hidden" name="penanggung_jawab" value="">
@@ -483,7 +502,7 @@ foreach ($paket as $p) {
             <!-- Tags Paket (Opsional) -->
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                    Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Opsional, pisahkan dengan koma untuk mengelompokkan paket beririsan)</span>
+                    Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Opsional, pisahkan dengan koma)</span>
                 </label>
                 <div class="relative">
                     <ion-icon name="pricetags-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></ion-icon>
@@ -492,37 +511,47 @@ foreach ($paket as $p) {
                 </div>
             </div>
 
-            <!-- Perusahaan & Group Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <!-- Perusahaan, Group & Tahun Anggaran Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Perusahaan Aktif</label>
-                    <div class="flex items-center gap-2 px-3 py-2 bg-slate-100/90 border border-slate-200 rounded-xl text-xs">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Perusahaan</label>
+                    <div class="flex items-center gap-1.5 px-2.5 py-2 bg-slate-100/90 border border-slate-200 rounded-xl text-xs">
                         <ion-icon name="business" class="text-blue-600 text-sm shrink-0"></ion-icon>
                         <span class="font-bold text-slate-800 truncate"><?= htmlspecialchars($activeCompany['nama'] ?? 'Belum Ada') ?></span>
-                        <span class="text-[10px] text-slate-400 ml-auto shrink-0 font-medium">Terkunci</span>
                     </div>
                     <input type="hidden" name="perusahaan_id" value="<?= $activeCompany['id'] ?? '' ?>">
                 </div>
 
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="block text-xs font-semibold text-slate-700">Group Paket (Opsional)</label>
-                        <button type="button" onclick="openQuickAddGroup('tambah_group_id')" class="text-[11px] text-blue-600 hover:underline font-semibold flex items-center gap-0.5">
-                            <ion-icon name="add-circle-outline"></ion-icon> Group Baru
-                        </button>
+                        <label class="block text-xs font-semibold text-slate-700">Group Paket</label>
                     </div>
                     <select name="group_id" id="tambah_group_id" 
-                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer">
-                        <option value="">-- Tanpa Group (Paket Mandiri) --</option>
+                            class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer">
+                        <option value="">-- Mandiri --</option>
                         <?php foreach ($groups as $grp): ?>
                             <option value="<?= $grp['id'] ?>"><?= htmlspecialchars($grp['nama_group']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tahun Anggaran</label>
+                    <select name="tahun_anggaran" id="tambah_tahun_anggaran" 
+                            class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer font-bold text-slate-800">
+                        <?php
+                        $curY = (int)date('Y');
+                        $optYears = [$curY - 1, $curY, $curY + 1];
+                        foreach ($optYears as $y):
+                        ?>
+                            <option value="<?= $y ?>" <?= ($y === $curY) ? 'selected' : '' ?>><?= $y ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
 
-            <!-- Financials Grid: Pagu Awal & Pagu Nego -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <!-- Financials Grid: Pagu Awal & Pagu Nego (Wajib) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <!-- Pagu Awal -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Kontrak / Pagu Awal <span class="text-red-500">*</span></label>
@@ -537,13 +566,13 @@ foreach ($paket as $p) {
                 <!-- Pagu Akhir / Nego -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">
-                        Pagu Nego <span class="text-[10px] font-normal text-emerald-600 font-semibold">(Acuan Akhir jika ada)</span>
+                        Pagu Nego (Hasil Negosiasi) <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
-                        <input type="text" name="pagu_nego" id="tambah_pagu_nego" oninput="formatRupiahInput(this)"
-                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700"
-                               placeholder="Opsional">
+                        <input type="text" name="pagu_nego" id="tambah_pagu_nego" required oninput="formatRupiahInput(this)"
+                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700 font-bold"
+                               placeholder="14.850.000">
                     </div>
                 </div>
             </div>
@@ -568,9 +597,9 @@ foreach ($paket as $p) {
 <!-- MODAL 2: EDIT PAKET KEGIATAN (POPUP)       -->
 <!-- ========================================== -->
 <div id="modalEditPaket" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
-    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-2xl w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
         <!-- Header -->
-        <div class="px-6 py-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between shrink-0">
+        <div class="px-5 py-3.5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center text-lg shadow-xs">
                     <ion-icon name="create-outline"></ion-icon>
@@ -586,7 +615,7 @@ foreach ($paket as $p) {
         </div>
 
         <!-- Body Form -->
-        <form id="formEditPaket" method="POST" action="" class="p-6 overflow-y-auto space-y-4 flex-1">
+        <form id="formEditPaket" method="POST" action="" class="p-5 overflow-y-auto space-y-3.5 flex-1">
             <?= csrfField() ?>
             <input type="hidden" name="jumlah_pemodal" id="edit_jumlah_pemodal" value="0">
             <input type="hidden" name="redirect_to" value="/paket">
@@ -601,7 +630,7 @@ foreach ($paket as $p) {
             <!-- Tags Paket (Opsional) -->
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">
-                    Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Opsional, pisahkan dengan koma untuk mengelompokkan paket beririsan)</span>
+                    Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Opsional, pisahkan dengan koma)</span>
                 </label>
                 <div class="relative">
                     <ion-icon name="pricetags-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></ion-icon>
@@ -610,37 +639,47 @@ foreach ($paket as $p) {
                 </div>
             </div>
 
-            <!-- Perusahaan & Group Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <!-- Perusahaan, Group & Tahun Anggaran Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Perusahaan</label>
-                    <div class="flex items-center gap-2 px-3 py-2 bg-slate-100/90 border border-slate-200 rounded-xl text-xs">
+                    <div class="flex items-center gap-1.5 px-2.5 py-2 bg-slate-100/90 border border-slate-200 rounded-xl text-xs">
                         <ion-icon name="business" class="text-blue-600 text-sm shrink-0"></ion-icon>
                         <span id="edit_perusahaan_nama" class="font-bold text-slate-800 truncate">-</span>
-                        <span class="text-[10px] text-slate-400 ml-auto shrink-0 font-medium">Terkunci</span>
                     </div>
                     <input type="hidden" name="perusahaan_id" id="edit_perusahaan_id" value="">
                 </div>
 
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="block text-xs font-semibold text-slate-700">Group Paket (Opsional)</label>
-                        <button type="button" onclick="openQuickAddGroup('edit_group_id')" class="text-[11px] text-blue-600 hover:underline font-semibold flex items-center gap-0.5">
-                            <ion-icon name="add-circle-outline"></ion-icon> Group Baru
-                        </button>
+                        <label class="block text-xs font-semibold text-slate-700">Group Paket</label>
                     </div>
                     <select name="group_id" id="edit_group_id" 
-                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer">
-                        <option value="">-- Tanpa Group (Paket Mandiri) --</option>
+                            class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer">
+                        <option value="">-- Mandiri --</option>
                         <?php foreach ($groups as $grp): ?>
                             <option value="<?= $grp['id'] ?>"><?= htmlspecialchars($grp['nama_group']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tahun Anggaran</label>
+                    <select name="tahun_anggaran" id="edit_tahun_anggaran" 
+                            class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer font-bold text-slate-800">
+                        <?php
+                        $curY = (int)date('Y');
+                        $optYears = [$curY - 1, $curY, $curY + 1];
+                        foreach ($optYears as $y):
+                        ?>
+                            <option value="<?= $y ?>"><?= $y ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
 
-            <!-- Financials Grid: Pagu Awal & Pagu Nego (Persis Tambah Paket) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <!-- Financials Grid: Pagu Awal & Pagu Nego (Wajib) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <!-- Pagu Awal -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Kontrak / Pagu Awal <span class="text-red-500">*</span></label>
@@ -654,13 +693,13 @@ foreach ($paket as $p) {
                 <!-- Pagu Akhir / Nego -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">
-                        Pagu Nego <span class="text-[10px] font-normal text-emerald-600 font-semibold">(Acuan Akhir jika ada)</span>
+                        Pagu Nego (Hasil Negosiasi) <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
-                        <input type="text" name="pagu_nego" id="edit_pagu_nego" oninput="formatRupiahInput(this)"
-                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700"
-                               placeholder="Opsional">
+                        <input type="text" name="pagu_nego" id="edit_pagu_nego" required oninput="formatRupiahInput(this)"
+                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700 font-bold"
+                               placeholder="14.850.000">
                     </div>
                 </div>
             </div>
@@ -1611,6 +1650,9 @@ function openEditPaketModal(p) {
     const spanNama = document.getElementById('edit_perusahaan_nama');
     if (spanNama) spanNama.textContent = namaPerusahaan;
     document.getElementById('edit_group_id').value = p.group_id || '';
+    if (document.getElementById('edit_tahun_anggaran')) {
+        document.getElementById('edit_tahun_anggaran').value = p.tahun_anggaran || new Date().getFullYear();
+    }
     if (document.getElementById('edit_penanggung_jawab')) document.getElementById('edit_penanggung_jawab').value = p.penanggung_jawab || '';
     if (document.getElementById('edit_progres_barang')) document.getElementById('edit_progres_barang').value = p.progres_barang || 'Belum';
     if (document.getElementById('edit_status')) document.getElementById('edit_status').value = p.status || 'Proses';
@@ -1633,6 +1675,7 @@ function openEditPaketModal(p) {
 function filterPaketTable() {
     const searchVal = document.getElementById('searchPaketInput').value.toLowerCase();
     const groupVal = document.getElementById('filterGroupSelect').value.toLowerCase();
+    const tahunVal = document.getElementById('filterTahunSelect') ? document.getElementById('filterTahunSelect').value : '';
     const tagVal = document.getElementById('filterTagSelect') ? document.getElementById('filterTagSelect').value.toLowerCase() : '';
     const statusVal = document.getElementById('filterStatusSelect').value.toLowerCase();
     
@@ -1644,6 +1687,7 @@ function filterPaketTable() {
     rows.forEach(row => {
         const text = row.innerText.toLowerCase();
         const rowGroup = row.getAttribute('data-group-name') || '';
+        const rowTahun = row.getAttribute('data-tahun') || '';
         const rowTags = row.getAttribute('data-tags') || '';
         const rowStatus = row.getAttribute('data-status') || '';
 
@@ -1656,6 +1700,11 @@ function filterPaketTable() {
             matchGroup = rowGroup.includes(groupVal);
         }
 
+        let matchTahun = true;
+        if (tahunVal !== '') {
+            matchTahun = (rowTahun === tahunVal);
+        }
+
         let matchTag = true;
         if (tagVal !== '') {
             matchTag = rowTags.includes(tagVal);
@@ -1666,7 +1715,7 @@ function filterPaketTable() {
             matchStatus = (rowStatus === statusVal);
         }
 
-        if (matchSearch && matchGroup && matchTag && matchStatus) {
+        if (matchSearch && matchGroup && matchTahun && matchTag && matchStatus) {
             row.style.display = '';
             visibleCount++;
         } else {
@@ -1703,6 +1752,7 @@ function setQuickStatusPill(statusVal) {
 function resetPaketFilters() {
     document.getElementById('searchPaketInput').value = '';
     document.getElementById('filterGroupSelect').value = '';
+    if (document.getElementById('filterTahunSelect')) document.getElementById('filterTahunSelect').value = '';
     if (document.getElementById('filterTagSelect')) document.getElementById('filterTagSelect').value = '';
     document.getElementById('filterStatusSelect').value = '';
     

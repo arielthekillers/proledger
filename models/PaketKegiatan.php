@@ -78,6 +78,12 @@ class PaketKegiatan {
             $params[] = '%,' . $t;
             $params[] = $t;
         }
+
+        // Filter by tahun_anggaran
+        if (!empty($filters['tahun'])) {
+            $sql .= " AND pk.tahun_anggaran = ?";
+            $params[] = (int)$filters['tahun'];
+        }
         
         // Filter by name (search)
         if (!empty($filters['search'])) {
@@ -205,9 +211,9 @@ class PaketKegiatan {
                     kode_paket, nama_paket, nomor_sp, kab_kota, pagu, pagu_nego, dpp, pasal_13, admin_2, total_pasal, tipe_potongan,
                     persen_pasal, persen_admin,
                     setor_awal, selisih, rab, status, progres_barang,
-                    perusahaan_id, group_id, tags, skema_id, perusahaan, penanggung_jawab
+                    perusahaan_id, group_id, tahun_anggaran, tags, skema_id, perusahaan, penanggung_jawab
                 ) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
             $perusahaanName = null;
@@ -239,6 +245,7 @@ class PaketKegiatan {
                 $data['progres_barang'] ?? 'Belum',
                 $data['perusahaan_id'] ?? null,
                 !empty($data['group_id']) ? (int)$data['group_id'] : null,
+                !empty($data['tahun_anggaran']) ? (int)$data['tahun_anggaran'] : (int)date('Y'),
                 !empty($data['tags']) ? trim($data['tags']) : null,
                 !empty($data['skema_id']) ? (int)$data['skema_id'] : null,
                 $perusahaanName, // Legacy column
@@ -297,7 +304,7 @@ class PaketKegiatan {
                 SET nama_paket = ?, nomor_sp = ?, kab_kota = ?, pagu = ?, pagu_nego = ?, dpp = ?, pasal_13 = ?, admin_2 = ?, total_pasal = ?, tipe_potongan = ?,
                     persen_pasal = ?, persen_admin = ?,
                     setor_awal = ?, selisih = ?, rab = ?, status = ?, progres_barang = ?,
-                    perusahaan_id = ?, group_id = ?, tags = ?, skema_id = ?, perusahaan = ?, penanggung_jawab = ?
+                    perusahaan_id = ?, group_id = ?, tahun_anggaran = ?, tags = ?, skema_id = ?, perusahaan = ?, penanggung_jawab = ?
                 WHERE kode_paket = ? OR id = ?
             ");
             
@@ -321,6 +328,7 @@ class PaketKegiatan {
                 $data['progres_barang'] ?? 'Belum',
                 $data['perusahaan_id'] ?? null,
                 !empty($data['group_id']) ? (int)$data['group_id'] : null,
+                !empty($data['tahun_anggaran']) ? (int)$data['tahun_anggaran'] : (int)date('Y'),
                 !empty($data['tags']) ? trim($data['tags']) : null,
                 !empty($data['skema_id']) ? (int)$data['skema_id'] : null,
                 $perusahaanName,
