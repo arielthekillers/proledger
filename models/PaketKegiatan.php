@@ -163,6 +163,13 @@ class PaketKegiatan {
         
         return $paket;
     }
+
+    /**
+     * Alias untuk getById
+     */
+    public function getByIdOrKode($idOrKode) {
+        return $this->getById($idOrKode);
+    }
     
     /**
      * Create new paket
@@ -381,7 +388,7 @@ class PaketKegiatan {
      * Update status pencairan paket kegiatan (Belum, Proses, Selesai)
      */
     public function updateStatus($idOrKode, $status) {
-        $existing = $this->getByIdOrKode($idOrKode);
+        $existing = $this->getById($idOrKode);
         if (!$existing) {
             throw new Exception("Paket kegiatan tidak ditemukan.");
         }
