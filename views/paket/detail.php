@@ -1,7 +1,14 @@
 <?php
 $role = $_SESSION['admin_role'] ?? 'user';
+$items = $items ?? [];
+$itemSummary = $itemSummary ?? ['total_item' => 0, 'total_qty' => 0, 'grand_total' => 0];
+
+$effectivePagu = (!empty($itemSummary['grand_total']) && (float)$itemSummary['grand_total'] > 0) 
+    ? (float)$itemSummary['grand_total'] 
+    : (float)$paket['pagu'];
+
 $hasNego = (!empty($paket['pagu_nego']) && (float)$paket['pagu_nego'] > 0);
-$acuan = $hasNego ? (float)$paket['pagu_nego'] : (float)$paket['pagu'];
+$acuan = $hasNego ? (float)$paket['pagu_nego'] : $effectivePagu;
 $dpp = !empty($paket['dpp']) ? (float)$paket['dpp'] : calculateDPP($acuan);
 
 $persenPasal = isset($paket['persen_pasal']) && $paket['persen_pasal'] !== '' ? (float)$paket['persen_pasal'] : 13.0;
@@ -16,8 +23,6 @@ $pasalVal = !empty($paket['pasal_13']) ? (float)$paket['pasal_13'] : calculatePa
 $adminVal = isset($paket['admin_2']) ? (float)$paket['admin_2'] : calculateAdmin($basisPotongan, $persenAdmin);
 $totalPasal = !empty($paket['total_pasal']) ? (float)$paket['total_pasal'] : ($pasalVal + $adminVal);
 
-$items = $items ?? [];
-$itemSummary = $itemSummary ?? ['total_item' => 0, 'total_qty' => 0, 'grand_total' => 0];
 $distribusiList = $distribusiList ?? [];
 $distribusiSummary = $distribusiSummary ?? ['total_baris' => 0, 'total_tujuan' => 0, 'total_qty_dialokasikan' => 0, 'total_diterima' => 0, 'total_dikirim' => 0, 'total_belum_kirim' => 0];
 $groupedDistribusi = $groupedDistribusi ?? [];

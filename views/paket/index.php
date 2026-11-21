@@ -112,7 +112,7 @@ foreach ($paket as $p) {
         <div class="relative w-full md:w-72">
             <ion-icon name="search-outline" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"></ion-icon>
             <input type="text" id="searchPaketInput" onkeyup="filterPaketTable()" 
-                   placeholder="Cari paket, PJ, perusahaan, group..." 
+                   placeholder="Cari paket, PJ, group..." 
                    class="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
         </div>
 
@@ -170,7 +170,6 @@ foreach ($paket as $p) {
                     <th class="py-2.5 px-3 min-w-[190px]">Nama Paket</th>
                     <th class="py-2.5 px-3 text-right">Nilai Kontrak</th>
                     <th class="py-2.5 px-3 text-center">Penanggung Jawab</th>
-                    <th class="py-2.5 px-3 min-w-[130px]">Nama Perusahaan</th>
                     <th class="py-2.5 px-3 text-center">Progres Barang</th>
                     <th class="py-2.5 px-3 text-right bg-emerald-100/40">DPP</th>
                     <th class="py-2.5 px-3 text-right">Potongan Pasal</th>
@@ -183,7 +182,7 @@ foreach ($paket as $p) {
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($paket)): ?>
                     <tr id="emptyTableRow">
-                        <td colspan="12" class="py-12 text-center text-slate-400">
+                        <td colspan="11" class="py-12 text-center text-slate-400">
                             <?php if (empty($activeCompany)): ?>
                                 <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-2xl text-amber-500">
                                     <ion-icon name="business-outline"></ion-icon>
@@ -214,17 +213,21 @@ foreach ($paket as $p) {
                     </tr>
                 <?php else: ?>
                     <?php foreach ($paket as $p): 
+                        $itemTotal = (float)($p['total_item_harga'] ?? 0);
+                        $effectivePagu = ($itemTotal > 0) ? $itemTotal : (float)$p['pagu'];
                         $hasNego = (!empty($p['pagu_nego']) && (float)$p['pagu_nego'] > 0);
-                        $acuan = $hasNego ? (float)$p['pagu_nego'] : (float)$p['pagu'];
-                        $dpp = !empty($p['dpp']) ? (float)$p['dpp'] : calculateDPP($acuan);
+                        $acuan = $hasNego ? (float)$p['pagu_nego'] : $effectivePagu;
+                        $tipePotongan = $p['tipe_potongan'] ?? 'dpp';
+                        $dpp = calculateDPP($acuan);
+                        $basis = ($tipePotongan === 'kontrak') ? $acuan : $dpp;
                         
                         $persenPasal = isset($p['persen_pasal']) && $p['persen_pasal'] !== '' ? (float)$p['persen_pasal'] : 13.0;
                         $persenAdmin = isset($p['persen_admin']) && $p['persen_admin'] !== '' ? (float)$p['persen_admin'] : 2.0;
                         $totalPersen = $persenPasal + $persenAdmin;
 
-                        $pasalVal = !empty($p['pasal_13']) ? (float)$p['pasal_13'] : calculatePasal($dpp, $persenPasal);
-                        $adminVal = isset($p['admin_2']) ? (float)$p['admin_2'] : calculateAdmin($dpp, $persenAdmin);
-                        $totalPasal = !empty($p['total_pasal']) ? (float)$p['total_pasal'] : ($pasalVal + $adminVal);
+                        $pasalVal = calculatePasal($basis, $persenPasal);
+                        $adminVal = calculateAdmin($basis, $persenAdmin);
+                        $totalPasal = $pasalVal + $adminVal;
                     ?>
                         <tr class="hover:bg-slate-50/70 transition-colors group"
                             data-group-name="<?= htmlspecialchars(strtolower($p['nama_group'] ?? '')) ?>"
@@ -247,8 +250,8 @@ foreach ($paket as $p) {
                                     </a>
                                     <?php if (!empty($p['nama_group'])): ?>
                                         <a href="<?= APP_URL ?>/group/detail/<?= $p['group_id'] ?>" 
-                                           class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-[9px] border border-indigo-200 transition-colors"
-                                           title="Group: <?= htmlspecialchars($p['nama_group']) ?>">
+                                            class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-[9px] border border-indigo-200 transition-colors"
+                                            title="Group: <?= htmlspecialchars($p['nama_group']) ?>">
                                             <ion-icon name="folder-outline"></ion-icon>
                                             <span><?= htmlspecialchars($p['nama_group']) ?></span>
                                         </a>
@@ -262,12 +265,12 @@ foreach ($paket as $p) {
                                     <div class="font-mono font-bold text-emerald-600 text-xs" title="Pagu Akhir (Hasil Negosiasi)">
                                         <?= formatRupiah($p['pagu_nego']) ?>
                                     </div>
-                                    <div class="text-[10px] text-slate-400 line-through" title="Pagu Awal">
-                                        <?= formatRupiah($p['pagu']) ?>
+                                    <div class="text-[10px] text-slate-400 line-through" title="Total Nilai Komponen Item">
+                                        <?= formatRupiah($effectivePagu) ?>
                                     </div>
                                 <?php else: ?>
-                                    <div class="font-mono font-bold text-slate-800 text-xs">
-                                        <?= formatRupiah($p['pagu']) ?>
+                                    <div class="font-mono font-bold text-slate-800 text-xs" title="Total Nilai Komponen Item">
+                                        <?= formatRupiah($effectivePagu) ?>
                                     </div>
                                 <?php endif; ?>
                             </td>
@@ -275,13 +278,6 @@ foreach ($paket as $p) {
                             <!-- Penanggung Jawab -->
                             <td class="py-2.5 px-3 text-center whitespace-nowrap">
                                 <?= getPenanggungJawabBadge($p['penanggung_jawab'] ?? '') ?>
-                            </td>
-
-                            <!-- Nama Perusahaan -->
-                            <td class="py-2.5 px-3 text-slate-700 text-xs whitespace-nowrap font-medium">
-                                <span class="truncate block max-w-[150px]" title="<?= htmlspecialchars($p['perusahaan'] ?? '-') ?>">
-                                    <?= htmlspecialchars($p['perusahaan'] ?: '-') ?>
-                                </span>
                             </td>
 
                             <!-- Progres Barang -->
@@ -1411,7 +1407,8 @@ function openIndexSkemaPotonganModal(p) {
         subtitle.textContent = (p.nama_paket || '') + (p.kode_paket ? ' [' + p.kode_paket + ']' : '');
     }
 
-    const pagu = parseFloat(p.pagu) || 0;
+    const itemTotal = parseFloat(p.total_item_harga) || 0;
+    const pagu = itemTotal > 0 ? itemTotal : (parseFloat(p.pagu) || 0);
     const paguNego = (p.pagu_nego && parseFloat(p.pagu_nego) > 0) ? parseFloat(p.pagu_nego) : 0;
     const acuan = paguNego > 0 ? paguNego : pagu;
     const hiddenAcuan = document.getElementById('potongan_acuan_hidden');
@@ -1462,8 +1459,10 @@ function openEditPaketModal(p) {
     document.getElementById('edit_status').value = p.status || 'Proses';
     document.getElementById('editPaketSubtitle').textContent = 'Mengubah: ' + (p.nama_paket || '') + (p.kode_paket ? ' [' + p.kode_paket + ']' : '');
 
+    const itemTotal = parseFloat(p.total_item_harga) || 0;
+    const effectivePagu = itemTotal > 0 ? itemTotal : (parseFloat(p.pagu) || 0);
     const paguInput = document.getElementById('edit_pagu');
-    paguInput.value = p.pagu ? parseInt(p.pagu, 10).toLocaleString('id-ID') : '';
+    paguInput.value = effectivePagu ? Math.round(effectivePagu).toLocaleString('id-ID') : '';
 
     const negoInput = document.getElementById('edit_pagu_nego');
     negoInput.value = (p.pagu_nego && p.pagu_nego > 0) ? parseInt(p.pagu_nego, 10).toLocaleString('id-ID') : '';

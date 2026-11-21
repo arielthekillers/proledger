@@ -15,10 +15,22 @@ class PaketKegiatan {
      * Get all paket kegiatan with filters
      */
     public function getAll($filters = []) {
-        // Updated to JOIN perusahaan and paket_group
-        $sql = "SELECT pk.*, p.nama as perusahaan_nama, p.email as perusahaan_email,
+        // Updated to JOIN perusahaan, paket_group, and paket_items summary
+        $sql = "SELECT pk.*, 
+                       COALESCE(pi_sum.total_item_harga, 0) as total_item_harga,
+                       COALESCE(pi_sum.total_item_qty, 0) as total_item_qty,
+                       COALESCE(pi_sum.total_item_count, 0) as total_item_count,
+                       p.nama as perusahaan_nama, p.email as perusahaan_email,
                        pg.nama_group, pg.kode_group 
                 FROM paket_kegiatan pk
+                LEFT JOIN (
+                    SELECT paket_id, 
+                           COUNT(*) as total_item_count,
+                           SUM(jumlah) as total_item_qty,
+                           SUM(total_harga) as total_item_harga
+                    FROM paket_items
+                    GROUP BY paket_id
+                ) pi_sum ON pk.id = pi_sum.paket_id
                 LEFT JOIN perusahaan p ON pk.perusahaan_id = p.id
                 LEFT JOIN paket_group pg ON pk.group_id = pg.id
                 WHERE 1=1";
@@ -336,6 +348,61 @@ class PaketKegiatan {
             $totalPasal,
             (int)$existing['id']
         ]);
+    }
+
+    /**
+     * Sinkronisasi pagu dan kalkulasi potongan paket dari total paket_items (Tab 2 Komponen Item)
+     */
+    public function syncPaguFromItems($paketId) {
+        $stmt = $this->db->prepare("
+            SELECT COALESCE(SUM(total_harga), 0) as grand_total, COUNT(*) as total_item 
+            FROM paket_items 
+            WHERE paket_id = ?
+        ");
+        $stmt->execute([(int)$paketId]);
+        $itemSum = $stmt->fetch();
+        
+        if ($itemSum && (int)$itemSum['total_item'] > 0) {
+            $grandTotal = (float)$itemSum['grand_total'];
+            $existing = $this->getById($paketId);
+            if (!$existing) return false;
+
+            $hasNego = (!empty($existing['pagu_nego']) && (float)$existing['pagu_nego'] > 0);
+            $acuan = $hasNego ? (float)$existing['pagu_nego'] : $grandTotal;
+            $tipePotongan = $existing['tipe_potongan'] ?? 'dpp';
+            $persenPasal = isset($existing['persen_pasal']) && $existing['persen_pasal'] !== '' ? (float)$existing['persen_pasal'] : 13.0;
+            $persenAdmin = isset($existing['persen_admin']) && $existing['persen_admin'] !== '' ? (float)$existing['persen_admin'] : 2.0;
+
+            $dpp = calculateDPP($acuan);
+            $basis = ($tipePotongan === 'kontrak') ? $acuan : $dpp;
+            $pasal = calculatePasal($basis, $persenPasal);
+            $admin = calculateAdmin($basis, $persenAdmin);
+            $totalPasal = $pasal + $admin;
+
+            $setorAwal = (isset($existing['setor_awal']) && $existing['setor_awal'] !== '' && $existing['setor_awal'] !== null) ? (float)$existing['setor_awal'] : null;
+            $selisih = $setorAwal !== null ? round($setorAwal - $totalPasal) : null;
+
+            $stmtUpdate = $this->db->prepare("
+                UPDATE paket_kegiatan SET
+                    pagu = ?,
+                    dpp = ?,
+                    pasal_13 = ?,
+                    admin_2 = ?,
+                    total_pasal = ?,
+                    selisih = ?
+                WHERE id = ?
+            ");
+            return $stmtUpdate->execute([
+                $grandTotal,
+                $dpp,
+                $pasal,
+                $admin,
+                $totalPasal,
+                $selisih,
+                (int)$existing['id']
+            ]);
+        }
+        return false;
     }
     
     /**

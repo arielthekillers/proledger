@@ -238,6 +238,12 @@ class PaketController {
         $summary = $this->paketModel->getSummary($paket['id']);
         $items = $this->itemModel->getByPaketId($paket['id']);
         $itemSummary = $this->itemModel->getSummaryByPaketId($paket['id']);
+        
+        // Pastikan pagu paket selalu sinkron dengan total nilai item di Tab 2
+        if (!empty($itemSummary['grand_total']) && (float)$itemSummary['grand_total'] > 0 && abs((float)$paket['pagu'] - (float)$itemSummary['grand_total']) > 0.01) {
+            $this->paketModel->syncPaguFromItems($paket['id']);
+            $paket = $this->paketModel->getById($paket['id']);
+        }
         $groups = $this->groupModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null));
         $skemas = $this->skemaModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null));
         
@@ -721,6 +727,9 @@ class PaketController {
                 'total_harga' => $totalHarga
             ]);
 
+            // Sinkronisasi pagu & potongan paket dengan total komponen item (Tab 2)
+            $this->paketModel->syncPaguFromItems($paket['id']);
+
             flash('success', 'Item spesifikasi berhasil ditambahkan!');
         } catch (Exception $e) {
             flash('error', 'Gagal menambahkan item: ' . $e->getMessage());
@@ -770,6 +779,9 @@ class PaketController {
                 'total_harga' => $totalHarga
             ]);
 
+            // Sinkronisasi pagu & potongan paket dengan total komponen item (Tab 2)
+            $this->paketModel->syncPaguFromItems($paket['id']);
+
             flash('success', 'Item spesifikasi berhasil diperbarui!');
         } catch (Exception $e) {
             flash('error', 'Gagal memperbarui item: ' . $e->getMessage());
@@ -786,6 +798,10 @@ class PaketController {
 
         try {
             $this->itemModel->delete($itemId);
+
+            // Sinkronisasi pagu & potongan paket dengan total komponen item (Tab 2)
+            $this->paketModel->syncPaguFromItems($paket['id']);
+
             flash('success', 'Item spesifikasi berhasil dihapus.');
         } catch (Exception $e) {
             flash('error', 'Gagal menghapus item: ' . $e->getMessage());
