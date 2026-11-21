@@ -1228,67 +1228,118 @@ foreach ($paket as $p) {
 </div>
 
 <!-- ============================================================== -->
-<!-- POPUP MODAL DINAMIS DETAIL TAB (LAZY LOAD VIA IFRAME)           -->
+<!-- DYNAMIC NATIVE AJAX MODAL (BEST PRACTICE / NO IFRAME)          -->
 <!-- ============================================================== -->
-<div id="modalDynamicDetail" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <!-- Backdrop Blur -->
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" onclick="closeDynamicDetailModal()"></div>
-
-    <div class="flex min-h-full items-center justify-center p-2 sm:p-4 text-center">
-        <div id="modalDynamicCard" 
-             style="height: 520px; max-height: 92vh;" 
-             class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-[height] duration-200 ease-out w-full max-w-6xl flex flex-col border border-slate-200">
-            
-            <!-- Modal Header -->
-            <div id="modalDynamicHeader" class="px-4 py-2.5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
-                <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0">
-                        <ion-icon name="layers-outline" id="modalDynamicIcon"></ion-icon>
-                    </div>
-                    <div class="min-w-0">
-                        <div class="flex items-center gap-2">
-                            <span id="modalDynamicTabName" class="text-xs font-bold text-slate-800">Detail Paket</span>
-                            <span id="modalDynamicKode" class="font-mono font-bold text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded">#KODE</span>
-                        </div>
-                        <p id="modalDynamicNama" class="text-[11px] text-slate-400 truncate max-w-sm sm:max-w-md">Nama Paket</p>
-                    </div>
+<div id="modalModuleDynamic" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div id="modalModuleCard" class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-5xl transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[90vh] flex flex-col">
+        <!-- Header -->
+        <div class="px-5 py-3.5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div id="modalModuleIconWrap" class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0">
+                    <ion-icon name="layers-outline" id="modalModuleIcon"></ion-icon>
                 </div>
-
-                <!-- Right Actions in Modal Header -->
-                <div class="flex items-center gap-2 shrink-0">
-                    <button type="button" onclick="closeDynamicDetailModal()"
-                            class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
-                            title="Tutup Popup (Esc)">
-                        <ion-icon name="close-outline" class="text-lg"></ion-icon>
-                    </button>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span id="modalModuleTitle" class="text-xs font-bold text-slate-800">Detail Paket</span>
+                        <span id="modalModuleKode" class="font-mono font-bold text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded border border-slate-200">#KODE</span>
+                    </div>
+                    <p id="modalModuleSubtitle" class="text-[11px] text-slate-400 truncate max-w-sm sm:max-w-md">Nama Paket</p>
                 </div>
             </div>
 
-            <!-- Modal Body (Iframe with Loading Skeleton) -->
-            <div class="relative flex-1 bg-slate-50 w-full overflow-hidden">
-                <!-- Skeleton Loader -->
-                <div id="modalDynamicLoader" class="absolute inset-0 z-10 bg-white flex flex-col items-center justify-center p-6 space-y-3">
-                    <div class="w-9 h-9 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <p class="text-xs font-semibold text-slate-700">Memuat rincian paket...</p>
-                    <p class="text-[11px] text-slate-400">Data hanya dimuat saat popup dibuka (ringan & cepat)</p>
-                </div>
-
-                <!-- Iframe Container -->
-                <iframe id="modalDynamicIframe" src="about:blank" class="w-full h-full border-0" onload="onDynamicIframeLoaded()"></iframe>
+            <!-- Right Actions in Modal Header -->
+            <div class="flex items-center gap-2 shrink-0">
+                <button type="button" onclick="closeModuleModal()"
+                        class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+                        title="Tutup Popup (Esc)">
+                    <ion-icon name="close-outline" class="text-lg"></ion-icon>
+                </button>
             </div>
+        </div>
+
+        <!-- Scrollable Modal Body (Pure Native HTML) -->
+        <div id="modalModuleBody" class="relative flex-1 bg-slate-50/60 w-full overflow-y-auto p-4 sm:p-5">
+            <!-- Dynamic Content / Skeleton injected here -->
         </div>
     </div>
 </div>
 
+<!-- ============================================================== -->
+<!-- NATIVE SUB-MODAL: UPLOAD BAST                                  -->
+<!-- ============================================================== -->
+<div id="modalNativeUploadBast" class="app-modal fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center text-lg shadow-xs">
+                    <ion-icon name="cloud-upload-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-sm" id="nativeUploadBastTitle">Upload Berkas BAST</h3>
+                    <p class="text-[11px] text-slate-400">Upload lembar scan/foto BAST yang telah ditandatangani.</p>
+                </div>
+            </div>
+            <button type="button" onclick="window.ProModal.close('modalNativeUploadBast')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                <ion-icon name="close-outline" class="text-xl"></ion-icon>
+            </button>
+        </div>
+
+        <form id="formNativeUploadBast" action="" method="POST" enctype="multipart/form-data" class="overflow-y-auto p-5 space-y-4">
+            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
+            <input type="hidden" name="jenis_dokumen" value="BAST">
+            <input type="hidden" name="redirect_to" id="nativeUploadBastRedirect" value="">
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+                    Nama Dokumen BAST <span class="text-rose-500">*</span>
+                </label>
+                <input type="text" name="nama_dokumen" id="nativeUploadBastNama" required
+                       placeholder="Misal: BAST SMAN 2 Bontang"
+                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-amber-500 transition-all font-semibold">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+                    Pilih File Hasil Scan / Foto BAST <span class="text-rose-500">*</span>
+                </label>
+                <input type="file" name="file_dokumen" required
+                       accept=".pdf,.jpg,.jpeg,.png,.webp"
+                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-amber-500 transition-all file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 cursor-pointer">
+                <p class="text-[10px] text-slate-400 mt-1">Format: PDF, JPG, PNG, WEBP. Maksimal 25MB.</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan (Opsional)</label>
+                <textarea name="keterangan" rows="2" placeholder="Catatan berkas BAST..."
+                          class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-amber-500 transition-all resize-none"></textarea>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                <button type="button" onclick="window.ProModal.close('modalNativeUploadBast')"
+                        class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold transition-colors">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
+                    <ion-icon name="cloud-upload-outline"></ion-icon>
+                    <span>Upload BAST</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- ========================================== -->
-<!-- 4. JAVASCRIPT LOGIC                        -->
+<!-- 4. JAVASCRIPT LOGIC (NATIVE MODALS ENGINE) -->
 <!-- ========================================== -->
 <script>
 // ==========================================
-// ACTION DROPDOWN & DYNAMIC TAB MODAL LOGIC
+// ACTION DROPDOWN & NATIVE AJAX MODAL LOGIC
 // ==========================================
 let currentPaketData = null;
 let activeMenuBtn = null;
+let currentOpenKode = null;
+let currentOpenModule = null;
 
 function toggleActionMenu(event, paketJson) {
     event.stopPropagation();
@@ -1346,143 +1397,313 @@ document.addEventListener('click', function(e) {
 });
 window.addEventListener('scroll', closeActionMenu, true);
 
-function openPaketModalTab(idOrKode, tab, namaPaket) {
-    closeActionMenu();
-    const modal = document.getElementById('modalDynamicDetail');
-    const iframe = document.getElementById('modalDynamicIframe');
-    const loader = document.getElementById('modalDynamicLoader');
-    if (!modal || !iframe) return;
+/**
+ * Open Native Modal with AJAX Content (Best Practice)
+ */
+function openPaketModalTab(idOrKode, module, namaPaket) {
+    openPaketNativeModal(idOrKode, module, namaPaket);
+}
 
-    const tabTitles = {
-        'info': { name: 'Informasi & Finansial', icon: 'information-circle-outline' },
-        'items': { name: 'Komponen Item Barang', icon: 'list-outline' },
-        'pemesanan': { name: 'Progres Pemesanan Toko', icon: 'bag-check-outline' },
-        'distribusi': { name: 'Alokasi Distribusi Titik', icon: 'navigate-outline' },
-        'dokumentasi': { name: 'Foto Dokumentasi', icon: 'camera-outline' },
-        'dokumen': { name: 'Berkas Dokumen BAST', icon: 'document-text-outline' },
-        'profit': { name: 'Estimasi Margin Profit', icon: 'trending-up-outline' }
+function openPaketNativeModal(idOrKode, module, namaPaket) {
+    closeActionMenu();
+    currentOpenKode = idOrKode;
+    currentOpenModule = module || 'info';
+
+    const tabConfig = {
+        'info': { name: 'Informasi & Finansial', icon: 'information-circle-outline', bg: 'bg-blue-50 text-blue-600' },
+        'items': { name: 'Komponen Item Barang', icon: 'list-outline', bg: 'bg-blue-50 text-blue-600' },
+        'pemesanan': { name: 'Progres Pemesanan Toko', icon: 'bag-check-outline', bg: 'bg-amber-50 text-amber-700' },
+        'distribusi': { name: 'Alokasi Distribusi Titik', icon: 'navigate-outline', bg: 'bg-indigo-50 text-indigo-600' },
+        'dokumentasi': { name: 'Foto Dokumentasi', icon: 'camera-outline', bg: 'bg-teal-50 text-teal-600' },
+        'dokumen': { name: 'Berkas Dokumen BAST', icon: 'ribbon-outline', bg: 'bg-amber-50 text-amber-700' },
+        'profit': { name: 'Estimasi Margin Profit', icon: 'trending-up-outline', bg: 'bg-emerald-50 text-emerald-700' }
     };
 
-    const tabInfo = tabTitles[tab] || { name: 'Detail Paket', icon: 'layers-outline' };
+    const cfg = tabConfig[module] || { name: 'Detail Paket', icon: 'layers-outline', bg: 'bg-blue-50 text-blue-600' };
 
-    const tabNameEl = document.getElementById('modalDynamicTabName');
-    const kodeEl = document.getElementById('modalDynamicKode');
-    const namaEl = document.getElementById('modalDynamicNama');
-    const iconEl = document.getElementById('modalDynamicIcon');
+    const titleEl = document.getElementById('modalModuleTitle');
+    const kodeEl = document.getElementById('modalModuleKode');
+    const subEl = document.getElementById('modalModuleSubtitle');
+    const iconEl = document.getElementById('modalModuleIcon');
+    const iconWrap = document.getElementById('modalModuleIconWrap');
+    const bodyEl = document.getElementById('modalModuleBody');
 
-    if (tabNameEl) tabNameEl.textContent = tabInfo.name;
+    if (titleEl) titleEl.textContent = cfg.name;
     if (kodeEl) kodeEl.textContent = '#' + idOrKode;
-    if (namaEl) namaEl.textContent = namaPaket || '';
-    if (iconEl) iconEl.setAttribute('name', tabInfo.icon);
+    if (subEl) subEl.textContent = namaPaket || '';
+    if (iconEl) iconEl.setAttribute('name', cfg.icon);
+    if (iconWrap) iconWrap.className = 'w-8 h-8 rounded-xl flex items-center justify-center text-lg shrink-0 ' + cfg.bg;
 
-    const card = document.getElementById('modalDynamicCard');
-    if (card) {
-        card.style.height = '480px';
+    // Show clean skeleton loader
+    if (bodyEl) {
+        bodyEl.innerHTML = `
+            <div class="animate-pulse space-y-4 py-2">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="h-20 bg-slate-200/80 rounded-xl"></div>
+                    <div class="h-20 bg-slate-200/80 rounded-xl"></div>
+                    <div class="h-20 bg-slate-200/80 rounded-xl"></div>
+                    <div class="h-20 bg-slate-200/80 rounded-xl"></div>
+                </div>
+                <div class="h-56 bg-slate-200/80 rounded-xl"></div>
+            </div>
+        `;
     }
 
-    if (loader) loader.classList.remove('hidden');
+    // Open modal immediately
+    window.ProModal.open('modalModuleDynamic');
 
-    modal.classList.remove('hidden');
-    document.body.classList.add('overflow-hidden');
-
-    // Lazy load the exact module
-    iframe.src = '<?= APP_URL ?>/paket/detail/' + idOrKode + '?modal=1&tab=' + tab;
-}
-
-let dynamicResizeObserver = null;
-
-function autoResizeModalDynamic() {
-    const iframe = document.getElementById('modalDynamicIframe');
-    const card = document.getElementById('modalDynamicCard');
-    const header = document.getElementById('modalDynamicHeader');
-    if (!iframe || !card) return;
-
-    try {
-        const doc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (!doc) return;
-
-        if (doc.body) {
-            doc.body.style.minHeight = 'auto';
-        }
-
-        const bodyH = doc.body ? doc.body.scrollHeight : 0;
-        const docH = doc.documentElement ? doc.documentElement.scrollHeight : 0;
-        const contentHeight = Math.max(bodyH, docH);
-
-        if (contentHeight > 50) {
-            const headerHeight = header ? header.offsetHeight : 55;
-            const maxAllowed = Math.floor(window.innerHeight * 0.92);
-            const minAllowed = 320;
-            
-            // Tambahkan ruang padding bawah secukupnya
-            const targetHeight = Math.min(Math.max(contentHeight + headerHeight + 25, minAllowed), maxAllowed);
-            card.style.height = targetHeight + 'px';
-        }
-    } catch (err) {
-        console.warn('Auto resize dynamic iframe fallback:', err);
-    }
-}
-
-window.setPaketModalHeight = function(h) {
-    const card = document.getElementById('modalDynamicCard');
-    if (card) {
-        const maxH = Math.floor(window.innerHeight * 0.92);
-        card.style.height = Math.min(Math.max(h, 320), maxH) + 'px';
-    }
-};
-
-window.autoResizeModalDynamic = autoResizeModalDynamic;
-
-function onDynamicIframeLoaded() {
-    const loader = document.getElementById('modalDynamicLoader');
-    if (loader) loader.classList.add('hidden');
-
-    setTimeout(() => {
-        autoResizeModalDynamic();
-    }, 60);
-
-    setTimeout(() => {
-        autoResizeModalDynamic();
-    }, 280);
-
-    try {
-        const iframe = document.getElementById('modalDynamicIframe');
-        const doc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (doc && doc.body && window.ResizeObserver) {
-            if (dynamicResizeObserver) {
-                dynamicResizeObserver.disconnect();
+    // Fetch pure HTML fragment via AJAX
+    fetch('<?= APP_URL ?>/paket/modalView/' + encodeURIComponent(idOrKode) + '/' + encodeURIComponent(module))
+        .then(response => {
+            if (!response.ok) throw new Error('Gagal memuat data modul (' + response.status + ')');
+            return response.text();
+        })
+        .then(html => {
+            if (bodyEl) {
+                bodyEl.innerHTML = html;
             }
-            dynamicResizeObserver = new ResizeObserver(() => {
-                autoResizeModalDynamic();
-            });
-            dynamicResizeObserver.observe(doc.body);
+        })
+        .catch(err => {
+            if (bodyEl) {
+                bodyEl.innerHTML = `
+                    <div class="p-8 text-center text-slate-500">
+                        <div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                            <ion-icon name="alert-circle-outline"></ion-icon>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-sm mb-1">Gagal Memuat Konten</h4>
+                        <p class="text-xs text-slate-400 mb-3">${err.message}</p>
+                        <button type="button" onclick="openPaketNativeModal('${idOrKode}', '${module}', '${namaPaket || ''}')" class="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-semibold cursor-pointer">Coba Lagi</button>
+                    </div>
+                `;
+            }
+        });
+}
+
+function closeModuleModal() {
+    window.ProModal.close('modalModuleDynamic');
+    currentOpenKode = null;
+    currentOpenModule = null;
+}
+
+function refreshCurrentNativeModal() {
+    if (currentOpenKode && currentOpenModule) {
+        const sub = document.getElementById('modalModuleSubtitle')?.textContent || '';
+        openPaketNativeModal(currentOpenKode, currentOpenModule, sub);
+    }
+}
+
+/**
+ * Native Upload BAST Modal Trigger
+ */
+function openNativeUploadBastModal(kode, namaTujuan) {
+    const form = document.getElementById('formNativeUploadBast');
+    if (form) {
+        form.action = '<?= APP_URL ?>/paket/storeDokumen/' + kode;
+        document.getElementById('nativeUploadBastRedirect').value = '<?= APP_URL ?>/paket?open_modal=' + kode + '&tab=dokumen';
+        document.getElementById('nativeUploadBastNama').value = namaTujuan ? ('BAST - ' + namaTujuan) : '';
+        const titleEl = document.getElementById('nativeUploadBastTitle');
+        if (titleEl) titleEl.textContent = namaTujuan ? ('Upload BAST: ' + namaTujuan) : 'Upload Berkas BAST';
+    }
+    window.ProModal.open('modalNativeUploadBast');
+}
+
+/**
+ * Delete Dokumen BAST via AJAX
+ */
+function deleteDokumenAjax(kode, docId, namaDoc) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Hapus Berkas BAST?',
+            html: `Apakah Anda yakin ingin menghapus <strong>${namaDoc || 'dokumen ini'}</strong>?`,
+            icon: 'warning',
+            iconColor: '#f43f5e',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('<?= APP_URL ?>/paket/deleteDokumen/' + kode + '/' + docId + '?ajax=1')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (window.ProToast) window.ProToast.success(data.message || 'Dokumen berhasil dihapus.');
+                            refreshCurrentNativeModal();
+                        } else {
+                            if (window.ProToast) window.ProToast.error(data.message || 'Gagal menghapus dokumen.');
+                        }
+                    })
+                    .catch(() => {
+                        window.location.reload();
+                    });
+            }
+        });
+    } else {
+        if (confirm('Hapus berkas BAST?')) {
+            window.location.href = '<?= APP_URL ?>/paket/deleteDokumen/' + kode + '/' + docId;
         }
-    } catch (e) {}
-}
-
-window.addEventListener('resize', autoResizeModalDynamic);
-
-function closeDynamicDetailModal() {
-    const modal = document.getElementById('modalDynamicDetail');
-    const iframe = document.getElementById('modalDynamicIframe');
-    if (dynamicResizeObserver) {
-        dynamicResizeObserver.disconnect();
-        dynamicResizeObserver = null;
-    }
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-    }
-    if (iframe) {
-        iframe.src = 'about:blank';
     }
 }
+
+/**
+ * Delete Item Komponen via AJAX
+ */
+function deleteItemAjax(kode, itemId, namaItem) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Hapus Item Barang?',
+            html: `Hapus <strong>${namaItem || 'komponen ini'}</strong> dari paket?`,
+            icon: 'warning',
+            iconColor: '#f43f5e',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('<?= APP_URL ?>/paket/deleteItem/' + kode + '/' + itemId + '?ajax=1')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (window.ProToast) window.ProToast.success(data.message || 'Item berhasil dihapus.');
+                            refreshCurrentNativeModal();
+                        } else {
+                            if (window.ProToast) window.ProToast.error(data.message || 'Gagal menghapus item.');
+                        }
+                    })
+                    .catch(() => {
+                        window.location.reload();
+                    });
+            }
+        });
+    } else {
+        if (confirm('Hapus item?')) {
+            window.location.href = '<?= APP_URL ?>/paket/deleteItem/' + kode + '/' + itemId;
+        }
+    }
+}
+
+/**
+ * Delete Alokasi Distribusi via AJAX
+ */
+function deleteDistribusiAjax(kode, distId) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Hapus Alokasi Distribusi?',
+            text: 'Data alokasi tujuan dan dokumentasinya akan dihapus.',
+            icon: 'warning',
+            iconColor: '#f43f5e',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('<?= APP_URL ?>/paket/deleteDistribusi/' + kode + '/' + distId + '?ajax=1')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (window.ProToast) window.ProToast.success(data.message || 'Alokasi berhasil dihapus.');
+                            refreshCurrentNativeModal();
+                        } else {
+                            if (window.ProToast) window.ProToast.error(data.message || 'Gagal menghapus alokasi.');
+                        }
+                    })
+                    .catch(() => {
+                        window.location.reload();
+                    });
+            }
+        });
+    } else {
+        if (confirm('Hapus alokasi distribusi?')) {
+            window.location.href = '<?= APP_URL ?>/paket/deleteDistribusi/' + kode + '/' + distId;
+        }
+    }
+}
+
+/**
+ * Delete Foto Dokumentasi via AJAX
+ */
+function deleteFotoDokumenAjax(kode, fotoId) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Hapus Foto Dokumentasi?',
+            text: 'Foto bukti serah terima akan dihapus permanen.',
+            icon: 'warning',
+            iconColor: '#f43f5e',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('<?= APP_URL ?>/paket/deleteDokumentasi/' + kode + '/' + fotoId, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: new URLSearchParams({ is_ajax: '1' })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (window.ProToast) window.ProToast.success(data.message || 'Foto berhasil dihapus.');
+                            refreshCurrentNativeModal();
+                        } else {
+                            if (window.ProToast) window.ProToast.error(data.message || 'Gagal menghapus foto.');
+                        }
+                    })
+                    .catch(() => {
+                        window.location.reload();
+                    });
+            }
+        });
+    } else {
+        if (confirm('Hapus foto?')) {
+            window.location.href = '<?= APP_URL ?>/paket/deleteDokumentasi/' + kode + '/' + fotoId;
+        }
+    }
+}
+
+/**
+ * Photo Lightbox Preview
+ */
+function openPhotoPreview(url, caption) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            imageUrl: url,
+            imageAlt: caption || 'Foto Dokumentasi',
+            title: caption || 'Foto Dokumentasi',
+            showCloseButton: true,
+            showConfirmButton: false,
+            width: 'auto',
+            customClass: {
+                popup: 'rounded-2xl overflow-hidden p-2'
+            }
+        });
+    } else {
+        window.open(url, '_blank');
+    }
+}
+
+// Auto open modal on load if URL params has open_modal
+document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const openKode = params.get('open_modal');
+    const openTab = params.get('tab') || 'info';
+    if (openKode) {
+        openPaketNativeModal(openKode, openTab);
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete('open_modal');
+        cleanUrl.searchParams.delete('tab');
+        window.history.replaceState({}, document.title, cleanUrl.toString());
+    }
+});
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        closeDynamicDetailModal();
+        closeModuleModal();
         closeActionMenu();
     }
+});
 });
 
 function triggerMenuTab(tab) {

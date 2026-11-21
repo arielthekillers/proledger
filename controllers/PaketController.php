@@ -245,6 +245,42 @@ class PaketController {
             return;
         }
 
+        $data = $this->prepareDetailData($idOrKode);
+        $this->view('paket/detail', $data);
+    }
+
+    /**
+     * AJAX Native Modal View Endpoint
+     * Mengembalikan potongan HTML murni untuk modul tertentu tanpa iframe
+     */
+    public function modalView($idOrKode, $module = 'info') {
+        $data = $this->prepareDetailData($idOrKode);
+        $data['activeTab'] = $module;
+        extract($data);
+
+        $validModules = [
+            'info' => 'modal_info.php',
+            'items' => 'modal_items.php',
+            'pemesanan' => 'modal_pemesanan.php',
+            'distribusi' => 'modal_distribusi.php',
+            'dokumentasi' => 'modal_dokumentasi.php',
+            'dokumen' => 'modal_dokumen.php',
+            'profit' => 'modal_profit.php'
+        ];
+
+        $viewName = $validModules[$module] ?? 'modal_info.php';
+        $file = VIEW_PATH . '/paket/modals/' . $viewName;
+        if (file_exists($file)) {
+            require $file;
+        } else {
+            require VIEW_PATH . '/paket/modals/modal_info.php';
+        }
+        exit;
+    }
+
+    private function prepareDetailData($idOrKode) {
+        $paket = $this->getAccessiblePaket($idOrKode);
+
         $role = $_SESSION['admin_role'] ?? 'user';
         
         $summary = $this->paketModel->getSummary($paket['id']);
@@ -454,7 +490,7 @@ class PaketController {
             'profit'      => ['profit' => $nilaiBersihProfit, 'margin' => $profitMarginPct]
         ];
         
-        $data = [
+        return [
             'title' => $paket['nama_paket'],
             'active' => 'paket',
             'activeTab' => $_GET['tab'] ?? 'info',
@@ -490,8 +526,6 @@ class PaketController {
             'modal_detail' => [],
             'transaksi' => []
         ];
-        
-        $this->view('paket/detail', $data);
     }
     
     public function edit($idOrKode) {
@@ -871,18 +905,33 @@ class PaketController {
     public function deleteItem($idOrKode, $itemId) {
         $paket = $this->getAccessiblePaket($idOrKode);
 
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || 
+                  (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) ||
+                  (isset($_GET['ajax']) && $_GET['ajax'] == '1');
+
         try {
             $this->itemModel->delete($itemId);
 
             // Sinkronisasi pagu & potongan paket dengan total komponen item (Tab 2)
             $this->paketModel->syncPaguFromItems($paket['id']);
 
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => 'Item spesifikasi berhasil dihapus.']);
+                exit;
+            }
             flash('success', 'Item spesifikasi berhasil dihapus.');
         } catch (Exception $e) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Gagal menghapus item: ' . $e->getMessage()]);
+                exit;
+            }
             flash('error', 'Gagal menghapus item: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=items#items');
+        $fallback = !empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ('/paket?open_modal=' . ($paket['kode_paket'] ?: $paket['id']) . '&tab=items');
+        redirect($fallback);
     }
 
     /**
@@ -1226,15 +1275,30 @@ class PaketController {
     public function deleteDistribusi($idOrKode, $distribusiId) {
         $paket = $this->getAccessiblePaket($idOrKode);
 
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || 
+                  (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) ||
+                  (isset($_GET['ajax']) && $_GET['ajax'] == '1');
+
         try {
             $this->dokumentasiModel->deleteByDistribusiId($distribusiId);
             $this->distribusiModel->delete($distribusiId);
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => 'Alokasi distribusi berhasil dihapus.']);
+                exit;
+            }
             flash('success', 'Alokasi distribusi berhasil dihapus.');
         } catch (Exception $e) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Gagal menghapus alokasi distribusi: ' . $e->getMessage()]);
+                exit;
+            }
             flash('error', 'Gagal menghapus alokasi distribusi: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
+        $fallback = !empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ('/paket?open_modal=' . ($paket['kode_paket'] ?: $paket['id']) . '&tab=distribusi');
+        redirect($fallback);
     }
 
     /**
@@ -1448,7 +1512,8 @@ class PaketController {
             flash('error', 'Gagal menyimpan dokumen: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
+        $redirectTarget = !empty($_POST['redirect_to']) ? $_POST['redirect_to'] : ('/paket?open_modal=' . ($paket['kode_paket'] ?: $paket['id']) . '&tab=dokumen');
+        redirect($redirectTarget);
     }
 
     /**
@@ -1499,14 +1564,29 @@ class PaketController {
     public function deleteDokumen($idOrKode, $dokumenId) {
         $paket = $this->getAccessiblePaket($idOrKode);
 
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || 
+                  (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) ||
+                  (isset($_GET['ajax']) && $_GET['ajax'] == '1');
+
         try {
             $this->dokumenModel->delete($dokumenId);
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => 'Dokumen berhasil dihapus.']);
+                exit;
+            }
             flash('success', 'Dokumen berhasil dihapus.');
         } catch (Exception $e) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Gagal menghapus dokumen: ' . $e->getMessage()]);
+                exit;
+            }
             flash('error', 'Gagal menghapus dokumen: ' . $e->getMessage());
         }
 
-        redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumen#dokumen');
+        $fallback = !empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ('/paket?open_modal=' . ($paket['kode_paket'] ?: $paket['id']) . '&tab=dokumen');
+        redirect($fallback);
     }
 
     /**
