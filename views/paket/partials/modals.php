@@ -858,6 +858,10 @@
                                class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700 font-bold"
                                placeholder="14.850.000">
                     </div>
+                    <p class="text-[10px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
+                        <ion-icon name="checkmark-circle-outline"></ion-icon>
+                        <span>Acuan utama DPP & potongan pasal</span>
+                    </p>
                 </div>
             </div>
 

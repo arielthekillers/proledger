@@ -183,7 +183,7 @@ foreach ($paket as $p) {
                 <tr>
                     <th class="py-2.5 px-3 w-16 text-center">KODE</th>
                     <th class="py-2.5 px-3 min-w-[200px]">Nama Paket</th>
-                    <th class="py-2.5 px-3 text-right">Nilai Kontrak</th>
+                    <th class="py-2.5 px-3 text-right" title="Nilai Hasil Negosiasi (Acuan Utama Perhitungan DPP & Potongan)">Nilai Nego (Acuan)</th>
                     <th class="py-2.5 px-3 text-right bg-emerald-100/40">DPP</th>
                     <th class="py-2.5 px-3 text-right">Potongan Pasal</th>
                     <th class="py-2.5 px-3 text-right">Admin</th>
@@ -299,29 +299,27 @@ foreach ($paket as $p) {
                                 <?php endif; ?>
                             </td>
 
-                            <!-- Nilai Kontrak (Pagu / Nego Acuan) -->
+                            <!-- Nilai Nego (Acuan Utama) & Kontrak Awal -->
                             <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                <div class="font-mono font-bold text-slate-800 text-xs leading-5" title="Total Nilai Komponen Item / Kontrak">
+                                <div class="font-mono font-bold text-slate-800 text-xs leading-5" title="Nilai Hasil Negosiasi (Acuan Utama): <?= formatRupiah($acuan) ?>">
                                     <?= formatRupiah($acuan) ?>
                                 </div>
                                 <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
-                                    <?php if ($hasNego): ?>
-                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200" title="Pagu Nego (Awal: <?= formatRupiah($effectivePagu) ?>)">
-                                            Nego
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="inline-block text-[9px] text-transparent select-none">-</span>
-                                    <?php endif; ?>
+                                    <span class="text-[9px] text-slate-400 font-normal" title="Nilai Kontrak / Pagu Awal: <?= formatRupiah($effectivePagu) ?>">
+                                        Awal: <?= formatRupiah($effectivePagu) ?>
+                                    </span>
                                 </div>
                             </td>
 
-                            <!-- DPP (-11% PPN) -->
+                            <!-- DPP (-11% PPN dari Nilai Nego) -->
                             <td class="py-2.5 px-3 text-right whitespace-nowrap bg-emerald-50/20">
-                                <div class="font-mono font-semibold text-slate-800 text-xs leading-5">
+                                <div class="font-mono font-semibold text-slate-800 text-xs leading-5" title="DPP dihitung dari Nilai Nego / 1.11">
                                     <?= formatRupiah($dpp) ?>
                                 </div>
                                 <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
-                                    <span class="inline-block text-[9px] text-transparent select-none">-</span>
+                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" title="Dasar Pengenaan Pajak (-11% PPN dari Nego)">
+                                        DPP -11%
+                                    </span>
                                 </div>
                             </td>
 
@@ -574,6 +572,10 @@ foreach ($paket as $p) {
                                class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700 font-bold"
                                placeholder="14.850.000">
                     </div>
+                    <p class="text-[10px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
+                        <ion-icon name="checkmark-circle-outline"></ion-icon>
+                        <span>Acuan utama DPP & potongan pasal</span>
+                    </p>
                 </div>
             </div>
 
@@ -701,6 +703,10 @@ foreach ($paket as $p) {
                                class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700 font-bold"
                                placeholder="14.850.000">
                     </div>
+                    <p class="text-[10px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
+                        <ion-icon name="checkmark-circle-outline"></ion-icon>
+                        <span>Acuan utama DPP & potongan pasal</span>
+                    </p>
                 </div>
             </div>
 

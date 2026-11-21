@@ -216,8 +216,9 @@
                                 <?= (float)($distribusiSummary['total_qty_dialokasikan'] ?? 0) ?>
                             </td>
                             <td class="py-2.5 px-3 text-right text-slate-400 font-mono text-xs">-</td>
-                            <td class="py-2.5 px-3 text-right font-mono font-extrabold text-xs whitespace-nowrap" title="Nilai Kontrak Acuan: <?= formatRupiah($acuanPagu) ?>">
-                                <?= formatRupiah($acuanPagu) ?>
+                            <td class="py-2.5 px-3 text-right font-mono font-extrabold text-xs whitespace-nowrap" title="Nilai Nego (Acuan Utama): <?= formatRupiah($acuanPagu) ?>">
+                                <div class="text-xs"><?= formatRupiah($acuanPagu) ?></div>
+                                <div class="text-[9px] font-normal text-emerald-700">Acuan Nego</div>
                             </td>
                             <td class="py-2.5 px-3 text-right font-mono font-extrabold text-xs whitespace-nowrap <?= $totalBeliBarang > 0 ? 'text-indigo-800' : 'text-slate-500' ?>">
                                 <?= formatRupiah($totalBeliBarang) ?>

@@ -132,12 +132,13 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Pagu Nego <span class="text-emerald-600 font-normal">(Acuan Akhir jika ada)</span></label>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Pagu Nego <span class="text-emerald-600 font-bold">(Hasil Negosiasi - Acuan Utama)</span> <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
-                            <input type="text" name="pagu_nego" id="pagu_nego" class="rupiah-input w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors font-mono font-medium text-emerald-700 text-sm" 
-                                   placeholder="Opsional" value="<?= (!empty($paket['pagu_nego']) && (float)$paket['pagu_nego'] > 0) ? number_format($paket['pagu_nego'], 0, ',', '.') : '' ?>">
+                            <input type="text" name="pagu_nego" id="pagu_nego" required class="rupiah-input w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors font-mono font-bold text-emerald-700 text-sm" 
+                                   placeholder="Wajib diisi hasil negosiasi" value="<?= (!empty($paket['pagu_nego']) && (float)$paket['pagu_nego'] > 0) ? number_format($paket['pagu_nego'], 0, ',', '.') : '' ?>">
                         </div>
+                        <p class="text-[11px] text-emerald-600 font-medium mt-1">Acuan perhitungan DPP (-11%), potongan pasal & margin laba</p>
                     </div>
                 </div>
 

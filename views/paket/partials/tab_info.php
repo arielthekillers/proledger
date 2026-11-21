@@ -267,23 +267,25 @@
                 <div class="divide-y divide-slate-100 text-xs">
                     <div class="py-2 flex items-center justify-between">
                         <span class="text-slate-500">Nilai Pagu Awal Kontrak</span>
-                        <span class="font-mono font-bold text-slate-800"><?= formatRupiah($paket['pagu']) ?></span>
+                        <span class="font-mono font-semibold text-slate-400 line-through" title="Pagu awal sebelum negosiasi"><?= formatRupiah($paket['pagu']) ?></span>
                     </div>
 
-                    <?php if ($hasNego): ?>
-                        <div class="py-2 flex items-center justify-between">
-                            <span class="text-emerald-700 font-semibold flex items-center gap-1">
-                                <span>Nilai Hasil Negosiasi (Pagu Akhir)</span>
-                                <span class="text-[9px] bg-emerald-100 px-1 py-0.2 rounded font-bold">Acuan</span>
+                    <div class="py-2.5 flex items-center justify-between bg-emerald-50/60 -mx-4 px-4 sm:-mx-5 sm:px-5 border-y border-emerald-100">
+                        <div>
+                            <span class="text-emerald-900 font-bold flex items-center gap-1.5">
+                                <ion-icon name="checkmark-circle" class="text-emerald-600 text-sm"></ion-icon>
+                                <span>Nilai Hasil Negosiasi (Pagu Nego)</span>
+                                <span class="text-[9px] bg-emerald-200 text-emerald-800 px-1.5 py-0.2 rounded font-extrabold uppercase">Acuan Utama</span>
                             </span>
-                            <span class="font-mono font-bold text-emerald-700"><?= formatRupiah($paket['pagu_nego']) ?></span>
+                            <span class="text-[10px] text-emerald-700 block mt-0.5">Seluruh perhitungan DPP, potongan & laba bersandar pada nilai ini</span>
                         </div>
-                    <?php endif; ?>
+                        <span class="font-mono font-black text-emerald-800 text-sm"><?= formatRupiah($paket['pagu_nego'] ?: $acuan) ?></span>
+                    </div>
 
                     <div class="py-2 flex items-center justify-between">
                         <div>
                             <span class="text-slate-600">DPP (Dasar Pengenaan Pajak)</span>
-                            <span class="text-[10px] text-slate-400 block">Nilai dikurangi PPN 11% (Nilai / 1.11)</span>
+                            <span class="text-[10px] text-slate-400 block">Dihitung dari Nilai Nego / 1.11 (dikurangi PPN 11%)</span>
                         </div>
                         <span class="font-mono font-bold text-slate-800"><?= formatRupiah($dpp) ?></span>
                     </div>
