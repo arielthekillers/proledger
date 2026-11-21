@@ -265,8 +265,10 @@ foreach ($paket as $p) {
                             <!-- Nama Paket & Group Badge & Tags (Satu Baris Sebelahan) -->
                             <td class="py-2.5 px-3">
                                 <div>
-                                    <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>" 
-                                       class="font-bold text-slate-800 hover:text-blue-600 text-xs transition-colors">
+                                    <a href="javascript:void(0)" 
+                                       onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'info', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
+                                       class="font-bold text-slate-800 hover:text-blue-600 text-xs transition-colors cursor-pointer"
+                                       title="Klik untuk buka Informasi & Rincian Paket">
                                         <?= htmlspecialchars($p['nama_paket']) ?>
                                     </a>
                                 </div>
@@ -1208,11 +1210,6 @@ foreach ($paket as $p) {
     <!-- Group 2: Pengelolaan & Aksi Cepat -->
     <div class="py-1">
         <div class="px-3.5 py-1 text-[9px] uppercase tracking-wider font-bold text-slate-400">Pengelolaan Paket</div>
-        <a id="actionMenuFullPageLink" href="#" 
-           class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer">
-            <ion-icon name="open-outline" class="text-sm text-slate-500"></ion-icon>
-            <span>Buka Halaman Lengkap</span>
-        </a>
         <?php if ($role === 'admin' || $role === 'user'): ?>
             <button type="button" onclick="triggerMenuEditPaket()" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-amber-50 hover:text-amber-700 transition-colors cursor-pointer">
                 <ion-icon name="create-outline" class="text-sm text-amber-500"></ion-icon>
@@ -1257,12 +1254,6 @@ foreach ($paket as $p) {
 
                 <!-- Right Actions in Modal Header -->
                 <div class="flex items-center gap-2 shrink-0">
-                    <a id="modalDynamicExternalLink" href="#" target="_blank"
-                       class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-slate-50 text-xs font-semibold transition-colors"
-                       title="Buka Halaman Lengkap di Tab Baru">
-                        <ion-icon name="open-outline" class="text-xs"></ion-icon>
-                        <span class="hidden sm:inline">Halaman Penuh</span>
-                    </a>
                     <button type="button" onclick="closeDynamicDetailModal()"
                             class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
                             title="Tutup Popup (Esc)">
@@ -1314,15 +1305,11 @@ function toggleActionMenu(event, paketJson) {
     // Header info
     const kodeEl = document.getElementById('actionMenuKode');
     const namaEl = document.getElementById('actionMenuNama');
-    const fullLinkEl = document.getElementById('actionMenuFullPageLink');
 
     if (kodeEl) kodeEl.textContent = '#' + (paketJson.kode_paket || paketJson.id);
     if (namaEl) {
         namaEl.textContent = paketJson.nama_paket;
         namaEl.title = paketJson.nama_paket;
-    }
-    if (fullLinkEl) {
-        fullLinkEl.href = '<?= APP_URL ?>/paket/detail/' + (paketJson.kode_paket || paketJson.id);
     }
 
     // Display & positioning
@@ -1380,21 +1367,19 @@ function openPaketModalTab(idOrKode, tab, namaPaket) {
     const kodeEl = document.getElementById('modalDynamicKode');
     const namaEl = document.getElementById('modalDynamicNama');
     const iconEl = document.getElementById('modalDynamicIcon');
-    const extLinkEl = document.getElementById('modalDynamicExternalLink');
 
     if (tabNameEl) tabNameEl.textContent = tabInfo.name;
     if (kodeEl) kodeEl.textContent = '#' + idOrKode;
     if (namaEl) namaEl.textContent = namaPaket || '';
     if (iconEl) iconEl.setAttribute('name', tabInfo.icon);
-    if (extLinkEl) extLinkEl.href = '<?= APP_URL ?>/paket/detail/' + idOrKode + '?tab=' + tab;
 
     if (loader) loader.classList.remove('hidden');
 
     modal.classList.remove('hidden');
     document.body.classList.add('overflow-hidden');
 
-    // Lazy load the exact tab
-    iframe.src = '<?= APP_URL ?>/paket/detail/' + idOrKode + '?modal=1&tab=' + tab + '#' + tab;
+    // Lazy load the exact module
+    iframe.src = '<?= APP_URL ?>/paket/detail/' + idOrKode + '?modal=1&tab=' + tab;
 }
 
 function onDynamicIframeLoaded() {
