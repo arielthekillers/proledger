@@ -55,7 +55,7 @@
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased font-sans text-sm p-2 sm:p-4 min-h-screen">
+<body class="bg-slate-50 text-slate-800 antialiased font-sans text-sm p-3 sm:p-5 m-0 h-auto">
     <?php 
     $flashSuccess = flash('success');
     $flashError = flash('error');

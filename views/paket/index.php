@@ -1235,10 +1235,12 @@ foreach ($paket as $p) {
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" onclick="closeDynamicDetailModal()"></div>
 
     <div class="flex min-h-full items-center justify-center p-2 sm:p-4 text-center">
-        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-6xl h-[92vh] flex flex-col border border-slate-200">
+        <div id="modalDynamicCard" 
+             style="height: 520px; max-height: 92vh;" 
+             class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-[height] duration-200 ease-out w-full max-w-6xl flex flex-col border border-slate-200">
             
             <!-- Modal Header -->
-            <div class="px-4 py-2.5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
+            <div id="modalDynamicHeader" class="px-4 py-2.5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-2.5 min-w-0">
                     <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0">
                         <ion-icon name="layers-outline" id="modalDynamicIcon"></ion-icon>
@@ -1373,6 +1375,11 @@ function openPaketModalTab(idOrKode, tab, namaPaket) {
     if (namaEl) namaEl.textContent = namaPaket || '';
     if (iconEl) iconEl.setAttribute('name', tabInfo.icon);
 
+    const card = document.getElementById('modalDynamicCard');
+    if (card) {
+        card.style.height = '480px';
+    }
+
     if (loader) loader.classList.remove('hidden');
 
     modal.classList.remove('hidden');
@@ -1382,14 +1389,86 @@ function openPaketModalTab(idOrKode, tab, namaPaket) {
     iframe.src = '<?= APP_URL ?>/paket/detail/' + idOrKode + '?modal=1&tab=' + tab;
 }
 
+let dynamicResizeObserver = null;
+
+function autoResizeModalDynamic() {
+    const iframe = document.getElementById('modalDynamicIframe');
+    const card = document.getElementById('modalDynamicCard');
+    const header = document.getElementById('modalDynamicHeader');
+    if (!iframe || !card) return;
+
+    try {
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (!doc) return;
+
+        if (doc.body) {
+            doc.body.style.minHeight = 'auto';
+        }
+
+        const bodyH = doc.body ? doc.body.scrollHeight : 0;
+        const docH = doc.documentElement ? doc.documentElement.scrollHeight : 0;
+        const contentHeight = Math.max(bodyH, docH);
+
+        if (contentHeight > 50) {
+            const headerHeight = header ? header.offsetHeight : 55;
+            const maxAllowed = Math.floor(window.innerHeight * 0.92);
+            const minAllowed = 320;
+            
+            // Tambahkan ruang padding bawah secukupnya
+            const targetHeight = Math.min(Math.max(contentHeight + headerHeight + 25, minAllowed), maxAllowed);
+            card.style.height = targetHeight + 'px';
+        }
+    } catch (err) {
+        console.warn('Auto resize dynamic iframe fallback:', err);
+    }
+}
+
+window.setPaketModalHeight = function(h) {
+    const card = document.getElementById('modalDynamicCard');
+    if (card) {
+        const maxH = Math.floor(window.innerHeight * 0.92);
+        card.style.height = Math.min(Math.max(h, 320), maxH) + 'px';
+    }
+};
+
+window.autoResizeModalDynamic = autoResizeModalDynamic;
+
 function onDynamicIframeLoaded() {
     const loader = document.getElementById('modalDynamicLoader');
     if (loader) loader.classList.add('hidden');
+
+    setTimeout(() => {
+        autoResizeModalDynamic();
+    }, 60);
+
+    setTimeout(() => {
+        autoResizeModalDynamic();
+    }, 280);
+
+    try {
+        const iframe = document.getElementById('modalDynamicIframe');
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (doc && doc.body && window.ResizeObserver) {
+            if (dynamicResizeObserver) {
+                dynamicResizeObserver.disconnect();
+            }
+            dynamicResizeObserver = new ResizeObserver(() => {
+                autoResizeModalDynamic();
+            });
+            dynamicResizeObserver.observe(doc.body);
+        }
+    } catch (e) {}
 }
+
+window.addEventListener('resize', autoResizeModalDynamic);
 
 function closeDynamicDetailModal() {
     const modal = document.getElementById('modalDynamicDetail');
     const iframe = document.getElementById('modalDynamicIframe');
+    if (dynamicResizeObserver) {
+        dynamicResizeObserver.disconnect();
+        dynamicResizeObserver = null;
+    }
     if (modal) {
         modal.classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
