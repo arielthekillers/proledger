@@ -552,8 +552,8 @@ class PaketController {
                 'group_id' => !empty($_POST['group_id']) ? (int)$_POST['group_id'] : null,
                 'tags' => !empty($_POST['tags']) ? sanitize($_POST['tags']) : null,
                 'skema_id' => $skemaId,
-                'penanggung_jawab' => !empty($_POST['penanggung_jawab']) ? sanitize($_POST['penanggung_jawab']) : null,
-                'progres_barang' => $_POST['progres_barang'] ?? 'Belum',
+                'penanggung_jawab' => !empty($_POST['penanggung_jawab']) ? sanitize($_POST['penanggung_jawab']) : ($existing['penanggung_jawab'] ?? null),
+                'progres_barang' => $_POST['progres_barang'] ?? ($existing['progres_barang'] ?? 'Belum'),
                 'pagu' => $pagu,
                 'pagu_nego' => $paguNego,
                 'tipe_potongan' => $tipePotongan,
@@ -561,19 +561,21 @@ class PaketController {
                 'persen_admin' => $persenAdmin,
                 'setor_awal' => null,
                 'rab' => 0,
-                'status' => $_POST['status'] ?? 'Proses'
+                'status' => $_POST['status'] ?? ($existing['status'] ?? 'Proses')
             ];
             
             $this->paketModel->update($idOrKode, $data);
             $targetCode = $existing['kode_paket'] ?: $existing['id'];
             
             flash('success', 'Paket kegiatan (' . $targetCode . ') berhasil diupdate!');
-            redirect('/paket/detail/' . $targetCode);
+            $redirectTo = !empty($_POST['redirect_to']) ? $_POST['redirect_to'] : ('/paket/detail/' . $targetCode);
+            redirect($redirectTo);
             
         } catch (Exception $e) {
             flash('error', 'Gagal mengupdate paket: ' . $e->getMessage());
             setOld($_POST);
-            redirect('/paket/edit/' . $idOrKode);
+            $fallback = !empty($_POST['redirect_to']) ? $_POST['redirect_to'] : ('/paket/detail/' . $idOrKode);
+            redirect($fallback);
         }
     }
 

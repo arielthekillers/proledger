@@ -169,16 +169,15 @@ foreach ($paket as $p) {
             <thead class="bg-emerald-50/70 text-[10px] uppercase tracking-wider text-slate-700 font-bold border-b border-emerald-200/80">
                 <tr>
                     <th class="py-2.5 px-3 w-16 text-center">KODE</th>
-                    <th class="py-2.5 px-3 min-w-[200px]">Nama Paket & Tags</th>
+                    <th class="py-2.5 px-3 min-w-[200px]">Nama Paket</th>
                     <th class="py-2.5 px-3 text-right">Nilai Kontrak</th>
-                    <th class="py-2.5 px-3 text-center">Penanggung Jawab</th>
-                    <th class="py-2.5 px-2 text-center min-w-[70px]" title="Progres Pemesanan Barang (Supplier/Toko)">Pemesanan</th>
-                    <th class="py-2.5 px-2 text-center min-w-[70px]" title="Progres Pengiriman & Distribusi">Distribusi</th>
-                    <th class="py-2.5 px-2 text-center min-w-[70px]" title="Progres Foto Dokumentasi Titik Penerima">Dokumentasi</th>
                     <th class="py-2.5 px-3 text-right bg-emerald-100/40">DPP</th>
                     <th class="py-2.5 px-3 text-right">Potongan Pasal</th>
                     <th class="py-2.5 px-3 text-right">Admin</th>
                     <th class="py-2.5 px-3 text-right bg-amber-50/70 text-amber-900 font-extrabold">Total Pasal</th>
+                    <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Pemesanan Barang (Supplier/Toko)">Pemesanan</th>
+                    <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Pengiriman & Distribusi">Distribusi</th>
+                    <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Foto Dokumentasi Titik Penerima">Dokumentasi</th>
                     <th class="py-2.5 px-3 text-center">Pencairan</th>
                     <th class="py-2.5 px-3 text-right w-16">Aksi</th>
                 </tr>
@@ -186,7 +185,7 @@ foreach ($paket as $p) {
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($paket)): ?>
                     <tr id="emptyTableRow">
-                        <td colspan="13" class="py-12 text-center text-slate-400">
+                        <td colspan="12" class="py-12 text-center text-slate-400">
                             <?php if (empty($activeCompany)): ?>
                                 <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-2xl text-amber-500">
                                     <ion-icon name="business-outline"></ion-icon>
@@ -249,56 +248,102 @@ foreach ($paket as $p) {
                                 </span>
                             </td>
 
-                            <!-- Nama Paket & Group Badge & Tags -->
+                            <!-- Nama Paket & Group Badge & Tags (Satu Baris Sebelahan) -->
                             <td class="py-2.5 px-3">
-                                <div class="flex items-center gap-1.5 flex-wrap">
+                                <div>
                                     <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>" 
                                        class="font-bold text-slate-800 hover:text-blue-600 text-xs transition-colors">
                                         <?= htmlspecialchars($p['nama_paket']) ?>
                                     </a>
-                                    <?php if (!empty($p['nama_group'])): ?>
-                                        <a href="<?= APP_URL ?>/group/detail/<?= $p['group_id'] ?>" 
-                                            class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-[9px] border border-indigo-200 transition-colors"
-                                            title="Group: <?= htmlspecialchars($p['nama_group']) ?>">
-                                            <ion-icon name="folder-outline"></ion-icon>
-                                            <span><?= htmlspecialchars($p['nama_group']) ?></span>
-                                        </a>
-                                    <?php endif; ?>
                                 </div>
-                                <?php if (!empty($p['tags'])): 
-                                    $tagList = array_map('trim', explode(',', $p['tags']));
-                                ?>
-                                    <div class="flex items-center gap-1 flex-wrap mt-1">
-                                        <?php foreach ($tagList as $tg): if ($tg === '') continue; ?>
+                                <?php if (!empty($p['nama_group']) || !empty($p['tags'])): ?>
+                                    <div class="flex items-center gap-1.5 flex-wrap mt-1">
+                                        <?php if (!empty($p['nama_group'])): ?>
+                                            <a href="<?= APP_URL ?>/group/detail/<?= $p['group_id'] ?>" 
+                                                class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-[9px] border border-indigo-200 transition-colors"
+                                                title="Group: <?= htmlspecialchars($p['nama_group']) ?>">
+                                                <ion-icon name="folder-outline"></ion-icon>
+                                                <span><?= htmlspecialchars($p['nama_group']) ?></span>
+                                            </a>
+                                        <?php endif; ?>
+                                        <?php if (!empty($p['tags'])): 
+                                            $tagList = array_map('trim', explode(',', $p['tags']));
+                                            foreach ($tagList as $tg): if ($tg === '') continue;
+                                        ?>
                                             <button type="button" onclick="filterByTag('<?= htmlspecialchars(strtolower($tg)) ?>')" 
-                                                    class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-500 font-medium text-[9px] border border-slate-200/60 transition-colors"
+                                                    class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-500 font-medium text-[9px] border border-slate-200/60 transition-colors"
                                                     title="Filter tag: #<?= htmlspecialchars($tg) ?>">
                                                 <span>#<?= htmlspecialchars($tg) ?></span>
                                             </button>
-                                        <?php endforeach; ?>
+                                        <?php endforeach; endif; ?>
                                     </div>
                                 <?php endif; ?>
                             </td>
 
                             <!-- Nilai Kontrak (Pagu / Nego Acuan) -->
                             <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                <?php if ($hasNego): ?>
-                                    <div class="font-mono font-bold text-emerald-600 text-xs" title="Pagu Akhir (Hasil Negosiasi)">
-                                        <?= formatRupiah($p['pagu_nego']) ?>
-                                    </div>
-                                    <div class="text-[10px] text-slate-400 line-through" title="Total Nilai Komponen Item">
-                                        <?= formatRupiah($effectivePagu) ?>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="font-mono font-bold text-slate-800 text-xs" title="Total Nilai Komponen Item">
-                                        <?= formatRupiah($effectivePagu) ?>
-                                    </div>
-                                <?php endif; ?>
+                                <div class="font-mono font-bold text-slate-800 text-xs leading-5" title="Total Nilai Komponen Item / Kontrak">
+                                    <?= formatRupiah($acuan) ?>
+                                </div>
+                                <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
+                                    <?php if ($hasNego): ?>
+                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200" title="Pagu Nego (Awal: <?= formatRupiah($effectivePagu) ?>)">
+                                            Nego
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="inline-block text-[9px] text-transparent select-none">-</span>
+                                    <?php endif; ?>
+                                </div>
                             </td>
 
-                            <!-- Penanggung Jawab -->
-                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                                <?= getPenanggungJawabBadge($p['penanggung_jawab'] ?? '') ?>
+                            <!-- DPP (-11% PPN) -->
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap bg-emerald-50/20">
+                                <div class="font-mono font-semibold text-slate-800 text-xs leading-5">
+                                    <?= formatRupiah($dpp) ?>
+                                </div>
+                                <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
+                                    <span class="inline-block text-[9px] text-transparent select-none">-</span>
+                                </div>
+                            </td>
+
+                            <!-- Potongan Pasal (Fleksibel) -->
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                                <div class="font-mono text-slate-800 text-xs font-semibold leading-5">
+                                    <?= formatRupiah($pasalVal) ?>
+                                </div>
+                                <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
+                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                        <?= (float)$persenPasal ?>%
+                                    </span>
+                                </div>
+                            </td>
+
+                            <!-- 2% / Admin (Fleksibel) -->
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                                <div class="font-mono text-slate-700 text-xs leading-5">
+                                    <?= ($persenAdmin > 0) ? formatRupiah($adminVal) : '-' ?>
+                                </div>
+                                <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
+                                    <?php if ($persenAdmin > 0): ?>
+                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                            <?= (float)$persenAdmin ?>%
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="inline-block text-[9px] text-transparent select-none">-</span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+
+                            <!-- Total Pasal -->
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap bg-amber-50/40">
+                                <div class="font-mono font-bold text-amber-800 text-xs leading-5">
+                                    <?= formatRupiah($totalPasal) ?>
+                                </div>
+                                <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
+                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300/80">
+                                        <?= (float)$totalPersen ?>%
+                                    </span>
+                                </div>
                             </td>
 
                             <!-- Progres Pemesanan (Lingkaran) -->
@@ -320,35 +365,6 @@ foreach ($paket as $p) {
                                 <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>?tab=dokumentasi#dokumentasi" class="hover:opacity-80 transition-opacity inline-block" title="Klik untuk buka Tab Dokumentasi">
                                     <?= renderCircularProgress($p['dok_done'] ?? 0, $p['total_dist'] ?? 0, 'dokumentasi') ?>
                                 </a>
-                            </td>
-
-                            <!-- DPP (-11% PPN) -->
-                            <td class="py-2.5 px-3 text-right font-mono font-semibold text-slate-800 text-xs bg-emerald-50/20 whitespace-nowrap">
-                                <?= formatRupiah($dpp) ?>
-                            </td>
-
-                            <!-- Potongan Pasal (Fleksibel) -->
-                            <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                <div class="font-mono text-slate-800 text-xs font-semibold"><?= formatRupiah($pasalVal) ?></div>
-                                <div class="text-[10px] text-slate-400 font-medium"><?= (float)$persenPasal ?>%</div>
-                            </td>
-
-                            <!-- 2% / Admin (Fleksibel) -->
-                            <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                <?php if ($persenAdmin > 0): ?>
-                                    <div class="font-mono text-slate-700 text-xs"><?= formatRupiah($adminVal) ?></div>
-                                    <div class="text-[10px] text-slate-400 font-medium"><?= (float)$persenAdmin ?>%</div>
-                                <?php else: ?>
-                                    <span class="text-slate-400 text-xs font-medium" title="Tanpa potongan admin">-</span>
-                                <?php endif; ?>
-                            </td>
-
-                            <!-- Total Pasal -->
-                            <td class="py-2.5 px-3 text-right whitespace-nowrap bg-amber-50/40">
-                                <div class="font-mono font-bold text-amber-800 text-xs">
-                                    <?= formatRupiah($totalPasal) ?>
-                                </div>
-                                <div class="text-[10px] text-amber-700/80 font-bold"><?= (float)$totalPersen ?>%</div>
                             </td>
 
                             <!-- Pencairan (Belum / Proses / Selesai) -->
@@ -573,6 +589,7 @@ foreach ($paket as $p) {
         <form id="formEditPaket" method="POST" action="" class="p-6 overflow-y-auto space-y-4 flex-1">
             <?= csrfField() ?>
             <input type="hidden" name="jumlah_pemodal" id="edit_jumlah_pemodal" value="0">
+            <input type="hidden" name="redirect_to" value="/paket">
 
             <!-- Nama Paket -->
             <div>
@@ -622,30 +639,8 @@ foreach ($paket as $p) {
                 </div>
             </div>
 
-            <!-- Penanggung Jawab & Progres Barang Grid -->
+            <!-- Financials Grid: Pagu Awal & Pagu Nego (Persis Tambah Paket) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Penanggung Jawab (PJ)</label>
-                    <input type="text" list="list_pj" name="penanggung_jawab" id="edit_penanggung_jawab"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all uppercase tracking-wide"
-                           placeholder="Contoh: RAHMAN, RIFKI, DARMAN, dll.">
-                    <span class="text-[10px] text-slate-400 mt-0.5 block">Ketik nama atau pilih dari saran</span>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Progres Barang</label>
-                    <select name="progres_barang" id="edit_progres_barang" 
-                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer font-semibold">
-                        <option value="Belum" class="text-rose-700 font-bold">BELUM</option>
-                        <option value="Belanja" class="text-blue-700 font-bold">BELANJA</option>
-                        <option value="Distribusi" class="text-emerald-700 font-bold">DISTRIBUSI</option>
-                        <option value="Selesai" class="text-teal-700 font-bold">SELESAI</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Financials Grid: Pagu Awal, Pagu Nego, Status -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <!-- Pagu Awal -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Kontrak / Pagu Awal <span class="text-red-500">*</span></label>
@@ -664,18 +659,9 @@ foreach ($paket as $p) {
                     <div class="relative">
                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
                         <input type="text" name="pagu_nego" id="edit_pagu_nego" oninput="formatRupiahInput(this)"
-                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700">
+                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700"
+                               placeholder="Opsional">
                     </div>
-                </div>
-
-                <!-- Status Pencairan -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Status Pencairan</label>
-                    <select id="edit_status" name="status" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer font-bold">
-                        <option value="Belum" class="text-slate-700 font-bold">BELUM</option>
-                        <option value="Proses" class="text-rose-700 font-bold">PROSES</option>
-                        <option value="Selesai" class="text-emerald-700 font-bold">SELESAI</option>
-                    </select>
                 </div>
             </div>
 
@@ -1625,9 +1611,9 @@ function openEditPaketModal(p) {
     const spanNama = document.getElementById('edit_perusahaan_nama');
     if (spanNama) spanNama.textContent = namaPerusahaan;
     document.getElementById('edit_group_id').value = p.group_id || '';
-    document.getElementById('edit_penanggung_jawab').value = p.penanggung_jawab || '';
-    document.getElementById('edit_progres_barang').value = p.progres_barang || 'Belum';
-    document.getElementById('edit_status').value = p.status || 'Proses';
+    if (document.getElementById('edit_penanggung_jawab')) document.getElementById('edit_penanggung_jawab').value = p.penanggung_jawab || '';
+    if (document.getElementById('edit_progres_barang')) document.getElementById('edit_progres_barang').value = p.progres_barang || 'Belum';
+    if (document.getElementById('edit_status')) document.getElementById('edit_status').value = p.status || 'Proses';
     document.getElementById('editPaketSubtitle').textContent = 'Mengubah: ' + (p.nama_paket || '') + (p.kode_paket ? ' [' + p.kode_paket + ']' : '');
 
     const itemTotal = parseFloat(p.total_item_harga) || 0;

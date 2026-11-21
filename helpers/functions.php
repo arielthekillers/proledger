@@ -184,7 +184,7 @@ function getStatusBadge($status) {
 }
 
 /**
- * Render visual Circular Progress Ring (Lingkaran Progres SVG)
+ * Render visual Circular Progress Ring (Lingkaran Progres SVG & Badge Fraksi)
  */
 function renderCircularProgress($done, $total, $type = 'pemesanan') {
     $done = (int)$done;
@@ -195,19 +195,28 @@ function renderCircularProgress($done, $total, $type = 'pemesanan') {
     if ($type === 'pemesanan') {
         $strokeColor = $isComplete ? 'text-emerald-500' : ($done > 0 ? 'text-amber-500' : 'text-slate-300');
         $textColor = $isComplete ? 'text-emerald-700' : ($done > 0 ? 'text-amber-700' : 'text-slate-400');
+        $badgeClass = $isComplete 
+            ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+            : ($done > 0 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200');
         $label = 'Pemesanan';
     } elseif ($type === 'distribusi') {
         $strokeColor = $isComplete ? 'text-emerald-500' : ($done > 0 ? 'text-indigo-500' : 'text-slate-300');
         $textColor = $isComplete ? 'text-emerald-700' : ($done > 0 ? 'text-indigo-700' : 'text-slate-400');
+        $badgeClass = $isComplete 
+            ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+            : ($done > 0 ? 'bg-indigo-50 text-indigo-800 border-indigo-200' : 'bg-slate-100 text-slate-500 border-slate-200');
         $label = 'Distribusi';
     } else {
         $strokeColor = $isComplete ? 'text-emerald-500' : ($done > 0 ? 'text-teal-500' : 'text-slate-300');
         $textColor = $isComplete ? 'text-emerald-700' : ($done > 0 ? 'text-teal-700' : 'text-slate-400');
+        $badgeClass = $isComplete 
+            ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+            : ($done > 0 ? 'bg-teal-50 text-teal-800 border-teal-200' : 'bg-slate-100 text-slate-500 border-slate-200');
         $label = 'Dokumentasi';
     }
 
-    $radius = 11;
-    $circumference = 2 * M_PI * $radius; // ~69.115
+    $radius = 14;
+    $circumference = 2 * M_PI * $radius; // ~87.96
     $dashoffset = $circumference - ($pct / 100 * $circumference);
 
     $tooltip = "{$label}: {$done} dari {$total} selesai ({$pct}%)";
@@ -215,21 +224,21 @@ function renderCircularProgress($done, $total, $type = 'pemesanan') {
         $tooltip = "{$label}: Belum ada alokasi item/tujuan";
     }
 
-    $html = '<div class="flex flex-col items-center justify-center gap-0.5" title="' . htmlspecialchars($tooltip) . '">';
-    $html .= '<div class="relative w-8 h-8 flex items-center justify-center">';
-    $html .= '<svg class="w-8 h-8 transform -rotate-90">';
-    $html .= '<circle cx="16" cy="16" r="' . $radius . '" stroke="currentColor" class="text-slate-100" stroke-width="2.5" fill="transparent"/>';
+    $html = '<div class="inline-flex items-center gap-1.5" title="' . htmlspecialchars($tooltip) . '">';
+    $html .= '<div class="relative w-9 h-9 flex items-center justify-center shrink-0">';
+    $html .= '<svg class="w-9 h-9 transform -rotate-90" viewBox="0 0 36 36">';
+    $html .= '<circle cx="18" cy="18" r="' . $radius . '" stroke="currentColor" class="text-slate-100" stroke-width="3" fill="transparent"/>';
     if ($total > 0 && $pct > 0) {
-        $html .= '<circle cx="16" cy="16" r="' . $radius . '" stroke="currentColor" class="' . $strokeColor . '" stroke-width="2.5" stroke-linecap="round" fill="transparent" stroke-dasharray="' . round($circumference, 2) . '" stroke-dashoffset="' . round($dashoffset, 2) . '"/>';
+        $html .= '<circle cx="18" cy="18" r="' . $radius . '" stroke="currentColor" class="' . $strokeColor . '" stroke-width="3" stroke-linecap="round" fill="transparent" stroke-dasharray="' . round($circumference, 2) . '" stroke-dashoffset="' . round($dashoffset, 2) . '"/>';
     }
     $html .= '</svg>';
     if ($isComplete) {
-        $html .= '<ion-icon name="checkmark-outline" class="absolute text-xs text-emerald-600 font-bold"></ion-icon>';
+        $html .= '<ion-icon name="checkmark-outline" class="absolute text-sm text-emerald-600 font-extrabold"></ion-icon>';
     } else {
-        $html .= '<span class="absolute text-[8px] font-bold font-mono ' . $textColor . '">' . ($total > 0 ? $pct . '%' : '-') . '</span>';
+        $html .= '<span class="absolute text-[9px] font-bold font-mono ' . $textColor . '">' . ($total > 0 ? $pct . '%' : '-') . '</span>';
     }
     $html .= '</div>';
-    $html .= '<span class="text-[9px] font-semibold text-slate-400 font-mono tracking-tighter">' . $done . '/' . $total . '</span>';
+    $html .= '<span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono border ' . $badgeClass . ' shadow-2xs">' . $done . '/' . $total . '</span>';
     $html .= '</div>';
 
     return $html;

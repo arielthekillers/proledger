@@ -769,42 +769,13 @@
         <form id="formEditPaket" method="POST" action="<?= APP_URL ?>/paket/update/<?= $paket['kode_paket'] ?: $paket['id'] ?>" class="p-6 overflow-y-auto space-y-4 flex-1">
             <?= csrfField() ?>
             <input type="hidden" name="perusahaan_id" value="<?= $paket['perusahaan_id'] ?? '' ?>">
+            <input type="hidden" name="redirect_to" value="/paket/detail/<?= $paket['kode_paket'] ?: $paket['id'] ?>">
 
             <!-- Nama Paket -->
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Paket Kegiatan <span class="text-red-500">*</span></label>
                 <input type="text" id="edit_nama_paket" name="nama_paket" required value="<?= htmlspecialchars($paket['nama_paket']) ?>"
                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
-            </div>
-
-            <!-- Nomor Surat Pesanan (No. SP / SPK / Kontrak) -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
-                    Nomor Surat Pesanan (No. SP / SPK / Kontrak)
-                </label>
-                <input type="text" id="edit_nomor_sp" name="nomor_sp" value="<?= htmlspecialchars($paket['nomor_sp'] ?? '') ?>"
-                       placeholder="Contoh: EP-01M1ZS80DH32WZR9NZ8JCWCA44"
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all font-mono">
-                <p class="text-[10px] text-slate-400 mt-0.5">Nomor ini tercetak otomatis pada lembar Berita Acara Serah Terima (BAST).</p>
-            </div>
-
-            <!-- Kota / Kabupaten Wilayah Pengadaan -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
-                    Kota / Kabupaten Wilayah Pengadaan
-                </label>
-                <select name="kab_kota" id="edit_kab_kota" 
-                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer font-medium">
-                    <option value="">-- Pilih Kota / Kabupaten --</option>
-                    <?php if (!empty($kabupatenList)): ?>
-                        <?php foreach ($kabupatenList as $kab): ?>
-                            <option value="<?= htmlspecialchars($kab['nama']) ?>" <?= (($paket['kab_kota'] ?? '') === $kab['nama']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($kab['nama']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </select>
-                <p class="text-[10px] text-slate-400 mt-0.5">Digunakan untuk memfilter tujuan penerima distribusi pada paket ini.</p>
             </div>
 
             <!-- Tags Paket -->
@@ -849,40 +820,11 @@
                 </div>
             </div>
 
-            <!-- Penanggung Jawab & Progres Barang Grid -->
+            <!-- Financials Grid: Pagu Awal & Pagu Nego (Persis Tambah Paket) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Penanggung Jawab (PJ)</label>
-                    <input type="text" list="list_pj" name="penanggung_jawab" id="edit_penanggung_jawab" value="<?= htmlspecialchars($paket['penanggung_jawab'] ?? '') ?>"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all uppercase tracking-wide"
-                           placeholder="Contoh: RAHMAN, RIFKI, DARMAN, dll.">
-                    <datalist id="list_pj">
-                        <option value="RAHMAN">
-                        <option value="RIFKI">
-                        <option value="DARMAN">
-                        <option value="ASHARI">
-                        <option value="SULIS">
-                        <option value="RIZAL">
-                    </datalist>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Progres Barang</label>
-                    <select name="progres_barang" id="edit_progres_barang" 
-                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer font-semibold">
-                        <option value="Belum" <?= ($paket['progres_barang'] ?? '') === 'Belum' ? 'selected' : '' ?> class="text-rose-700 font-bold">BELUM</option>
-                        <option value="Belanja" <?= ($paket['progres_barang'] ?? '') === 'Belanja' ? 'selected' : '' ?> class="text-blue-700 font-bold">BELANJA</option>
-                        <option value="Distribusi" <?= ($paket['progres_barang'] ?? '') === 'Distribusi' ? 'selected' : '' ?> class="text-emerald-700 font-bold">DISTRIBUSI</option>
-                        <option value="Selesai" <?= ($paket['progres_barang'] ?? '') === 'Selesai' ? 'selected' : '' ?> class="text-teal-700 font-bold">SELESAI</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Financials Grid: Pagu Awal, Pagu Nego, Status -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <!-- Pagu Awal -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Pagu Awal <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Kontrak / Pagu Awal <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
                         <input type="text" name="pagu" id="edit_pagu" required oninput="formatRupiahInput(this); updateEditCalc();"
@@ -894,7 +836,7 @@
                 <!-- Pagu Akhir / Nego -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">
-                        Pagu Nego <span class="text-[10px] font-normal text-emerald-600 font-semibold">(Acuan Akhir)</span>
+                        Pagu Nego <span class="text-[10px] font-normal text-emerald-600 font-semibold">(Acuan Akhir jika ada)</span>
                     </label>
                     <div class="relative">
                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
@@ -903,16 +845,6 @@
                                class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700"
                                placeholder="Opsional">
                     </div>
-                </div>
-
-                <!-- Status Pencairan -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Status Pencairan</label>
-                    <select id="edit_status" name="status" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer font-bold">
-                        <option value="Belum" <?= ($paket['status'] ?? '') === 'Belum' ? 'selected' : '' ?> class="text-slate-700 font-bold">BELUM</option>
-                        <option value="Proses" <?= ($paket['status'] ?? '') === 'Proses' ? 'selected' : '' ?> class="text-rose-700 font-bold">PROSES</option>
-                        <option value="Selesai" <?= (in_array(($paket['status'] ?? ''), ['Selesai', 'Cair'])) ? 'selected' : '' ?> class="text-emerald-700 font-bold">SELESAI</option>
-                    </select>
                 </div>
             </div>
 
