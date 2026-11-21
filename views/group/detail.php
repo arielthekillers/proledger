@@ -191,16 +191,18 @@ $totalAcuan = $stats['total_pagu_nego'] > 0 ? $stats['total_pagu_nego'] : $stats
                             <td class="py-3 px-4 text-center">
                                 <?= getPenanggungJawabBadge($p['penanggung_jawab'] ?? '') ?>
                             </td>
-                            <td class="py-3 px-4 text-right font-mono font-bold text-slate-800">
-                                <?= formatRupiah($acuan) ?>
-                                <?php if ($hasNego): ?>
-                                    <span class="block text-[10px] text-emerald-600 font-semibold">Nego</span>
-                                <?php endif; ?>
+                            <td class="py-3 px-4 text-right whitespace-nowrap">
+                                <div class="font-mono text-slate-400 line-through text-[11px] leading-4" title="Nilai Kontrak / Pagu Awal">
+                                    <?= formatRupiah($p['pagu']) ?>
+                                </div>
+                                <div class="font-mono font-bold text-slate-800 text-xs leading-5" title="Nilai Hasil Negosiasi (Acuan Utama)">
+                                    <?= formatRupiah($acuan) ?>
+                                </div>
                             </td>
-                            <td class="py-3 px-4 text-right font-mono text-slate-600">
+                            <td class="py-3 px-4 text-right font-mono font-semibold text-slate-800 text-xs">
                                 <?= !empty($p['dpp']) ? formatRupiah($p['dpp']) : '-' ?>
                             </td>
-                            <td class="py-3 px-4 text-right font-mono font-bold text-amber-700">
+                            <td class="py-3 px-4 text-right font-mono font-bold text-slate-800 text-xs">
                                 <?= !empty($p['total_pasal']) ? formatRupiah($p['total_pasal']) : '-' ?>
                             </td>
                             <td class="py-3 px-4 text-center">

@@ -179,15 +179,15 @@ foreach ($paket as $p) {
 <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full text-left text-xs" id="paketTable">
-            <thead class="bg-emerald-50/70 text-[10px] uppercase tracking-wider text-slate-700 font-bold border-b border-emerald-200/80">
+            <thead class="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-600 font-bold border-b border-slate-200">
                 <tr>
                     <th class="py-2.5 px-3 w-16 text-center">KODE</th>
                     <th class="py-2.5 px-3 min-w-[200px]">Nama Paket</th>
-                    <th class="py-2.5 px-3 text-right" title="Nilai Hasil Negosiasi (Acuan Utama Perhitungan DPP & Potongan)">Nilai Nego (Acuan)</th>
-                    <th class="py-2.5 px-3 text-right bg-emerald-100/40">DPP</th>
+                    <th class="py-2.5 px-3 text-right" title="Nilai Kontrak Awal & Nilai Hasil Negosiasi (Acuan Utama)">Nilai Kontrak</th>
+                    <th class="py-2.5 px-3 text-right">DPP</th>
                     <th class="py-2.5 px-3 text-right">Potongan Pasal</th>
                     <th class="py-2.5 px-3 text-right">Admin</th>
-                    <th class="py-2.5 px-3 text-right bg-amber-50/70 text-amber-900 font-extrabold">Total Pasal</th>
+                    <th class="py-2.5 px-3 text-right">Total Pasal</th>
                     <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Pemesanan Barang (Supplier/Toko)">Pemesanan</th>
                     <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Pengiriman & Distribusi">Distribusi</th>
                     <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Foto Dokumentasi Titik Penerima">Dokumentasi</th>
@@ -299,25 +299,25 @@ foreach ($paket as $p) {
                                 <?php endif; ?>
                             </td>
 
-                            <!-- Nilai Nego (Acuan Utama) & Kontrak Awal -->
+                            <!-- Nilai Kontrak (Pagu Awal & Pagu Nego) -->
                             <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                                <!-- Pagu Awal: Grey & Coretan di Tengah Text -->
+                                <div class="font-mono text-slate-400 line-through text-[11px] leading-4" title="Nilai Kontrak / Pagu Awal">
+                                    <?= formatRupiah($effectivePagu) ?>
+                                </div>
+                                <!-- Pagu Nego: Ditampilkan di Bawah Pagu Awal (Acuan Utama) -->
                                 <div class="font-mono font-bold text-slate-800 text-xs leading-5" title="Nilai Hasil Negosiasi (Acuan Utama): <?= formatRupiah($acuan) ?>">
                                     <?= formatRupiah($acuan) ?>
-                                </div>
-                                <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
-                                    <span class="text-[9px] text-slate-400 font-normal" title="Nilai Kontrak / Pagu Awal: <?= formatRupiah($effectivePagu) ?>">
-                                        Awal: <?= formatRupiah($effectivePagu) ?>
-                                    </span>
                                 </div>
                             </td>
 
                             <!-- DPP (-11% PPN dari Nilai Nego) -->
-                            <td class="py-2.5 px-3 text-right whitespace-nowrap bg-emerald-50/20">
-                                <div class="font-mono font-semibold text-slate-800 text-xs leading-5" title="DPP dihitung dari Nilai Nego / 1.11">
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                                <div class="font-mono font-bold text-slate-800 text-xs leading-5" title="DPP dihitung dari Nilai Nego / 1.11">
                                     <?= formatRupiah($dpp) ?>
                                 </div>
-                                <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
-                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" title="Dasar Pengenaan Pajak (-11% PPN dari Nego)">
+                                <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
+                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200" title="Dasar Pengenaan Pajak (-11% PPN dari Nego)">
                                         DPP -11%
                                     </span>
                                 </div>
@@ -328,7 +328,7 @@ foreach ($paket as $p) {
                                 <div class="font-mono text-slate-800 text-xs font-semibold leading-5">
                                     <?= formatRupiah($pasalVal) ?>
                                 </div>
-                                <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
+                                <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
                                     <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                                         <?= (float)$persenPasal ?>%
                                     </span>
@@ -340,7 +340,7 @@ foreach ($paket as $p) {
                                 <div class="font-mono text-slate-700 text-xs leading-5">
                                     <?= ($persenAdmin > 0) ? formatRupiah($adminVal) : '-' ?>
                                 </div>
-                                <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
+                                <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
                                     <?php if ($persenAdmin > 0): ?>
                                         <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
                                             <?= (float)$persenAdmin ?>%
@@ -352,11 +352,11 @@ foreach ($paket as $p) {
                             </td>
 
                             <!-- Total Pasal -->
-                            <td class="py-2.5 px-3 text-right whitespace-nowrap bg-amber-50/40">
-                                <div class="font-mono font-bold text-amber-800 text-xs leading-5">
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                                <div class="font-mono font-bold text-slate-800 text-xs leading-5">
                                     <?= formatRupiah($totalPasal) ?>
                                 </div>
-                                <div class="mt-0.5 min-h-[18px] flex items-center justify-end">
+                                <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
                                     <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300/80">
                                         <?= (float)$totalPersen ?>%
                                     </span>
