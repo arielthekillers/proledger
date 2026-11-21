@@ -776,22 +776,6 @@ foreach ($paket as $p) {
     </div>
 </div>
 
-            <!-- Footer -->
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 shrink-0">
-                <button type="button" data-modal-close="modalEditPaket" 
-                        class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs transition-colors">
-                    Batal
-                </button>
-                <button type="submit" 
-                        class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-xs shadow-xs transition-all flex items-center gap-1.5">
-                    <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
-                    <span>Simpan Perubahan</span>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <!-- ========================================== -->
 <!-- MODAL 3: KELOLA GROUP PAKET (POPUP)        -->
 <!-- ========================================== -->
