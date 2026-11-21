@@ -70,11 +70,11 @@
 <?php
 $countAll = count($paket);
 $countProses = 0;
-$countCair = 0;
+$countSelesai = 0;
 $countBelum = 0;
 foreach ($paket as $p) {
     $st = strtolower($p['status'] ?? '');
-    if ($st === 'cair') $countCair++;
+    if ($st === 'cair' || $st === 'selesai') $countSelesai++;
     elseif ($st === 'proses') $countProses++;
     elseif ($st === 'belum') $countBelum++;
 }
@@ -84,26 +84,26 @@ foreach ($paket as $p) {
     <div class="flex items-center gap-1.5 overflow-x-auto pb-2.5 border-b border-slate-100 mb-3 text-xs scrollbar-none">
         <button type="button" onclick="setQuickStatusPill('')" id="pill_status_all"
                 class="pill-status-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-slate-900 text-white shadow-2xs flex items-center gap-1.5 shrink-0">
-            <span>Semua Status</span>
+            <span>Semua Pencairan</span>
             <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20"><?= $countAll ?></span>
-        </button>
-        <button type="button" onclick="setQuickStatusPill('proses')" id="pill_status_proses"
-                class="pill-status-btn px-3 py-1.5 rounded-xl font-semibold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 shrink-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-            <span>Proses</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200/80 text-slate-800"><?= $countProses ?></span>
-        </button>
-        <button type="button" onclick="setQuickStatusPill('cair')" id="pill_status_cair"
-                class="pill-status-btn px-3 py-1.5 rounded-xl font-semibold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 shrink-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <span>Cair</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200/80 text-slate-800"><?= $countCair ?></span>
         </button>
         <button type="button" onclick="setQuickStatusPill('belum')" id="pill_status_belum"
                 class="pill-status-btn px-3 py-1.5 rounded-xl font-semibold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 shrink-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
             <span>Belum</span>
             <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200/80 text-slate-800"><?= $countBelum ?></span>
+        </button>
+        <button type="button" onclick="setQuickStatusPill('proses')" id="pill_status_proses"
+                class="pill-status-btn px-3 py-1.5 rounded-xl font-semibold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 shrink-0">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+            <span>Proses</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200/80 text-slate-800"><?= $countProses ?></span>
+        </button>
+        <button type="button" onclick="setQuickStatusPill('selesai')" id="pill_status_selesai"
+                class="pill-status-btn px-3 py-1.5 rounded-xl font-semibold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 shrink-0">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Selesai</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200/80 text-slate-800"><?= $countSelesai ?></span>
         </button>
     </div>
 
@@ -143,10 +143,10 @@ foreach ($paket as $p) {
             <!-- Filter Status Pencairan -->
             <select id="filterStatusSelect" onchange="filterPaketTable()" 
                     class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-blue-500 transition-all cursor-pointer">
-                <option value="">Semua Status</option>
-                <option value="cair">CAIR</option>
-                <option value="proses">PROSES</option>
+                <option value="">Semua Pencairan</option>
                 <option value="belum">BELUM</option>
+                <option value="proses">PROSES</option>
+                <option value="selesai">SELESAI</option>
             </select>
 
             <!-- Reset Button -->
@@ -175,7 +175,7 @@ foreach ($paket as $p) {
                     <th class="py-2.5 px-3 text-right">Potongan Pasal</th>
                     <th class="py-2.5 px-3 text-right">Admin</th>
                     <th class="py-2.5 px-3 text-right bg-amber-50/70 text-amber-900 font-extrabold">Total Pasal</th>
-                    <th class="py-2.5 px-3 text-center">Status</th>
+                    <th class="py-2.5 px-3 text-center">Pencairan</th>
                     <th class="py-2.5 px-3 text-right w-16">Aksi</th>
                 </tr>
             </thead>
@@ -228,11 +228,14 @@ foreach ($paket as $p) {
                         $pasalVal = calculatePasal($basis, $persenPasal);
                         $adminVal = calculateAdmin($basis, $persenAdmin);
                         $totalPasal = $pasalVal + $adminVal;
+
+                        $rawSt = strtolower($p['status'] ?? 'proses');
+                        $normStatus = ($rawSt === 'cair') ? 'selesai' : $rawSt;
                     ?>
                         <tr class="hover:bg-slate-50/70 transition-colors group"
                             data-group-name="<?= htmlspecialchars(strtolower($p['nama_group'] ?? '')) ?>"
                             data-progres="<?= htmlspecialchars(strtolower($p['progres_barang'] ?? 'belum')) ?>"
-                            data-status="<?= htmlspecialchars(strtolower($p['status'] ?? 'proses')) ?>">
+                            data-status="<?= htmlspecialchars($normStatus) ?>">
                             
                             <!-- KODE (5-digit) -->
                             <td class="py-2.5 px-3 text-center">
@@ -314,9 +317,23 @@ foreach ($paket as $p) {
                                 <div class="text-[10px] text-amber-700/80 font-bold"><?= (float)$totalPersen ?>%</div>
                             </td>
 
-                            <!-- Status (Cair / Proses) -->
+                            <!-- Pencairan (Belum / Proses / Selesai) -->
                             <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                                <?= getStatusBadge($p['status'] ?? 'Proses') ?>
+                                <?php if ($role === 'admin' || $role === 'user'): ?>
+                                    <button type="button" 
+                                            onclick='openStatusPencairanModal(<?= json_encode([
+                                                "id" => $p["id"],
+                                                "kode_paket" => $p["kode_paket"],
+                                                "nama_paket" => $p["nama_paket"],
+                                                "status" => ucfirst($normStatus)
+                                            ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                            class="inline-flex items-center group/status hover:scale-105 transition-transform cursor-pointer"
+                                            title="Klik untuk ubah status pencairan">
+                                        <?= getStatusBadge($p['status'] ?? 'Proses') ?>
+                                    </button>
+                                <?php else: ?>
+                                    <?= getStatusBadge($p['status'] ?? 'Proses') ?>
+                                <?php endif; ?>
                             </td>
 
                             <!-- Aksi -->
@@ -595,11 +612,11 @@ foreach ($paket as $p) {
 
                 <!-- Status Pencairan -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Status Kas</label>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Status Pencairan</label>
                     <select id="edit_status" name="status" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer font-bold">
-                        <option value="Proses" class="text-rose-700 font-bold">PROSES</option>
-                        <option value="Cair" class="text-emerald-700 font-bold">CAIR</option>
                         <option value="Belum" class="text-slate-700 font-bold">BELUM</option>
+                        <option value="Proses" class="text-rose-700 font-bold">PROSES</option>
+                        <option value="Selesai" class="text-emerald-700 font-bold">SELESAI</option>
                     </select>
                 </div>
             </div>
@@ -768,6 +785,86 @@ foreach ($paket as $p) {
                 </button>
                 <button type="submit" 
                         class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-xs shadow-xs transition-all flex items-center gap-1.5">
+                    <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
+                    <span>Simpan Perubahan</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: UBAH STATUS PENCAIRAN (POPUP)       -->
+<!-- ========================================== -->
+<div id="modalStatusPencairan" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden">
+        <!-- Header -->
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-base shadow-xs">
+                    <ion-icon name="wallet-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-xs">Ubah Status Pencairan</h3>
+                    <p class="text-[10px] text-slate-400 truncate max-w-[200px]" id="status_pencairan_subtitle">-</p>
+                </div>
+            </div>
+            <button type="button" data-modal-close="modalStatusPencairan" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+
+        <!-- Form -->
+        <form id="formStatusPencairan" action="" method="POST" class="p-5 space-y-3">
+            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
+            <input type="hidden" name="redirect_to" value="index">
+
+            <div class="space-y-2">
+                <!-- Option 1: Belum -->
+                <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 cursor-pointer transition-all has-[:checked]:border-slate-600 has-[:checked]:bg-slate-50/80">
+                    <div class="flex items-center gap-2.5">
+                        <input type="radio" name="status" value="Belum" id="status_opt_belum" class="w-4 h-4 text-slate-700 focus:ring-0 cursor-pointer">
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Belum Cair</div>
+                            <div class="text-[10px] text-slate-400">Berkas/termin belum diajukan</div>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-600 text-white shadow-2xs">BELUM</span>
+                </label>
+
+                <!-- Option 2: Proses -->
+                <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 cursor-pointer transition-all has-[:checked]:border-rose-600 has-[:checked]:bg-rose-50/30">
+                    <div class="flex items-center gap-2.5">
+                        <input type="radio" name="status" value="Proses" id="status_opt_proses" class="w-4 h-4 text-rose-700 focus:ring-0 cursor-pointer">
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Sedang Proses</div>
+                            <div class="text-[10px] text-slate-400">Pengajuan berkas dalam proses</div>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-700 text-white shadow-2xs">PROSES</span>
+                </label>
+
+                <!-- Option 3: Selesai -->
+                <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 cursor-pointer transition-all has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/30">
+                    <div class="flex items-center gap-2.5">
+                        <input type="radio" name="status" value="Selesai" id="status_opt_selesai" class="w-4 h-4 text-emerald-600 focus:ring-0 cursor-pointer">
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Selesai</div>
+                            <div class="text-[10px] text-slate-400">Dana pencairan telah selesai/cair</div>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white shadow-2xs">SELESAI</span>
+                </label>
+            </div>
+
+            <!-- Footer -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 shrink-0">
+                <button type="button" data-modal-close="modalStatusPencairan" 
+                        class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs transition-colors">
+                    Batal
+                </button>
+                <button type="submit" 
+                        class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow-xs transition-all flex items-center gap-1.5">
                     <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
                     <span>Simpan Perubahan</span>
                 </button>
@@ -1421,6 +1518,35 @@ function openIndexSkemaPotonganModal(p) {
 
     updateIndexPotonganCalc();
     window.ProModal.open('modalSkemaPotongan');
+}
+
+/**
+ * Buka Modal Ubah Status Pencairan (Popup Mandiri)
+ */
+function openStatusPencairanModal(p) {
+    if (!p) return;
+    const form = document.getElementById('formStatusPencairan');
+    form.action = '<?= APP_URL ?>/paket/updateStatus/' + (p.kode_paket || p.id);
+
+    const subtitle = document.getElementById('status_pencairan_subtitle');
+    if (subtitle) {
+        subtitle.textContent = (p.nama_paket || '') + (p.kode_paket ? ' [' + p.kode_paket + ']' : '');
+    }
+
+    const st = (p.status || 'Proses').toLowerCase();
+    const optBelum = document.getElementById('status_opt_belum');
+    const optProses = document.getElementById('status_opt_proses');
+    const optSelesai = document.getElementById('status_opt_selesai');
+
+    if (st === 'belum' && optBelum) {
+        optBelum.checked = true;
+    } else if ((st === 'selesai' || st === 'cair') && optSelesai) {
+        optSelesai.checked = true;
+    } else if (optProses) {
+        optProses.checked = true;
+    }
+
+    window.ProModal.open('modalStatusPencairan');
 }
 
 /**

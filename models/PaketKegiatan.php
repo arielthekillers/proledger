@@ -351,6 +351,23 @@ class PaketKegiatan {
     }
 
     /**
+     * Update status pencairan paket kegiatan (Belum, Proses, Selesai)
+     */
+    public function updateStatus($idOrKode, $status) {
+        $existing = $this->getByIdOrKode($idOrKode);
+        if (!$existing) {
+            throw new Exception("Paket kegiatan tidak ditemukan.");
+        }
+        $validStatuses = ['Belum', 'Proses', 'Selesai'];
+        $norm = ucfirst(strtolower(trim($status)));
+        if (!in_array($norm, $validStatuses)) {
+            $norm = 'Proses';
+        }
+        $stmt = $this->db->prepare("UPDATE paket_kegiatan SET status = ?, updated_at = NOW() WHERE id = ?");
+        return $stmt->execute([$norm, (int)$existing['id']]);
+    }
+
+    /**
      * Sinkronisasi pagu dan kalkulasi potongan paket dari total paket_items (Tab 2 Komponen Item)
      */
     public function syncPaguFromItems($paketId) {

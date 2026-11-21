@@ -893,13 +893,13 @@
                     </div>
                 </div>
 
-                <!-- Status Kas -->
+                <!-- Status Pencairan -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Status Kas</label>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Status Pencairan</label>
                     <select id="edit_status" name="status" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer font-bold">
-                        <option value="Proses" <?= ($paket['status'] ?? '') === 'Proses' ? 'selected' : '' ?> class="text-rose-700 font-bold">PROSES</option>
-                        <option value="Cair" <?= ($paket['status'] ?? '') === 'Cair' ? 'selected' : '' ?> class="text-emerald-700 font-bold">CAIR</option>
                         <option value="Belum" <?= ($paket['status'] ?? '') === 'Belum' ? 'selected' : '' ?> class="text-slate-700 font-bold">BELUM</option>
+                        <option value="Proses" <?= ($paket['status'] ?? '') === 'Proses' ? 'selected' : '' ?> class="text-rose-700 font-bold">PROSES</option>
+                        <option value="Selesai" <?= (in_array(($paket['status'] ?? ''), ['Selesai', 'Cair'])) ? 'selected' : '' ?> class="text-emerald-700 font-bold">SELESAI</option>
                     </select>
                 </div>
             </div>
@@ -1072,6 +1072,86 @@
                 </button>
                 <button type="submit" 
                         class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-xs shadow-xs transition-all flex items-center gap-1.5">
+                    <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
+                    <span>Simpan Perubahan</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: UBAH STATUS PENCAIRAN (POPUP)       -->
+<!-- ========================================== -->
+<div id="modalStatusPencairan" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden">
+        <!-- Header -->
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-base shadow-xs">
+                    <ion-icon name="wallet-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-xs">Ubah Status Pencairan</h3>
+                    <p class="text-[10px] text-slate-400 truncate max-w-[200px]" id="status_pencairan_subtitle">-</p>
+                </div>
+            </div>
+            <button type="button" data-modal-close="modalStatusPencairan" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+
+        <!-- Form -->
+        <form id="formStatusPencairan" action="" method="POST" class="p-5 space-y-3">
+            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
+            <input type="hidden" name="redirect_to" value="detail">
+
+            <div class="space-y-2">
+                <!-- Option 1: Belum -->
+                <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 cursor-pointer transition-all has-[:checked]:border-slate-600 has-[:checked]:bg-slate-50/80">
+                    <div class="flex items-center gap-2.5">
+                        <input type="radio" name="status" value="Belum" id="status_opt_belum" class="w-4 h-4 text-slate-700 focus:ring-0 cursor-pointer">
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Belum Cair</div>
+                            <div class="text-[10px] text-slate-400">Berkas/termin belum diajukan</div>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-600 text-white shadow-2xs">BELUM</span>
+                </label>
+
+                <!-- Option 2: Proses -->
+                <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 cursor-pointer transition-all has-[:checked]:border-rose-600 has-[:checked]:bg-rose-50/30">
+                    <div class="flex items-center gap-2.5">
+                        <input type="radio" name="status" value="Proses" id="status_opt_proses" class="w-4 h-4 text-rose-700 focus:ring-0 cursor-pointer">
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Sedang Proses</div>
+                            <div class="text-[10px] text-slate-400">Pengajuan berkas dalam proses</div>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-700 text-white shadow-2xs">PROSES</span>
+                </label>
+
+                <!-- Option 3: Selesai -->
+                <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 cursor-pointer transition-all has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/30">
+                    <div class="flex items-center gap-2.5">
+                        <input type="radio" name="status" value="Selesai" id="status_opt_selesai" class="w-4 h-4 text-emerald-600 focus:ring-0 cursor-pointer">
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Selesai</div>
+                            <div class="text-[10px] text-slate-400">Dana pencairan telah selesai/cair</div>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white shadow-2xs">SELESAI</span>
+                </label>
+            </div>
+
+            <!-- Footer -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 shrink-0">
+                <button type="button" data-modal-close="modalStatusPencairan" 
+                        class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs transition-colors">
+                    Batal
+                </button>
+                <button type="submit" 
+                        class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow-xs transition-all flex items-center gap-1.5">
                     <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
                     <span>Simpan Perubahan</span>
                 </button>

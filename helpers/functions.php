@@ -166,7 +166,7 @@ function formatTanggal($date) {
 function getStatusBadge($status) {
     $norm = strtoupper(trim($status ?? ''));
     if ($norm === 'CAIR' || $norm === 'SELESAI') {
-        return '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white shadow-2xs">CAIR</span>';
+        return '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white shadow-2xs">SELESAI</span>';
     } elseif ($norm === 'PROSES') {
         return '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-700 text-white shadow-2xs">PROSES</span>';
     } elseif ($norm === 'BELUM') {

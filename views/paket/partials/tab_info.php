@@ -398,11 +398,21 @@
                         </div>
                     </div>
 
-                    <!-- Status Kas & Tanggal -->
+                    <!-- Status Pencairan & Tanggal -->
                     <div class="py-2 flex items-center justify-between">
-                        <span class="text-slate-500">Status Kas & Dibuat</span>
+                        <span class="text-slate-500">Status Pencairan</span>
                         <div class="flex items-center gap-2">
-                            <div><?= getStatusBadge($paket['status'] ?? 'Proses') ?></div>
+                            <button type="button" 
+                                    onclick='openStatusPencairanModal(<?= json_encode([
+                                        "id" => $paket["id"],
+                                        "kode_paket" => $paket["kode_paket"],
+                                        "nama_paket" => $paket["nama_paket"],
+                                        "status" => $paket["status"] ?? "Proses"
+                                    ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                    class="inline-flex items-center gap-1 hover:scale-105 transition-transform cursor-pointer"
+                                    title="Klik untuk ubah status pencairan">
+                                <?= getStatusBadge($paket['status'] ?? 'Proses') ?>
+                            </button>
                             <span class="text-slate-400 text-[11px]">&bull; <?= formatTanggal($paket['created_at']) ?></span>
                         </div>
                     </div>

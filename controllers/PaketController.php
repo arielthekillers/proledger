@@ -636,6 +636,58 @@ class PaketController {
     }
 
     /**
+     * Update Status Pencairan Paket Kegiatan (Belum, Proses, Selesai) via Popup Modal
+     */
+    public function updateStatus($idOrKode) {
+        $this->requireUser();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('/paket');
+            return;
+        }
+
+        $paket = $this->getAccessiblePaket($idOrKode, true);
+        $status = trim($_POST['status'] ?? 'Proses');
+        $validStatuses = ['Belum', 'Proses', 'Selesai'];
+        $statusNorm = ucfirst(strtolower($status));
+        if (!in_array($statusNorm, $validStatuses)) {
+            $statusNorm = 'Proses';
+        }
+
+        try {
+            $this->paketModel->updateStatus($paket['id'], $statusNorm);
+            
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Status pencairan berhasil diperbarui menjadi ' . $statusNorm,
+                    'status' => $statusNorm,
+                    'badge' => getStatusBadge($statusNorm)
+                ]);
+                exit;
+            }
+
+            flash('success', 'Status pencairan berhasil diubah menjadi ' . $statusNorm . '!');
+        } catch (Exception $e) {
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Gagal mengubah status pencairan: ' . $e->getMessage()
+                ]);
+                exit;
+            }
+            flash('error', 'Gagal mengubah status pencairan: ' . $e->getMessage());
+        }
+
+        $redirect = $_POST['redirect_to'] ?? 'index';
+        if ($redirect === 'detail') {
+            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']));
+        } else {
+            redirect('/paket');
+        }
+    }
+
+    /**
      * Endpoint AJAX untuk menyimpan skema potongan baru langsung dari form paket
      */
     public function ajaxStoreSkema() {

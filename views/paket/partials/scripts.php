@@ -1742,4 +1742,33 @@ document.addEventListener('keydown', function(e) {
         closePhotoLightbox();
     }
 });
+
+/**
+ * Buka Modal Ubah Status Pencairan (Popup Mandiri Detail)
+ */
+function openStatusPencairanModal(p) {
+    if (!p) return;
+    const form = document.getElementById('formStatusPencairan');
+    form.action = '<?= APP_URL ?>/paket/updateStatus/' + (p.kode_paket || p.id);
+
+    const subtitle = document.getElementById('status_pencairan_subtitle');
+    if (subtitle) {
+        subtitle.textContent = (p.nama_paket || '') + (p.kode_paket ? ' [' + p.kode_paket + ']' : '');
+    }
+
+    const st = (p.status || 'Proses').toLowerCase();
+    const optBelum = document.getElementById('status_opt_belum');
+    const optProses = document.getElementById('status_opt_proses');
+    const optSelesai = document.getElementById('status_opt_selesai');
+
+    if (st === 'belum' && optBelum) {
+        optBelum.checked = true;
+    } else if ((st === 'selesai' || st === 'cair') && optSelesai) {
+        optSelesai.checked = true;
+    } else if (optProses) {
+        optProses.checked = true;
+    }
+
+    window.ProModal.open('modalStatusPencairan');
+}
 </script>
