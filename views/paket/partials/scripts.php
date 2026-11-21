@@ -1199,13 +1199,6 @@ function handleQuickTambahSkema(e) {
         window.ProToast.error('Koneksi terputus saat menyimpan skema.');
     });
 }
-    })
-    .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = '<ion-icon name="checkmark-outline" class="text-sm"></ion-icon> <span>Simpan & Gunakan</span>';
-        window.ProToast.error('Koneksi terputus saat menyimpan skema.');
-    });
-}
 
 // ==========================================
 // LOGIKA TAB DOKUMENTASI (UPLOAD & GALERI)

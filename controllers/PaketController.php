@@ -112,6 +112,8 @@ class PaketController {
         $groups = $this->groupModel->getAll($activeCompId);
         $skemas = $this->skemaModel->getAll($activeCompId);
         
+        $allTags = !empty($activeCompany['id']) ? $this->paketModel->getAllTags($activeCompany['id']) : [];
+
         $data = [
             'title' => 'Paket Kegiatan',
             'active' => 'paket',
@@ -119,6 +121,7 @@ class PaketController {
             'paket' => array_values($paket),
             'groups' => $groups,
             'skemas' => $skemas,
+            'allTags' => $allTags,
             'users' => [],
             'activeCompany' => $activeCompany,
             'has_perusahaan' => !empty($activeCompany),
@@ -196,6 +199,7 @@ class PaketController {
                 'kab_kota' => !empty($_POST['kab_kota']) ? sanitize($_POST['kab_kota']) : null,
                 'perusahaan_id' => $activeCompany['id'],
                 'group_id' => !empty($_POST['group_id']) ? (int)$_POST['group_id'] : null,
+                'tags' => !empty($_POST['tags']) ? sanitize($_POST['tags']) : null,
                 'skema_id' => $skemaId,
                 'perusahaan' => $activeCompany['nama'],
                 'penanggung_jawab' => !empty($_POST['penanggung_jawab']) ? sanitize($_POST['penanggung_jawab']) : null,
@@ -546,6 +550,7 @@ class PaketController {
                 'perusahaan_id' => $perusahaanId,
                 'perusahaan' => $perusahaanNama,
                 'group_id' => !empty($_POST['group_id']) ? (int)$_POST['group_id'] : null,
+                'tags' => !empty($_POST['tags']) ? sanitize($_POST['tags']) : null,
                 'skema_id' => $skemaId,
                 'penanggung_jawab' => !empty($_POST['penanggung_jawab']) ? sanitize($_POST['penanggung_jawab']) : null,
                 'progres_barang' => $_POST['progres_barang'] ?? 'Belum',

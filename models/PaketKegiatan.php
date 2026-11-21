@@ -15,11 +15,15 @@ class PaketKegiatan {
      * Get all paket kegiatan with filters
      */
     public function getAll($filters = []) {
-        // Updated to JOIN perusahaan, paket_group, and paket_items summary
+        // Updated to JOIN perusahaan, paket_group, paket_items summary, and progress metrics
         $sql = "SELECT pk.*, 
                        COALESCE(pi_sum.total_item_harga, 0) as total_item_harga,
                        COALESCE(pi_sum.total_item_qty, 0) as total_item_qty,
                        COALESCE(pi_sum.total_item_count, 0) as total_item_count,
+                       COALESCE(p_prog.total_dist, 0) as total_dist,
+                       COALESCE(p_prog.pesan_done, 0) as pesan_done,
+                       COALESCE(p_prog.dist_done, 0) as dist_done,
+                       COALESCE(p_prog.dok_done, 0) as dok_done,
                        p.nama as perusahaan_nama, p.email as perusahaan_email,
                        pg.nama_group, pg.kode_group 
                 FROM paket_kegiatan pk
@@ -31,6 +35,17 @@ class PaketKegiatan {
                     FROM paket_items
                     GROUP BY paket_id
                 ) pi_sum ON pk.id = pi_sum.paket_id
+                LEFT JOIN (
+                    SELECT 
+                        pd.paket_id,
+                        COUNT(DISTINCT pd.id) as total_dist,
+                        COUNT(DISTINCT CASE WHEN pd.status_barang = 'Sudah Dipesan' THEN pd.id END) as pesan_done,
+                        COUNT(DISTINCT CASE WHEN pd.status_distribusi = 'Tiba di Tujuan' THEN pd.id END) as dist_done,
+                        COUNT(DISTINCT pdk.distribusi_id) as dok_done
+                    FROM paket_distribusi pd
+                    LEFT JOIN paket_dokumentasi pdk ON pd.id = pdk.distribusi_id
+                    GROUP BY pd.paket_id
+                ) p_prog ON pk.id = p_prog.paket_id
                 LEFT JOIN perusahaan p ON pk.perusahaan_id = p.id
                 LEFT JOIN paket_group pg ON pk.group_id = pg.id
                 WHERE 1=1";
@@ -52,6 +67,16 @@ class PaketKegiatan {
         if (!empty($filters['status'])) {
             $sql .= " AND pk.status = ?";
             $params[] = $filters['status'];
+        }
+
+        // Filter by tag
+        if (!empty($filters['tag'])) {
+            $sql .= " AND (pk.tags LIKE ? OR pk.tags LIKE ? OR pk.tags LIKE ? OR pk.tags = ?)";
+            $t = trim($filters['tag']);
+            $params[] = $t . ',%';
+            $params[] = '%, ' . $t . ',%';
+            $params[] = '%,' . $t;
+            $params[] = $t;
         }
         
         // Filter by name (search)
@@ -173,9 +198,9 @@ class PaketKegiatan {
                     kode_paket, nama_paket, nomor_sp, kab_kota, pagu, pagu_nego, dpp, pasal_13, admin_2, total_pasal, tipe_potongan,
                     persen_pasal, persen_admin,
                     setor_awal, selisih, rab, status, progres_barang,
-                    perusahaan_id, group_id, skema_id, perusahaan, penanggung_jawab
+                    perusahaan_id, group_id, tags, skema_id, perusahaan, penanggung_jawab
                 ) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
             $perusahaanName = null;
@@ -207,6 +232,7 @@ class PaketKegiatan {
                 $data['progres_barang'] ?? 'Belum',
                 $data['perusahaan_id'] ?? null,
                 !empty($data['group_id']) ? (int)$data['group_id'] : null,
+                !empty($data['tags']) ? trim($data['tags']) : null,
                 !empty($data['skema_id']) ? (int)$data['skema_id'] : null,
                 $perusahaanName, // Legacy column
                 $data['penanggung_jawab'] ?? null
@@ -264,7 +290,7 @@ class PaketKegiatan {
                 SET nama_paket = ?, nomor_sp = ?, kab_kota = ?, pagu = ?, pagu_nego = ?, dpp = ?, pasal_13 = ?, admin_2 = ?, total_pasal = ?, tipe_potongan = ?,
                     persen_pasal = ?, persen_admin = ?,
                     setor_awal = ?, selisih = ?, rab = ?, status = ?, progres_barang = ?,
-                    perusahaan_id = ?, group_id = ?, skema_id = ?, perusahaan = ?, penanggung_jawab = ?
+                    perusahaan_id = ?, group_id = ?, tags = ?, skema_id = ?, perusahaan = ?, penanggung_jawab = ?
                 WHERE kode_paket = ? OR id = ?
             ");
             
@@ -288,6 +314,7 @@ class PaketKegiatan {
                 $data['progres_barang'] ?? 'Belum',
                 $data['perusahaan_id'] ?? null,
                 !empty($data['group_id']) ? (int)$data['group_id'] : null,
+                !empty($data['tags']) ? trim($data['tags']) : null,
                 !empty($data['skema_id']) ? (int)$data['skema_id'] : null,
                 $perusahaanName,
                 $data['penanggung_jawab'] ?? null,
@@ -508,5 +535,32 @@ class PaketKegiatan {
             'saldo' => 0,
             'laba_rugi' => 0
         ];
+    }
+
+    /**
+     * Dapatkan semua tag unik dari paket kegiatan milik perusahaan tertentu beserta jumlahnya
+     */
+    public function getAllTags($perusahaanId) {
+        $stmt = $this->db->prepare("SELECT tags FROM paket_kegiatan WHERE perusahaan_id = ? AND tags IS NOT NULL AND tags != ''");
+        $stmt->execute([(int)$perusahaanId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $tagCounts = [];
+        foreach ($rows as $r) {
+            $parts = explode(',', $r['tags']);
+            foreach ($parts as $p) {
+                $tag = trim($p);
+                if ($tag !== '') {
+                    $tagCounts[$tag] = ($tagCounts[$tag] ?? 0) + 1;
+                }
+            }
+        }
+        
+        ksort($tagCounts);
+        $result = [];
+        foreach ($tagCounts as $tag => $count) {
+            $result[] = ['tag' => $tag, 'count' => $count];
+        }
+        return $result;
     }
 }

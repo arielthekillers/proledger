@@ -807,6 +807,18 @@
                 <p class="text-[10px] text-slate-400 mt-0.5">Digunakan untuk memfilter tujuan penerima distribusi pada paket ini.</p>
             </div>
 
+            <!-- Tags Paket -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                    Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Pisahkan dengan koma untuk mengelompokkan paket yang saling beririsan)</span>
+                </label>
+                <div class="relative">
+                    <ion-icon name="pricetags-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></ion-icon>
+                    <input type="text" name="tags" id="edit_tags" value="<?= htmlspecialchars($paket['tags'] ?? '') ?>" placeholder="Contoh: Disdik, APBD-P, Bontang, Urgent"
+                           class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
+                </div>
+            </div>
+
             <!-- Perusahaan & Group Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>

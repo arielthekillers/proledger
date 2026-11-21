@@ -184,6 +184,58 @@ function getStatusBadge($status) {
 }
 
 /**
+ * Render visual Circular Progress Ring (Lingkaran Progres SVG)
+ */
+function renderCircularProgress($done, $total, $type = 'pemesanan') {
+    $done = (int)$done;
+    $total = (int)$total;
+    $pct = ($total > 0) ? min(100, round(($done / $total) * 100)) : 0;
+    $isComplete = ($total > 0 && $done >= $total);
+
+    if ($type === 'pemesanan') {
+        $strokeColor = $isComplete ? 'text-emerald-500' : ($done > 0 ? 'text-amber-500' : 'text-slate-300');
+        $textColor = $isComplete ? 'text-emerald-700' : ($done > 0 ? 'text-amber-700' : 'text-slate-400');
+        $label = 'Pemesanan';
+    } elseif ($type === 'distribusi') {
+        $strokeColor = $isComplete ? 'text-emerald-500' : ($done > 0 ? 'text-indigo-500' : 'text-slate-300');
+        $textColor = $isComplete ? 'text-emerald-700' : ($done > 0 ? 'text-indigo-700' : 'text-slate-400');
+        $label = 'Distribusi';
+    } else {
+        $strokeColor = $isComplete ? 'text-emerald-500' : ($done > 0 ? 'text-teal-500' : 'text-slate-300');
+        $textColor = $isComplete ? 'text-emerald-700' : ($done > 0 ? 'text-teal-700' : 'text-slate-400');
+        $label = 'Dokumentasi';
+    }
+
+    $radius = 11;
+    $circumference = 2 * M_PI * $radius; // ~69.115
+    $dashoffset = $circumference - ($pct / 100 * $circumference);
+
+    $tooltip = "{$label}: {$done} dari {$total} selesai ({$pct}%)";
+    if ($total === 0) {
+        $tooltip = "{$label}: Belum ada alokasi item/tujuan";
+    }
+
+    $html = '<div class="flex flex-col items-center justify-center gap-0.5" title="' . htmlspecialchars($tooltip) . '">';
+    $html .= '<div class="relative w-8 h-8 flex items-center justify-center">';
+    $html .= '<svg class="w-8 h-8 transform -rotate-90">';
+    $html .= '<circle cx="16" cy="16" r="' . $radius . '" stroke="currentColor" class="text-slate-100" stroke-width="2.5" fill="transparent"/>';
+    if ($total > 0 && $pct > 0) {
+        $html .= '<circle cx="16" cy="16" r="' . $radius . '" stroke="currentColor" class="' . $strokeColor . '" stroke-width="2.5" stroke-linecap="round" fill="transparent" stroke-dasharray="' . round($circumference, 2) . '" stroke-dashoffset="' . round($dashoffset, 2) . '"/>';
+    }
+    $html .= '</svg>';
+    if ($isComplete) {
+        $html .= '<ion-icon name="checkmark-outline" class="absolute text-xs text-emerald-600 font-bold"></ion-icon>';
+    } else {
+        $html .= '<span class="absolute text-[8px] font-bold font-mono ' . $textColor . '">' . ($total > 0 ? $pct . '%' : '-') . '</span>';
+    }
+    $html .= '</div>';
+    $html .= '<span class="text-[9px] font-semibold text-slate-400 font-mono tracking-tighter">' . $done . '/' . $total . '</span>';
+    $html .= '</div>';
+
+    return $html;
+}
+
+/**
  * Get progres barang badge HTML (Sesuai Spreadsheet: BELUM, BELANJA, DISTRIBUSI, SELESAI)
  */
 function getProgresBarangBadge($progres) {

@@ -338,6 +338,24 @@
                         </span>
                     </div>
 
+                    <div class="py-2 flex items-center justify-between">
+                        <span class="text-slate-500">Tags Paket</span>
+                        <div class="flex flex-wrap items-center gap-1.5 justify-end">
+                            <?php if (!empty($paket['tags'])): ?>
+                                <?php 
+                                $tList = array_filter(array_map('trim', explode(',', $paket['tags'])));
+                                foreach ($tList as $tg): 
+                                ?>
+                                    <a href="<?= APP_URL ?>/paket?tag=<?= urlencode($tg) ?>" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors">
+                                        #<?= htmlspecialchars($tg) ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <span class="text-slate-400 italic text-[11px]">Belum ada tags</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
                     <!-- Shortcut Rekap Tab Item -->
                     <div class="py-2 flex items-center justify-between">
                         <span class="text-slate-500">Total Komponen</span>

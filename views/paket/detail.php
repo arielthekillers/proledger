@@ -71,14 +71,25 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
         <h1 class="text-lg md:text-xl font-bold text-slate-800 leading-snug">
             <?= htmlspecialchars($paket['nama_paket']) ?>
         </h1>
-        <?php if (!empty($paket['nama_group'])): ?>
-            <div class="mt-0.5">
+        <div class="flex flex-wrap items-center gap-2 mt-1">
+            <?php if (!empty($paket['nama_group'])): ?>
                 <a href="<?= APP_URL ?>/group/detail/<?= $paket['group_id'] ?>" class="text-xs text-slate-500 hover:text-indigo-600 inline-flex items-center gap-1 transition-colors">
                     <ion-icon name="folder-outline" class="text-slate-400 text-xs"></ion-icon>
                     <span>Group: <?= htmlspecialchars($paket['nama_group']) ?></span>
                 </a>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+            <?php if (!empty($paket['tags'])): ?>
+                <?php 
+                $detailTags = array_filter(array_map('trim', explode(',', $paket['tags'])));
+                foreach ($detailTags as $tg): 
+                ?>
+                    <a href="<?= APP_URL ?>/paket?tag=<?= urlencode($tg) ?>" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <ion-icon name="pricetag-outline" class="text-[10px] text-blue-500"></ion-icon>
+                        <span>#<?= htmlspecialchars($tg) ?></span>
+                    </a>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
     </div>
     
     <div class="flex items-center gap-2 shrink-0">

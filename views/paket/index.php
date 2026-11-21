@@ -112,7 +112,7 @@ foreach ($paket as $p) {
         <div class="relative w-full md:w-72">
             <ion-icon name="search-outline" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"></ion-icon>
             <input type="text" id="searchPaketInput" onkeyup="filterPaketTable()" 
-                   placeholder="Cari paket, PJ, group..." 
+                   placeholder="Cari paket, PJ, group, tag..." 
                    class="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
         </div>
 
@@ -130,14 +130,16 @@ foreach ($paket as $p) {
                 <?php endforeach; ?>
             </select>
 
-            <!-- Filter Progres Barang -->
-            <select id="filterProgresSelect" onchange="filterPaketTable()" 
+            <!-- Filter Tag -->
+            <?php $allTags = $allTags ?? []; ?>
+            <select id="filterTagSelect" onchange="filterPaketTable()" 
                     class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-blue-500 transition-all cursor-pointer">
-                <option value="">Semua Progres</option>
-                <option value="belum">BELUM</option>
-                <option value="belanja">BELANJA</option>
-                <option value="distribusi">DISTRIBUSI</option>
-                <option value="selesai">SELESAI</option>
+                <option value="">Semua Tag</option>
+                <?php foreach ($allTags as $tg): ?>
+                    <option value="<?= htmlspecialchars(strtolower($tg['tag'])) ?>">
+                        #<?= htmlspecialchars($tg['tag']) ?> (<?= $tg['count'] ?>)
+                    </option>
+                <?php endforeach; ?>
             </select>
 
             <!-- Filter Status Pencairan -->
@@ -167,10 +169,12 @@ foreach ($paket as $p) {
             <thead class="bg-emerald-50/70 text-[10px] uppercase tracking-wider text-slate-700 font-bold border-b border-emerald-200/80">
                 <tr>
                     <th class="py-2.5 px-3 w-16 text-center">KODE</th>
-                    <th class="py-2.5 px-3 min-w-[190px]">Nama Paket</th>
+                    <th class="py-2.5 px-3 min-w-[200px]">Nama Paket & Tags</th>
                     <th class="py-2.5 px-3 text-right">Nilai Kontrak</th>
                     <th class="py-2.5 px-3 text-center">Penanggung Jawab</th>
-                    <th class="py-2.5 px-3 text-center">Progres Barang</th>
+                    <th class="py-2.5 px-2 text-center min-w-[70px]" title="Progres Pemesanan Barang (Supplier/Toko)">Pemesanan</th>
+                    <th class="py-2.5 px-2 text-center min-w-[70px]" title="Progres Pengiriman & Distribusi">Distribusi</th>
+                    <th class="py-2.5 px-2 text-center min-w-[70px]" title="Progres Foto Dokumentasi Titik Penerima">Dokumentasi</th>
                     <th class="py-2.5 px-3 text-right bg-emerald-100/40">DPP</th>
                     <th class="py-2.5 px-3 text-right">Potongan Pasal</th>
                     <th class="py-2.5 px-3 text-right">Admin</th>
@@ -182,7 +186,7 @@ foreach ($paket as $p) {
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($paket)): ?>
                     <tr id="emptyTableRow">
-                        <td colspan="11" class="py-12 text-center text-slate-400">
+                        <td colspan="13" class="py-12 text-center text-slate-400">
                             <?php if (empty($activeCompany)): ?>
                                 <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-2xl text-amber-500">
                                     <ion-icon name="business-outline"></ion-icon>
@@ -234,6 +238,7 @@ foreach ($paket as $p) {
                     ?>
                         <tr class="hover:bg-slate-50/70 transition-colors group"
                             data-group-name="<?= htmlspecialchars(strtolower($p['nama_group'] ?? '')) ?>"
+                            data-tags="<?= htmlspecialchars(strtolower($p['tags'] ?? '')) ?>"
                             data-progres="<?= htmlspecialchars(strtolower($p['progres_barang'] ?? 'belum')) ?>"
                             data-status="<?= htmlspecialchars($normStatus) ?>">
                             
@@ -244,7 +249,7 @@ foreach ($paket as $p) {
                                 </span>
                             </td>
 
-                            <!-- Nama Paket & Group Badge -->
+                            <!-- Nama Paket & Group Badge & Tags -->
                             <td class="py-2.5 px-3">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>" 
@@ -260,6 +265,19 @@ foreach ($paket as $p) {
                                         </a>
                                     <?php endif; ?>
                                 </div>
+                                <?php if (!empty($p['tags'])): 
+                                    $tagList = array_map('trim', explode(',', $p['tags']));
+                                ?>
+                                    <div class="flex items-center gap-1 flex-wrap mt-1">
+                                        <?php foreach ($tagList as $tg): if ($tg === '') continue; ?>
+                                            <button type="button" onclick="filterByTag('<?= htmlspecialchars(strtolower($tg)) ?>')" 
+                                                    class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-500 font-medium text-[9px] border border-slate-200/60 transition-colors"
+                                                    title="Filter tag: #<?= htmlspecialchars($tg) ?>">
+                                                <span>#<?= htmlspecialchars($tg) ?></span>
+                                            </button>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
                             </td>
 
                             <!-- Nilai Kontrak (Pagu / Nego Acuan) -->
@@ -283,9 +301,25 @@ foreach ($paket as $p) {
                                 <?= getPenanggungJawabBadge($p['penanggung_jawab'] ?? '') ?>
                             </td>
 
-                            <!-- Progres Barang -->
-                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                                <?= getProgresBarangBadge($p['progres_barang'] ?? 'Belum') ?>
+                            <!-- Progres Pemesanan (Lingkaran) -->
+                            <td class="py-2 px-2 text-center whitespace-nowrap">
+                                <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>?tab=pemesanan#pemesanan" class="hover:opacity-80 transition-opacity inline-block" title="Klik untuk buka Tab Pemesanan">
+                                    <?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?>
+                                </a>
+                            </td>
+
+                            <!-- Progres Distribusi (Lingkaran) -->
+                            <td class="py-2 px-2 text-center whitespace-nowrap">
+                                <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>?tab=distribusi#distribusi" class="hover:opacity-80 transition-opacity inline-block" title="Klik untuk buka Tab Distribusi">
+                                    <?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?>
+                                </a>
+                            </td>
+
+                            <!-- Progres Dokumentasi (Lingkaran) -->
+                            <td class="py-2 px-2 text-center whitespace-nowrap">
+                                <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>?tab=dokumentasi#dokumentasi" class="hover:opacity-80 transition-opacity inline-block" title="Klik untuk buka Tab Dokumentasi">
+                                    <?= renderCircularProgress($p['dok_done'] ?? 0, $p['total_dist'] ?? 0, 'dokumentasi') ?>
+                                </a>
                             </td>
 
                             <!-- DPP (-11% PPN) -->
@@ -430,6 +464,18 @@ foreach ($paket as $p) {
                        placeholder="Contoh: Belanja Bahan-Isi Tabung Pemadam Kebakaran">
             </div>
 
+            <!-- Tags Paket (Opsional) -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                    Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Opsional, pisahkan dengan koma untuk mengelompokkan paket beririsan)</span>
+                </label>
+                <div class="relative">
+                    <ion-icon name="pricetags-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></ion-icon>
+                    <input type="text" name="tags" placeholder="Contoh: Disdik, APBD-P, Bontang, Urgent"
+                           class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
+                </div>
+            </div>
+
             <!-- Perusahaan & Group Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
@@ -533,6 +579,18 @@ foreach ($paket as $p) {
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Paket Kegiatan <span class="text-red-500">*</span></label>
                 <input type="text" id="edit_nama_paket" name="nama_paket" required 
                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
+            </div>
+
+            <!-- Tags Paket (Opsional) -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                    Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Opsional, pisahkan dengan koma untuk mengelompokkan paket beririsan)</span>
+                </label>
+                <div class="relative">
+                    <ion-icon name="pricetags-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></ion-icon>
+                    <input type="text" name="tags" id="edit_tags" placeholder="Contoh: Disdik, APBD-P, Bontang, Urgent"
+                           class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
+                </div>
             </div>
 
             <!-- Perusahaan & Group Grid -->
@@ -1559,6 +1617,9 @@ function openEditPaketModal(p) {
     form.action = '<?= APP_URL ?>/paket/update/' + (p.kode_paket || p.id);
 
     document.getElementById('edit_nama_paket').value = p.nama_paket || '';
+    if (document.getElementById('edit_tags')) {
+        document.getElementById('edit_tags').value = p.tags || '';
+    }
     document.getElementById('edit_perusahaan_id').value = p.perusahaan_id || '';
     const namaPerusahaan = p.perusahaan_nama || p.perusahaan || '-';
     const spanNama = document.getElementById('edit_perusahaan_nama');
@@ -1586,7 +1647,7 @@ function openEditPaketModal(p) {
 function filterPaketTable() {
     const searchVal = document.getElementById('searchPaketInput').value.toLowerCase();
     const groupVal = document.getElementById('filterGroupSelect').value.toLowerCase();
-    const progresVal = document.getElementById('filterProgresSelect').value.toLowerCase();
+    const tagVal = document.getElementById('filterTagSelect') ? document.getElementById('filterTagSelect').value.toLowerCase() : '';
     const statusVal = document.getElementById('filterStatusSelect').value.toLowerCase();
     
     const table = document.getElementById('paketTable');
@@ -1597,7 +1658,7 @@ function filterPaketTable() {
     rows.forEach(row => {
         const text = row.innerText.toLowerCase();
         const rowGroup = row.getAttribute('data-group-name') || '';
-        const rowProgres = row.getAttribute('data-progres') || '';
+        const rowTags = row.getAttribute('data-tags') || '';
         const rowStatus = row.getAttribute('data-status') || '';
 
         const matchSearch = text.includes(searchVal);
@@ -1609,9 +1670,9 @@ function filterPaketTable() {
             matchGroup = rowGroup.includes(groupVal);
         }
 
-        let matchProgres = true;
-        if (progresVal !== '') {
-            matchProgres = (rowProgres === progresVal);
+        let matchTag = true;
+        if (tagVal !== '') {
+            matchTag = rowTags.includes(tagVal);
         }
 
         let matchStatus = true;
@@ -1619,13 +1680,21 @@ function filterPaketTable() {
             matchStatus = (rowStatus === statusVal);
         }
 
-        if (matchSearch && matchGroup && matchProgres && matchStatus) {
+        if (matchSearch && matchGroup && matchTag && matchStatus) {
             row.style.display = '';
             visibleCount++;
         } else {
             row.style.display = 'none';
         }
     });
+}
+
+function filterByTag(tag) {
+    const sel = document.getElementById('filterTagSelect');
+    if (sel) {
+        sel.value = tag.toLowerCase();
+    }
+    filterPaketTable();
 }
 
 function setQuickStatusPill(statusVal) {
@@ -1648,7 +1717,7 @@ function setQuickStatusPill(statusVal) {
 function resetPaketFilters() {
     document.getElementById('searchPaketInput').value = '';
     document.getElementById('filterGroupSelect').value = '';
-    document.getElementById('filterProgresSelect').value = '';
+    if (document.getElementById('filterTagSelect')) document.getElementById('filterTagSelect').value = '';
     document.getElementById('filterStatusSelect').value = '';
     
     document.querySelectorAll('.pill-status-btn').forEach(btn => {
