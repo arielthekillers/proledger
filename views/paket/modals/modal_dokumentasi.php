@@ -68,8 +68,8 @@ foreach ($dokumentasiMap as $distId => $photos) {
                     </div>
                     <div class="p-2.5 flex-1 flex flex-col justify-between">
                         <div>
-                            <div class="text-xs font-bold text-slate-800 truncate" title="<?= htmlspecialchars($ph['nama_tujuan'] ?? '') ?>">
-                                <?= htmlspecialchars($ph['nama_tujuan'] ?: 'Dokumentasi') ?>
+                            <div class="text-xs font-bold text-slate-800 truncate" title="<?= htmlspecialchars($ph['nama_tujuan'] ?? 'Dokumentasi') ?>">
+                                <?= htmlspecialchars(!empty($ph['nama_tujuan']) ? $ph['nama_tujuan'] : 'Dokumentasi') ?>
                             </div>
                             <?php if (!empty($ph['keterangan'])): ?>
                                 <p class="text-[10px] text-slate-400 truncate mt-0.5" title="<?= htmlspecialchars($ph['keterangan']) ?>">

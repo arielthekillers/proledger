@@ -1257,8 +1257,8 @@ foreach ($paket as $p) {
             </div>
         </div>
 
-        <!-- Scrollable Modal Body (Pure Native HTML) -->
-        <div id="modalModuleBody" class="relative flex-1 bg-slate-50/60 w-full overflow-y-auto p-4 sm:p-5">
+        <!-- Scrollable Modal Body (Pure Native HTML) - Auto-fit height up to 90vh -->
+        <div id="modalModuleBody" class="relative w-full overflow-y-auto max-h-[calc(90vh-65px)] bg-slate-50/60 p-4 sm:p-5">
             <!-- Dynamic Content / Skeleton injected here -->
         </div>
     </div>
@@ -1323,6 +1323,339 @@ foreach ($paket as $p) {
                         class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
                     <ion-icon name="cloud-upload-outline"></ion-icon>
                     <span>Upload BAST</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- NATIVE SUB-MODAL: TAMBAH / EDIT ITEM KOMPONEN                  -->
+<!-- ============================================================== -->
+<div id="modalNativeItem" class="app-modal fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-lg shadow-xs">
+                    <ion-icon name="cube-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-sm" id="nativeItemModalTitle">Tambah Komponen Barang</h3>
+                    <p class="text-[11px] text-slate-400">Rincian spesifikasi teknis dan pagu satuan item</p>
+                </div>
+            </div>
+            <button type="button" onclick="window.ProModal.close('modalNativeItem')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                <ion-icon name="close-outline" class="text-xl"></ion-icon>
+            </button>
+        </div>
+
+        <form id="formNativeItem" action="" method="POST" class="overflow-y-auto p-5 space-y-4">
+            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
+            <input type="hidden" name="redirect_to" id="nativeItemRedirect" value="">
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Nama Komponen / Barang <span class="text-rose-500">*</span></label>
+                <input type="text" name="komponen" id="nativeItemKomponen" required placeholder="Contoh: Tenda Lipat 3x3m"
+                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-blue-500 transition-all font-semibold">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Spesifikasi Lengkap</label>
+                <textarea name="spesifikasi" id="nativeItemSpesifikasi" rows="2" placeholder="Ukuran, bahan, tipe, atau spesifikasi teknis..."
+                          class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-blue-500 transition-all resize-none"></textarea>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Satuan</label>
+                    <input type="text" name="satuan" id="nativeItemSatuan" value="Unit" placeholder="Unit, Pcs..."
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-blue-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Jumlah (Qty) <span class="text-rose-500">*</span></label>
+                    <input type="number" name="jumlah" id="nativeItemJumlah" value="1" min="1" step="any" required
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-blue-500 transition-all font-semibold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Harga Satuan (Rp)</label>
+                    <input type="text" name="harga_satuan" id="nativeItemHargaSatuan" value="0"
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-blue-500 transition-all font-mono font-semibold">
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                <button type="button" onclick="window.ProModal.close('modalNativeItem')"
+                        class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold transition-colors">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
+                    <ion-icon name="save-outline"></ion-icon>
+                    <span id="nativeItemSubmitBtn">Simpan Komponen</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- NATIVE SUB-MODAL: TAMBAH DISTRIBUSI ALOKASI                    -->
+<!-- ============================================================== -->
+<div id="modalNativeDistribusi" class="app-modal fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-lg shadow-xs">
+                    <ion-icon name="navigate-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-sm">Tambah Alokasi Distribusi</h3>
+                    <p class="text-[11px] text-slate-400">Tentukan tujuan pengiriman dan jumlah unit komponen</p>
+                </div>
+            </div>
+            <button type="button" onclick="window.ProModal.close('modalNativeDistribusi')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                <ion-icon name="close-outline" class="text-xl"></ion-icon>
+            </button>
+        </div>
+
+        <form id="formNativeDistribusi" action="" method="POST" class="overflow-y-auto p-5 space-y-4">
+            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
+            <input type="hidden" name="redirect_to" id="nativeDistribusiRedirect" value="">
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Pilih Item Komponen <span class="text-rose-500">*</span></label>
+                <select name="item_id" id="nativeDistribusiItemId" required
+                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all font-semibold">
+                    <option value="">-- Pilih Komponen Barang --</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Nama Tujuan / Sekolah Penerima <span class="text-rose-500">*</span></label>
+                <input type="text" name="nama_tujuan" id="nativeDistribusiTujuan" required placeholder="Contoh: SMAN 1 Balikpapan"
+                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all font-semibold">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Jumlah Unit Alokasi <span class="text-rose-500">*</span></label>
+                    <input type="number" name="jumlah" id="nativeDistribusiJumlah" value="1" min="1" step="any" required
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all font-semibold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Kabupaten / Kota</label>
+                    <input type="text" name="kab_kota" id="nativeDistribusiKabKota" placeholder="Kota / Wilayah"
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan Tambahan (Opsional)</label>
+                <textarea name="catatan" id="nativeDistribusiCatatan" rows="2" placeholder="Catatan tujuan atau instruksi khusus..."
+                          class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all resize-none"></textarea>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                <button type="button" onclick="window.ProModal.close('modalNativeDistribusi')"
+                        class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold transition-colors">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
+                    <ion-icon name="checkmark-circle-outline"></ion-icon>
+                    <span>Simpan Alokasi</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- NATIVE SUB-MODAL: UPDATE STATUS PEMESANAN BARANG               -->
+<!-- ============================================================== -->
+<div id="modalNativeStatusBarang" class="app-modal fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-base shadow-xs">
+                    <ion-icon name="bag-check-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-xs">Update Status Pemesanan</h3>
+                    <p class="text-[10px] text-slate-400" id="nativeStatusBarangSub">-</p>
+                </div>
+            </div>
+            <button type="button" onclick="window.ProModal.close('modalNativeStatusBarang')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+
+        <form id="formNativeStatusBarang" onsubmit="submitNativeStatusBarang(event)" class="overflow-y-auto p-5 space-y-3.5">
+            <input type="hidden" id="nativeStatusBarangDistId" name="dist_id">
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Status Pemesanan <span class="text-rose-500">*</span></label>
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer bg-white hover:bg-slate-50 transition-colors">
+                        <input type="radio" name="status_barang" value="Belum Dipesan" id="radioStatusBelumPesan" onchange="toggleNativeStatusBarangInputs()">
+                        <span class="text-xs font-semibold text-slate-700">Belum Dipesan</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer bg-white hover:bg-emerald-50/50 transition-colors">
+                        <input type="radio" name="status_barang" value="Sudah Dipesan" id="radioStatusSudahPesan" onchange="toggleNativeStatusBarangInputs()">
+                        <span class="text-xs font-semibold text-emerald-800">Sudah Dipesan</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="sectionNativeDetailPesanan" class="space-y-3 pt-2 border-t border-slate-100 hidden">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Barang Dibeli / Toko</label>
+                    <input type="text" name="nama_barang" id="nativeStatusBarangNama" placeholder="Contoh: Asus Official Store / Tokopedia"
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 transition-all font-semibold">
+                </div>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ekspedisi</label>
+                        <input type="text" name="ekspedisi" id="nativeStatusBarangEkspedisi" placeholder="JNE / SiCepat..."
+                               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">No. Resi</label>
+                        <input type="text" name="no_resi" id="nativeStatusBarangResi" placeholder="No Resi..."
+                               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 transition-all font-mono">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Harga Beli Satuan (Rp)</label>
+                    <input type="text" name="harga_satuan" id="nativeStatusBarangHarga" placeholder="0"
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 transition-all font-mono font-semibold">
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button type="button" onclick="window.ProModal.close('modalNativeStatusBarang')"
+                        class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold">Batal</button>
+                <button type="submit" id="btnSubmitNativeStatusBarang"
+                        class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- NATIVE SUB-MODAL: UPDATE STATUS DISTRIBUSI / PENGIRIMAN        -->
+<!-- ============================================================== -->
+<div id="modalNativeStatusDistribusi" class="app-modal fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-base shadow-xs">
+                    <ion-icon name="paper-plane-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-xs">Update Status Pengiriman</h3>
+                    <p class="text-[10px] text-slate-400" id="nativeStatusDistSub">-</p>
+                </div>
+            </div>
+            <button type="button" onclick="window.ProModal.close('modalNativeStatusDistribusi')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+
+        <form id="formNativeStatusDistribusi" onsubmit="submitNativeStatusDistribusi(event)" class="overflow-y-auto p-5 space-y-3.5">
+            <input type="hidden" id="nativeStatusDistId" name="dist_id">
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Status Pengiriman <span class="text-rose-500">*</span></label>
+                <select name="status_distribusi" id="nativeStatusDistSelect" required
+                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all font-semibold">
+                    <option value="Menunggu Pengiriman">Menunggu Pengiriman</option>
+                    <option value="Dalam Perjalanan">Dalam Perjalanan (Proses Kirim)</option>
+                    <option value="Tiba di Tujuan">Tiba di Tujuan (Sudah Diterima)</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tgl Kirim</label>
+                    <input type="date" name="tanggal_kirim" id="nativeStatusDistTglKirim"
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tgl Tiba</label>
+                    <input type="date" name="tanggal_terima" id="nativeStatusDistTglTerima"
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Penerima di Lokasi</label>
+                <input type="text" name="nama_penerima" id="nativeStatusDistPenerima" placeholder="Nama Guru / Staf Penerima..."
+                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan</label>
+                <textarea name="catatan" id="nativeStatusDistCatatan" rows="2" placeholder="Catatan penerimaan..."
+                          class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all resize-none"></textarea>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button type="button" onclick="window.ProModal.close('modalNativeStatusDistribusi')"
+                        class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold">Batal</button>
+                <button type="submit" id="btnSubmitNativeStatusDist"
+                        class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-all">Simpan Status</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- NATIVE SUB-MODAL: UPLOAD FOTO DOKUMENTASI                      -->
+<!-- ============================================================== -->
+<div id="modalNativeUploadFoto" class="app-modal fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center text-lg shadow-xs">
+                    <ion-icon name="camera-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-sm">Upload Foto Dokumentasi</h3>
+                    <p class="text-[11px] text-slate-400">Bukti serah terima / kondisi fisik barang di lokasi</p>
+                </div>
+            </div>
+            <button type="button" onclick="window.ProModal.close('modalNativeUploadFoto')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                <ion-icon name="close-outline" class="text-xl"></ion-icon>
+            </button>
+        </div>
+
+        <form id="formNativeUploadFoto" action="" method="POST" enctype="multipart/form-data" class="overflow-y-auto p-5 space-y-4">
+            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
+            <input type="hidden" name="redirect_to" id="nativeUploadFotoRedirect" value="">
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Pilih Foto Dokumentasi <span class="text-rose-500">*</span></label>
+                <input type="file" name="fotos[]" multiple required accept="image/*"
+                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-teal-500 transition-all file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-100 file:text-teal-800 hover:file:bg-teal-200 cursor-pointer">
+                <p class="text-[10px] text-slate-400 mt-1">Dapat memilih lebih dari 1 file gambar sekaligus (JPG, PNG, WEBP). Maks 15MB/foto.</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan Foto</label>
+                <input type="text" name="keterangan" id="nativeUploadFotoKeterangan" placeholder="Contoh: Serah terima barang kepada Kepala Sekolah..."
+                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-teal-500 transition-all">
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                <button type="button" onclick="window.ProModal.close('modalNativeUploadFoto')"
+                        class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold transition-colors">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
+                    <ion-icon name="cloud-upload-outline"></ion-icon>
+                    <span>Upload Foto</span>
                 </button>
             </div>
         </form>
@@ -1505,6 +1838,213 @@ function openNativeUploadBastModal(kode, namaTujuan) {
         if (titleEl) titleEl.textContent = namaTujuan ? ('Upload BAST: ' + namaTujuan) : 'Upload Berkas BAST';
     }
     window.ProModal.open('modalNativeUploadBast');
+}
+
+/**
+ * Native Tambah & Edit Item Modal Trigger
+ */
+function openNativeTambahItemModal(kode) {
+    const targetKode = kode || currentOpenKode;
+    const form = document.getElementById('formNativeItem');
+    if (form) {
+        form.action = '<?= APP_URL ?>/paket/storeItem/' + encodeURIComponent(targetKode);
+        document.getElementById('nativeItemRedirect').value = '<?= APP_URL ?>/paket?open_modal=' + encodeURIComponent(targetKode) + '&tab=items';
+        document.getElementById('nativeItemModalTitle').textContent = 'Tambah Komponen Barang';
+        document.getElementById('nativeItemSubmitBtn').textContent = 'Simpan Komponen';
+        document.getElementById('nativeItemKomponen').value = '';
+        document.getElementById('nativeItemSpesifikasi').value = '';
+        document.getElementById('nativeItemSatuan').value = 'Unit';
+        document.getElementById('nativeItemJumlah').value = '1';
+        document.getElementById('nativeItemHargaSatuan').value = '0';
+    }
+    window.ProModal.open('modalNativeItem');
+}
+
+function openNativeEditItemModal(it) {
+    if (!it) return;
+    const form = document.getElementById('formNativeItem');
+    const targetKode = currentOpenKode || it.kode_paket || it.paket_id;
+    if (form) {
+        form.action = '<?= APP_URL ?>/paket/updateItem/' + encodeURIComponent(targetKode) + '/' + encodeURIComponent(it.id);
+        document.getElementById('nativeItemRedirect').value = '<?= APP_URL ?>/paket?open_modal=' + encodeURIComponent(targetKode) + '&tab=items';
+        document.getElementById('nativeItemModalTitle').textContent = 'Edit Komponen Barang';
+        document.getElementById('nativeItemSubmitBtn').textContent = 'Perbarui Komponen';
+        document.getElementById('nativeItemKomponen').value = it.komponen || it.nama_barang || '';
+        document.getElementById('nativeItemSpesifikasi').value = it.spesifikasi || '';
+        document.getElementById('nativeItemSatuan').value = it.satuan || 'Unit';
+        document.getElementById('nativeItemJumlah').value = it.jumlah || 1;
+        document.getElementById('nativeItemHargaSatuan').value = it.harga_satuan ? new Intl.NumberFormat('id-ID').format(it.harga_satuan) : '0';
+    }
+    window.ProModal.open('modalNativeItem');
+}
+
+/**
+ * Native Tambah Distribusi Modal Trigger
+ */
+function openNativeTambahDistribusiModal(kode) {
+    const targetKode = kode || currentOpenKode;
+    const form = document.getElementById('formNativeDistribusi');
+    if (form) {
+        form.action = '<?= APP_URL ?>/paket/storeDistribusi/' + encodeURIComponent(targetKode);
+        document.getElementById('nativeDistribusiRedirect').value = '<?= APP_URL ?>/paket?open_modal=' + encodeURIComponent(targetKode) + '&tab=distribusi';
+        document.getElementById('nativeDistribusiTujuan').value = '';
+        document.getElementById('nativeDistribusiJumlah').value = '1';
+        document.getElementById('nativeDistribusiCatatan').value = '';
+        
+        // Populate items from rows if available
+        const select = document.getElementById('nativeDistribusiItemId');
+        if (select) {
+            select.innerHTML = '<option value="">-- Pilih Komponen Barang --</option>';
+            const itemSelectOptions = document.querySelectorAll('#modalModuleBody [data-item-select-id]');
+            if (itemSelectOptions.length > 0) {
+                itemSelectOptions.forEach(opt => {
+                    const id = opt.getAttribute('data-item-select-id');
+                    const name = opt.getAttribute('data-item-select-name') || ('Item #' + id);
+                    select.innerHTML += `<option value="${id}">${name}</option>`;
+                });
+            }
+        }
+    }
+    window.ProModal.open('modalNativeDistribusi');
+}
+
+/**
+ * Native Update Status Barang Modal Trigger & AJAX Submit
+ */
+function openNativeUpdateStatusBarangModal(dist) {
+    if (!dist) return;
+    document.getElementById('nativeStatusBarangDistId').value = dist.id;
+    const sub = document.getElementById('nativeStatusBarangSub');
+    if (sub) sub.textContent = (dist.nama_tujuan || '-') + ' (' + (dist.nama_komponen || dist.komponen || '-') + ')';
+
+    const isSudah = (dist.status_barang === 'Sudah Dipesan');
+    document.getElementById('radioStatusSudahPesan').checked = isSudah;
+    document.getElementById('radioStatusBelumPesan').checked = !isSudah;
+
+    document.getElementById('nativeStatusBarangNama').value = dist.nama_barang || '';
+    document.getElementById('nativeStatusBarangEkspedisi').value = dist.ekspedisi || '';
+    document.getElementById('nativeStatusBarangResi').value = dist.no_resi || '';
+    document.getElementById('nativeStatusBarangHarga').value = dist.harga_satuan ? new Intl.NumberFormat('id-ID').format(dist.harga_satuan) : '';
+
+    toggleNativeStatusBarangInputs();
+    window.ProModal.open('modalNativeStatusBarang');
+}
+
+function toggleNativeStatusBarangInputs() {
+    const isSudah = document.getElementById('radioStatusSudahPesan')?.checked;
+    const sec = document.getElementById('sectionNativeDetailPesanan');
+    if (sec) {
+        if (isSudah) sec.classList.remove('hidden');
+        else sec.classList.add('hidden');
+    }
+}
+
+function submitNativeStatusBarang(e) {
+    e.preventDefault();
+    const distId = document.getElementById('nativeStatusBarangDistId').value;
+    const form = document.getElementById('formNativeStatusBarang');
+    const formData = new FormData(form);
+    const kode = currentOpenKode;
+    if (!kode || !distId) return;
+
+    const btn = document.getElementById('btnSubmitNativeStatusBarang');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+    }
+
+    fetch('<?= APP_URL ?>/paket/updateStatusBarang/' + encodeURIComponent(kode) + '/' + encodeURIComponent(distId), {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Simpan Perubahan'; }
+        if (data.success) {
+            window.ProModal.close('modalNativeStatusBarang');
+            if (window.ProToast) window.ProToast.success(data.message || 'Status pesanan berhasil disimpan!');
+            refreshCurrentNativeModal();
+        } else {
+            if (window.ProToast) window.ProToast.error(data.message || 'Gagal menyimpan status pesanan.');
+        }
+    })
+    .catch(() => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Simpan Perubahan'; }
+        window.ProModal.close('modalNativeStatusBarang');
+        refreshCurrentNativeModal();
+    });
+}
+
+/**
+ * Native Update Status Pengiriman / Distribusi Modal Trigger & AJAX Submit
+ */
+function openNativeUpdateStatusDistribusiModal(dist) {
+    if (!dist) return;
+    document.getElementById('nativeStatusDistId').value = dist.id;
+    const sub = document.getElementById('nativeStatusDistSub');
+    if (sub) sub.textContent = (dist.nama_tujuan || '-') + ' (' + (dist.nama_komponen || dist.komponen || '-') + ')';
+
+    const sel = document.getElementById('nativeStatusDistSelect');
+    if (sel) sel.value = dist.status_distribusi || 'Menunggu Pengiriman';
+
+    document.getElementById('nativeStatusDistTglKirim').value = dist.tanggal_kirim || '';
+    document.getElementById('nativeStatusDistTglTerima').value = dist.tanggal_terima || '';
+    document.getElementById('nativeStatusDistPenerima').value = dist.nama_penerima || '';
+    document.getElementById('nativeStatusDistCatatan').value = dist.catatan || '';
+
+    window.ProModal.open('modalNativeStatusDistribusi');
+}
+
+function submitNativeStatusDistribusi(e) {
+    e.preventDefault();
+    const distId = document.getElementById('nativeStatusDistId').value;
+    const form = document.getElementById('formNativeStatusDistribusi');
+    const formData = new FormData(form);
+    const kode = currentOpenKode;
+    if (!kode || !distId) return;
+
+    const btn = document.getElementById('btnSubmitNativeStatusDist');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+    }
+
+    fetch('<?= APP_URL ?>/paket/updateStatusDistribusi/' + encodeURIComponent(kode) + '/' + encodeURIComponent(distId), {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Simpan Status'; }
+        if (data.success) {
+            window.ProModal.close('modalNativeStatusDistribusi');
+            if (window.ProToast) window.ProToast.success(data.message || 'Status distribusi berhasil disimpan!');
+            refreshCurrentNativeModal();
+        } else {
+            if (window.ProToast) window.ProToast.error(data.message || 'Gagal menyimpan status distribusi.');
+        }
+    })
+    .catch(() => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Simpan Status'; }
+        window.ProModal.close('modalNativeStatusDistribusi');
+        refreshCurrentNativeModal();
+    });
+}
+
+/**
+ * Native Upload Foto Dokumentasi Modal Trigger
+ */
+function openNativeUploadFotoModal(kode) {
+    const targetKode = kode || currentOpenKode;
+    const form = document.getElementById('formNativeUploadFoto');
+    if (form) {
+        form.action = '<?= APP_URL ?>/paket/storeDokumentasi/' + encodeURIComponent(targetKode);
+        document.getElementById('nativeUploadFotoRedirect').value = '<?= APP_URL ?>/paket?open_modal=' + encodeURIComponent(targetKode) + '&tab=dokumentasi';
+        document.getElementById('nativeUploadFotoKeterangan').value = '';
+    }
+    window.ProModal.open('modalNativeUploadFoto');
 }
 
 /**

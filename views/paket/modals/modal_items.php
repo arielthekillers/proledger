@@ -43,7 +43,7 @@ foreach ($items as $it) {
                 <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                     <tr>
                         <th class="py-2.5 px-3 w-8 text-center">NO</th>
-                        <th class="py-2.5 px-3 min-w-[180px]">NAMA BARANG</th>
+                        <th class="py-2.5 px-3 min-w-[180px]">KOMPONEN BARANG</th>
                         <th class="py-2.5 px-3 min-w-[160px]">SPESIFIKASI</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[70px]">QTY</th>
                         <th class="py-2.5 px-3 text-right min-w-[110px]">HARGA SATUAN</th>
@@ -59,7 +59,7 @@ foreach ($items as $it) {
                         <tr>
                             <td colspan="8" class="py-8 text-center text-slate-400 text-xs">
                                 <div class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl text-slate-300">
-                                    <ion-icon name="list-outline"></ion-icon>
+                                    <ion-icon name="cube-outline"></ion-icon>
                                 </div>
                                 <h4 class="text-xs font-bold text-slate-700 mb-0.5">Belum Ada Komponen Item</h4>
                                 <p class="text-[11px] text-slate-400">Klik tombol "Tambah Komponen" di atas untuk memasukkan rincian barang.</p>
@@ -68,6 +68,7 @@ foreach ($items as $it) {
                     <?php else: ?>
                         <?php $no = 1; foreach ($items as $it): ?>
                             <?php 
+                            $itNama = $it['komponen'] ?? $it['nama_barang'] ?? '-';
                             $itTotal = (float)($it['total_harga'] ?? ((float)$it['jumlah'] * (float)$it['harga_satuan']));
                             $itAlloc = (float)($it['allocated_qty'] ?? 0);
                             $itQty = (float)$it['jumlah'];
@@ -76,7 +77,7 @@ foreach ($items as $it) {
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <td class="py-2 px-3 text-center text-slate-400 font-mono text-[11px]"><?= $no++ ?></td>
                                 <td class="py-2 px-3 whitespace-nowrap text-xs font-bold text-slate-800">
-                                    <?= htmlspecialchars($it['nama_barang']) ?>
+                                    <?= htmlspecialchars($itNama) ?>
                                 </td>
                                 <td class="py-2 px-3 text-xs text-slate-500 max-w-xs truncate" title="<?= htmlspecialchars($it['spesifikasi'] ?? '') ?>">
                                     <?= htmlspecialchars($it['spesifikasi'] ?: '-') ?>
@@ -105,7 +106,7 @@ foreach ($items as $it) {
                                                 <ion-icon name="create-outline"></ion-icon>
                                             </button>
                                             <button type="button" 
-                                                    onclick="deleteItemAjax('<?= $paket['kode_paket'] ?: $paket['id'] ?>', '<?= $it['id'] ?>', '<?= htmlspecialchars(addslashes($it['nama_barang'])) ?>')"
+                                                    onclick="deleteItemAjax('<?= $paket['kode_paket'] ?: $paket['id'] ?>', '<?= $it['id'] ?>', '<?= htmlspecialchars(addslashes($itNama)) ?>')"
                                                     class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors text-xs"
                                                     title="Hapus Item">
                                                 <ion-icon name="trash-outline"></ion-icon>

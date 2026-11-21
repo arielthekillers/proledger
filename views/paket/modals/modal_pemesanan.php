@@ -45,11 +45,12 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                     <tr>
                         <th class="py-2.5 px-3 w-8 text-center">NO</th>
                         <th class="py-2.5 px-3 min-w-[170px]">KOMPONEN BARANG</th>
+                        <th class="py-2.5 px-3 min-w-[170px]">TUJUAN PENERIMA</th>
                         <th class="py-2.5 px-2.5 text-center min-w-[70px]">QTY</th>
-                        <th class="py-2.5 px-3 min-w-[150px]">TOKO / SUPPLIER</th>
+                        <th class="py-2.5 px-3 min-w-[160px]">PESANAN TOKO</th>
                         <th class="py-2.5 px-3 text-right min-w-[110px]">HARGA BELI</th>
                         <th class="py-2.5 px-3 text-right min-w-[120px]">TOTAL BELI</th>
-                        <th class="py-2.5 px-3 text-center min-w-[130px]">STATUS PESANAN</th>
+                        <th class="py-2.5 px-3 text-center min-w-[130px]">STATUS</th>
                         <?php if ($role === 'admin' || $role === 'user'): ?>
                             <th class="py-2.5 px-3 text-right min-w-[80px]">AKSI</th>
                         <?php endif; ?>
@@ -58,7 +59,7 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                 <tbody class="divide-y divide-slate-100">
                     <?php if (empty($distribusiList)): ?>
                         <tr>
-                            <td colspan="8" class="py-8 text-center text-slate-400 text-xs">
+                            <td colspan="9" class="py-8 text-center text-slate-400 text-xs">
                                 <div class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl text-slate-300">
                                     <ion-icon name="bag-outline"></ion-icon>
                                 </div>
@@ -72,18 +73,28 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                             $isPesan = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
                             $hSatuan = (float)($dist['harga_satuan'] ?? 0);
                             $subTotalBeli = $hSatuan * (float)$dist['jumlah'];
+                            $namaKomp = $dist['nama_komponen'] ?? $dist['komponen'] ?? '-';
                             ?>
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <td class="py-2 px-3 text-center text-slate-400 font-mono text-[11px]"><?= $no++ ?></td>
                                 <td class="py-2 px-3 text-xs font-bold text-slate-800">
-                                    <?= htmlspecialchars($dist['nama_barang'] ?? '-') ?>
-                                    <div class="text-[10px] text-slate-400 font-normal">Tujuan: <?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?></div>
+                                    <?= htmlspecialchars($namaKomp) ?>
+                                </td>
+                                <td class="py-2 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
+                                    <?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>
                                 </td>
                                 <td class="py-2 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
                                     <?= (float)$dist['jumlah'] ?> <?= htmlspecialchars($dist['satuan'] ?? 'Unit') ?>
                                 </td>
                                 <td class="py-2 px-3 text-xs text-slate-700">
-                                    <?= htmlspecialchars($dist['nama_toko'] ?: '-') ?>
+                                    <?php if (!empty($dist['nama_barang'])): ?>
+                                        <div class="font-medium text-slate-800"><?= htmlspecialchars($dist['nama_barang']) ?></div>
+                                        <?php if (!empty($dist['ekspedisi'])): ?>
+                                            <div class="text-[10px] text-slate-400 mt-0.5"><?= htmlspecialchars($dist['ekspedisi']) ?></div>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <span class="text-slate-400 italic text-[11px]">-</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="py-2 px-3 text-right whitespace-nowrap text-xs font-mono text-slate-700">
                                     <?= $hSatuan > 0 ? 'Rp ' . number_format($hSatuan, 0, ',', '.') : '-' ?>

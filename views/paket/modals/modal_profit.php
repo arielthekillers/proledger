@@ -85,7 +85,7 @@ $isLoss = ($nilaiBersihProfit < 0);
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <td class="py-2 px-3 text-center text-slate-400 font-mono text-[11px]"><?= $no++ ?></td>
                                 <td class="py-2 px-3 text-xs font-bold text-slate-800">
-                                    <?= htmlspecialchars($it['nama_barang']) ?>
+                                    <?= htmlspecialchars($it['komponen'] ?? $it['nama_barang'] ?? '-') ?>
                                 </td>
                                 <td class="py-2 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
                                     <?= (float)$it['jumlah'] ?> <?= htmlspecialchars($it['satuan'] ?: 'Unit') ?>

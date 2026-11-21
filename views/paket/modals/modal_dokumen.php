@@ -58,30 +58,36 @@ $role = $_SESSION['admin_role'] ?? 'user';
                         <?php $grpNo = 1; foreach ($groupedDistribusi as $grp): ?>
                             <?php 
                             $uploadedBast = $uploadedBastByTujuan[$grp['nama_tujuan']] ?? null;
+                            $itemStrs = [];
+                            foreach (($grp['items'] ?? []) as $gItem) {
+                                $itemStrs[] = htmlspecialchars($gItem['nama_komponen'] ?? $gItem['komponen'] ?? '-') . ' (' . (float)($gItem['jumlah'] ?? 0) . ' ' . htmlspecialchars($gItem['satuan'] ?? 'Unit') . ')';
+                            }
+                            $itemsSummary = !empty($itemStrs) ? implode(', ', $itemStrs) : '-';
+                            $itemCount = count($grp['items'] ?? []);
                             ?>
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <td class="py-2 px-3 text-center text-slate-400 font-mono text-[11px]"><?= $grpNo++ ?></td>
-                                <td class="py-2 px-3 text-xs text-slate-700">
-                                    <div class="font-bold text-slate-800"><?= htmlspecialchars($grp['item_names_summary'] ?? '-') ?></div>
-                                    <div class="text-[10px] text-slate-400"><?= (int)$grp['item_count'] ?> macam komponen</div>
+                                <td class="py-2 px-3 text-xs text-slate-700 max-w-xs">
+                                    <div class="font-bold text-slate-800 truncate" title="<?= $itemsSummary ?>"><?= $itemsSummary ?></div>
+                                    <div class="text-[10px] text-slate-400"><?= $itemCount ?> macam komponen</div>
                                 </td>
                                 <td class="py-2 px-3 whitespace-nowrap text-xs font-semibold text-slate-800">
                                     <?= htmlspecialchars($grp['nama_tujuan']) ?>
                                 </td>
                                 <td class="py-2 px-2.5 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
-                                    <?= (float)$grp['total_qty'] ?> Unit
+                                    <?= (float)($grp['total_qty'] ?? 0) ?> Unit
                                 </td>
                                 <td class="py-2 px-3 text-center whitespace-nowrap">
-                                    <?php if ($grp['is_bast_ready']): ?>
+                                    <?php if (!empty($grp['is_bast_ready'])): ?>
                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                             <ion-icon name="checkmark-circle" class="text-xs text-emerald-600"></ion-icon>
                                             <span>Siap BAST</span>
                                         </span>
                                     <?php else: ?>
                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200"
-                                              title="<?= $grp['status_count']['diterima'] ?> dari <?= $grp['status_count']['total'] ?> barang telah tiba di gudang/tujuan">
+                                              title="<?= ($grp['status_count']['diterima'] ?? 0) ?> dari <?= ($grp['status_count']['total'] ?? 0) ?> barang telah tiba di gudang/tujuan">
                                             <ion-icon name="time-outline" class="text-xs text-amber-600"></ion-icon>
-                                            <span><?= $grp['status_count']['diterima'] ?>/<?= $grp['status_count']['total'] ?> Tiba</span>
+                                            <span><?= ($grp['status_count']['diterima'] ?? 0) ?>/<?= ($grp['status_count']['total'] ?? 0) ?> Tiba</span>
                                         </span>
                                     <?php endif; ?>
                                 </td>
@@ -105,7 +111,7 @@ $role = $_SESSION['admin_role'] ?? 'user';
                                             <?php endif; ?>
                                         <?php endif; ?>
 
-                                        <?php if ($grp['is_bast_ready']): ?>
+                                        <?php if (!empty($grp['is_bast_ready'])): ?>
                                             <a href="<?= APP_URL ?>/paket/cetakBast/<?= $paket['kode_paket'] ?: $paket['id'] ?>?tujuan=<?= urlencode($grp['nama_tujuan']) ?>" 
                                                target="_blank"
                                                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs transition-all"
@@ -114,7 +120,7 @@ $role = $_SESSION['admin_role'] ?? 'user';
                                                 <span>Cetak</span>
                                             </a>
                                         <?php else: ?>
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed select-none opacity-80"
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed select-none opacity-80"
                                                   title="Semua barang harus tiba di gudang atau tujuan terlebih dahulu untuk cetak BAST">
                                                 <ion-icon name="lock-closed-outline" class="text-xs"></ion-icon>
                                                 <span>Cetak</span>
@@ -122,7 +128,7 @@ $role = $_SESSION['admin_role'] ?? 'user';
                                         <?php endif; ?>
 
                                         <?php if ($role === 'admin' || $role === 'user'): ?>
-                                            <?php if ($grp['is_bast_ready']): ?>
+                                            <?php if (!empty($grp['is_bast_ready'])): ?>
                                                 <button type="button" 
                                                         onclick="openNativeUploadBastModal('<?= $paket['kode_paket'] ?: $paket['id'] ?>', '<?= htmlspecialchars(addslashes($grp['nama_tujuan'])) ?>')"
                                                         class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 shadow-2xs transition-all cursor-pointer">
@@ -130,7 +136,7 @@ $role = $_SESSION['admin_role'] ?? 'user';
                                                     <span><?= $uploadedBast ? 'Ganti' : 'Upload' ?></span>
                                                 </button>
                                             <?php else: ?>
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed select-none opacity-80"
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed select-none opacity-80"
                                                       title="Semua barang harus tiba di gudang atau tujuan terlebih dahulu untuk upload BAST">
                                                     <ion-icon name="lock-closed-outline" class="text-xs"></ion-icon>
                                                     <span>Upload</span>
