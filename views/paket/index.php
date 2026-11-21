@@ -363,25 +363,34 @@ foreach ($paket as $p) {
                                 </div>
                             </td>
 
-                            <!-- Progres Pemesanan (Lingkaran) -->
+                            <!-- Progres Pemesanan (Lingkaran - Klik untuk Buka Popup) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
-                                <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>?tab=pemesanan#pemesanan" class="hover:opacity-80 transition-opacity inline-block" title="Klik untuk buka Tab Pemesanan">
+                                <button type="button" 
+                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'pemesanan', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
+                                        class="hover:scale-105 transition-transform inline-block cursor-pointer" 
+                                        title="Klik untuk buka Popup Pemesanan">
                                     <?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?>
-                                </a>
+                                </button>
                             </td>
 
-                            <!-- Progres Distribusi (Lingkaran) -->
+                            <!-- Progres Distribusi (Lingkaran - Klik untuk Buka Popup) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
-                                <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>?tab=distribusi#distribusi" class="hover:opacity-80 transition-opacity inline-block" title="Klik untuk buka Tab Distribusi">
+                                <button type="button" 
+                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'distribusi', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
+                                        class="hover:scale-105 transition-transform inline-block cursor-pointer" 
+                                        title="Klik untuk buka Popup Distribusi">
                                     <?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?>
-                                </a>
+                                </button>
                             </td>
 
-                            <!-- Progres Dokumentasi (Lingkaran) -->
+                            <!-- Progres Dokumentasi (Lingkaran - Klik untuk Buka Popup) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
-                                <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>?tab=dokumentasi#dokumentasi" class="hover:opacity-80 transition-opacity inline-block" title="Klik untuk buka Tab Dokumentasi">
+                                <button type="button" 
+                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'dokumentasi', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
+                                        class="hover:scale-105 transition-transform inline-block cursor-pointer" 
+                                        title="Klik untuk buka Popup Dokumentasi">
                                     <?= renderCircularProgress($p['dok_done'] ?? 0, $p['total_dist'] ?? 0, 'dokumentasi') ?>
-                                </a>
+                                </button>
                             </td>
 
                             <!-- Pencairan (Belum / Proses / Selesai) -->
@@ -403,43 +412,14 @@ foreach ($paket as $p) {
                                 <?php endif; ?>
                             </td>
 
-                            <!-- Aksi -->
+                            <!-- Aksi (Dropdown Titik Tiga ⋮) -->
                             <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                <div class="flex items-center justify-end gap-1">
-                                    <!-- Detail Link -->
-                                    <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>" 
-                                       class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-base"
-                                       title="Lihat Detail & Rekap">
-                                        <ion-icon name="eye-outline"></ion-icon>
-                                    </a>
-
-                                    <?php if ($role === 'admin' || $role === 'user'): ?>
-                                        <!-- Skema Potongan Modal Trigger -->
-                                        <button type="button" 
-                                                onclick='openIndexSkemaPotonganModal(<?= json_encode($p, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                                class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors text-base"
-                                                title="Atur Skema Potongan">
-                                            <ion-icon name="options-outline"></ion-icon>
-                                        </button>
-
-                                        <!-- Edit Modal Trigger -->
-                                        <button type="button" 
-                                                onclick='openEditPaketModal(<?= json_encode($p, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                                class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors text-base"
-                                                title="Edit Paket (Popup)">
-                                            <ion-icon name="create-outline"></ion-icon>
-                                        </button>
-
-                                        <!-- Hapus via SweetAlert2 -->
-                                        <a href="<?= APP_URL ?>/paket/delete/<?= $p['kode_paket'] ?: $p['id'] ?>" 
-                                           data-confirm-delete="<?= htmlspecialchars($p['nama_paket']) ?>"
-                                           data-type="Paket Kegiatan"
-                                           class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors text-base"
-                                           title="Hapus Paket">
-                                            <ion-icon name="trash-outline"></ion-icon>
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
+                                <button type="button" 
+                                        onclick='toggleActionMenu(event, <?= json_encode($p, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                        class="action-menu-trigger w-8 h-8 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all inline-flex items-center justify-center cursor-pointer text-lg shadow-2xs hover:shadow-xs active:scale-95"
+                                        title="Menu Pilihan & Rincian Paket">
+                                    <ion-icon name="ellipsis-vertical"></ion-icon>
+                                </button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -1179,10 +1159,311 @@ foreach ($paket as $p) {
     </div>
 </div>
 
+<!-- ============================================================== -->
+<!-- FLOATING ACTION DROPDOWN MENU (TITIK 3 ⋮)                       -->
+<!-- ============================================================== -->
+<div id="globalActionDropdown" class="fixed z-50 hidden bg-white rounded-2xl shadow-xl border border-slate-200/90 py-1.5 w-64 text-xs font-medium text-slate-700 divide-y divide-slate-100 transition-all select-none">
+    <!-- Header: Info Singkat Paket -->
+    <div class="px-3.5 py-2.5 bg-slate-50/80">
+        <div class="flex items-center justify-between gap-1.5 mb-1">
+            <span id="actionMenuKode" class="font-mono font-bold text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200/60">#KODE</span>
+            <span class="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">PILIHAN MENU</span>
+        </div>
+        <div id="actionMenuNama" class="text-xs font-bold text-slate-800 truncate" title="">Nama Paket</div>
+    </div>
+
+    <!-- Group 1: Modul Detail (Buka Popup) -->
+    <div class="py-1">
+        <div class="px-3.5 py-1 text-[9px] uppercase tracking-wider font-bold text-slate-400">Rincian Modul (Popup)</div>
+        <button type="button" onclick="triggerMenuTab('info')" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer">
+            <ion-icon name="information-circle-outline" class="text-sm text-blue-500"></ion-icon>
+            <span>Informasi & Pajak</span>
+        </button>
+        <button type="button" onclick="triggerMenuTab('items')" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer">
+            <ion-icon name="list-outline" class="text-sm text-blue-500"></ion-icon>
+            <span>Komponen Item Barang</span>
+        </button>
+        <button type="button" onclick="triggerMenuTab('pemesanan')" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-amber-50 hover:text-amber-700 transition-colors cursor-pointer">
+            <ion-icon name="bag-check-outline" class="text-sm text-amber-500"></ion-icon>
+            <span>Progres Pemesanan Toko</span>
+        </button>
+        <button type="button" onclick="triggerMenuTab('distribusi')" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-indigo-50 hover:text-indigo-600 transition-colors cursor-pointer">
+            <ion-icon name="navigate-outline" class="text-sm text-indigo-500"></ion-icon>
+            <span>Alokasi Distribusi Titik</span>
+        </button>
+        <button type="button" onclick="triggerMenuTab('dokumentasi')" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-teal-50 hover:text-teal-600 transition-colors cursor-pointer">
+            <ion-icon name="camera-outline" class="text-sm text-teal-500"></ion-icon>
+            <span>Foto Dokumentasi</span>
+        </button>
+        <button type="button" onclick="triggerMenuTab('dokumen')" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-emerald-50 hover:text-emerald-600 transition-colors cursor-pointer">
+            <ion-icon name="document-text-outline" class="text-sm text-emerald-500"></ion-icon>
+            <span>Berkas Dokumen BAST</span>
+        </button>
+        <button type="button" onclick="triggerMenuTab('profit')" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-emerald-50 hover:text-emerald-700 transition-colors cursor-pointer">
+            <ion-icon name="trending-up-outline" class="text-sm text-emerald-600"></ion-icon>
+            <span>Estimasi Margin Profit</span>
+        </button>
+    </div>
+
+    <!-- Group 2: Pengelolaan & Aksi Cepat -->
+    <div class="py-1">
+        <div class="px-3.5 py-1 text-[9px] uppercase tracking-wider font-bold text-slate-400">Pengelolaan Paket</div>
+        <a id="actionMenuFullPageLink" href="#" 
+           class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer">
+            <ion-icon name="open-outline" class="text-sm text-slate-500"></ion-icon>
+            <span>Buka Halaman Lengkap</span>
+        </a>
+        <?php if ($role === 'admin' || $role === 'user'): ?>
+            <button type="button" onclick="triggerMenuEditPaket()" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-amber-50 hover:text-amber-700 transition-colors cursor-pointer">
+                <ion-icon name="create-outline" class="text-sm text-amber-500"></ion-icon>
+                <span>Edit Data Paket</span>
+            </button>
+            <button type="button" onclick="triggerMenuSkemaPotongan()" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-amber-50 hover:text-amber-700 transition-colors cursor-pointer">
+                <ion-icon name="options-outline" class="text-sm text-amber-500"></ion-icon>
+                <span>Atur Skema Potongan</span>
+            </button>
+            <button type="button" onclick="triggerMenuHapusPaket()" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-rose-50 text-rose-600 transition-colors cursor-pointer">
+                <ion-icon name="trash-outline" class="text-sm text-rose-500"></ion-icon>
+                <span>Hapus Paket Kegiatan</span>
+            </button>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- POPUP MODAL DINAMIS DETAIL TAB (LAZY LOAD VIA IFRAME)           -->
+<!-- ============================================================== -->
+<div id="modalDynamicDetail" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop Blur -->
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" onclick="closeDynamicDetailModal()"></div>
+
+    <div class="flex min-h-full items-center justify-center p-2 sm:p-4 text-center">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-6xl h-[92vh] flex flex-col border border-slate-200">
+            
+            <!-- Modal Header -->
+            <div class="px-4 py-2.5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0">
+                        <ion-icon name="layers-outline" id="modalDynamicIcon"></ion-icon>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span id="modalDynamicTabName" class="text-xs font-bold text-slate-800">Detail Paket</span>
+                            <span id="modalDynamicKode" class="font-mono font-bold text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded">#KODE</span>
+                        </div>
+                        <p id="modalDynamicNama" class="text-[11px] text-slate-400 truncate max-w-sm sm:max-w-md">Nama Paket</p>
+                    </div>
+                </div>
+
+                <!-- Right Actions in Modal Header -->
+                <div class="flex items-center gap-2 shrink-0">
+                    <a id="modalDynamicExternalLink" href="#" target="_blank"
+                       class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-slate-50 text-xs font-semibold transition-colors"
+                       title="Buka Halaman Lengkap di Tab Baru">
+                        <ion-icon name="open-outline" class="text-xs"></ion-icon>
+                        <span class="hidden sm:inline">Halaman Penuh</span>
+                    </a>
+                    <button type="button" onclick="closeDynamicDetailModal()"
+                            class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+                            title="Tutup Popup (Esc)">
+                        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body (Iframe with Loading Skeleton) -->
+            <div class="relative flex-1 bg-slate-50 w-full overflow-hidden">
+                <!-- Skeleton Loader -->
+                <div id="modalDynamicLoader" class="absolute inset-0 z-10 bg-white flex flex-col items-center justify-center p-6 space-y-3">
+                    <div class="w-9 h-9 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-xs font-semibold text-slate-700">Memuat rincian paket...</p>
+                    <p class="text-[11px] text-slate-400">Data hanya dimuat saat popup dibuka (ringan & cepat)</p>
+                </div>
+
+                <!-- Iframe Container -->
+                <iframe id="modalDynamicIframe" src="about:blank" class="w-full h-full border-0" onload="onDynamicIframeLoaded()"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ========================================== -->
 <!-- 4. JAVASCRIPT LOGIC                        -->
 <!-- ========================================== -->
 <script>
+// ==========================================
+// ACTION DROPDOWN & DYNAMIC TAB MODAL LOGIC
+// ==========================================
+let currentPaketData = null;
+let activeMenuBtn = null;
+
+function toggleActionMenu(event, paketJson) {
+    event.stopPropagation();
+    const btn = event.currentTarget;
+    const menu = document.getElementById('globalActionDropdown');
+    if (!menu) return;
+
+    if (activeMenuBtn === btn && !menu.classList.contains('hidden')) {
+        closeActionMenu();
+        return;
+    }
+
+    activeMenuBtn = btn;
+    currentPaketData = paketJson;
+
+    // Header info
+    const kodeEl = document.getElementById('actionMenuKode');
+    const namaEl = document.getElementById('actionMenuNama');
+    const fullLinkEl = document.getElementById('actionMenuFullPageLink');
+
+    if (kodeEl) kodeEl.textContent = '#' + (paketJson.kode_paket || paketJson.id);
+    if (namaEl) {
+        namaEl.textContent = paketJson.nama_paket;
+        namaEl.title = paketJson.nama_paket;
+    }
+    if (fullLinkEl) {
+        fullLinkEl.href = '<?= APP_URL ?>/paket/detail/' + (paketJson.kode_paket || paketJson.id);
+    }
+
+    // Display & positioning
+    menu.classList.remove('hidden');
+
+    const rect = btn.getBoundingClientRect();
+    const menuWidth = 256;
+    let left = rect.right - menuWidth;
+    let top = rect.bottom + 6;
+
+    const menuHeight = menu.offsetHeight || 390;
+    if (top + menuHeight > window.innerHeight) {
+        top = Math.max(10, rect.top - menuHeight - 6);
+    }
+    if (left < 10) left = 10;
+
+    menu.style.top = top + 'px';
+    menu.style.left = left + 'px';
+}
+
+function closeActionMenu() {
+    const menu = document.getElementById('globalActionDropdown');
+    if (menu) menu.classList.add('hidden');
+    activeMenuBtn = null;
+}
+
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('globalActionDropdown');
+    if (menu && !menu.classList.contains('hidden') && !menu.contains(e.target) && !e.target.closest('.action-menu-trigger')) {
+        closeActionMenu();
+    }
+});
+window.addEventListener('scroll', closeActionMenu, true);
+
+function openPaketModalTab(idOrKode, tab, namaPaket) {
+    closeActionMenu();
+    const modal = document.getElementById('modalDynamicDetail');
+    const iframe = document.getElementById('modalDynamicIframe');
+    const loader = document.getElementById('modalDynamicLoader');
+    if (!modal || !iframe) return;
+
+    const tabTitles = {
+        'info': { name: 'Informasi & Finansial', icon: 'information-circle-outline' },
+        'items': { name: 'Komponen Item Barang', icon: 'list-outline' },
+        'pemesanan': { name: 'Progres Pemesanan Toko', icon: 'bag-check-outline' },
+        'distribusi': { name: 'Alokasi Distribusi Titik', icon: 'navigate-outline' },
+        'dokumentasi': { name: 'Foto Dokumentasi', icon: 'camera-outline' },
+        'dokumen': { name: 'Berkas Dokumen BAST', icon: 'document-text-outline' },
+        'profit': { name: 'Estimasi Margin Profit', icon: 'trending-up-outline' }
+    };
+
+    const tabInfo = tabTitles[tab] || { name: 'Detail Paket', icon: 'layers-outline' };
+
+    const tabNameEl = document.getElementById('modalDynamicTabName');
+    const kodeEl = document.getElementById('modalDynamicKode');
+    const namaEl = document.getElementById('modalDynamicNama');
+    const iconEl = document.getElementById('modalDynamicIcon');
+    const extLinkEl = document.getElementById('modalDynamicExternalLink');
+
+    if (tabNameEl) tabNameEl.textContent = tabInfo.name;
+    if (kodeEl) kodeEl.textContent = '#' + idOrKode;
+    if (namaEl) namaEl.textContent = namaPaket || '';
+    if (iconEl) iconEl.setAttribute('name', tabInfo.icon);
+    if (extLinkEl) extLinkEl.href = '<?= APP_URL ?>/paket/detail/' + idOrKode + '?tab=' + tab;
+
+    if (loader) loader.classList.remove('hidden');
+
+    modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+
+    // Lazy load the exact tab
+    iframe.src = '<?= APP_URL ?>/paket/detail/' + idOrKode + '?modal=1&tab=' + tab + '#' + tab;
+}
+
+function onDynamicIframeLoaded() {
+    const loader = document.getElementById('modalDynamicLoader');
+    if (loader) loader.classList.add('hidden');
+}
+
+function closeDynamicDetailModal() {
+    const modal = document.getElementById('modalDynamicDetail');
+    const iframe = document.getElementById('modalDynamicIframe');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+    if (iframe) {
+        iframe.src = 'about:blank';
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDynamicDetailModal();
+        closeActionMenu();
+    }
+});
+
+function triggerMenuTab(tab) {
+    if (!currentPaketData) return;
+    openPaketModalTab(
+        currentPaketData.kode_paket || currentPaketData.id,
+        tab,
+        currentPaketData.nama_paket
+    );
+}
+
+function triggerMenuEditPaket() {
+    if (!currentPaketData) return;
+    const pkg = currentPaketData;
+    closeActionMenu();
+    openEditPaketModal(pkg);
+}
+
+function triggerMenuSkemaPotongan() {
+    if (!currentPaketData) return;
+    const pkg = currentPaketData;
+    closeActionMenu();
+    openIndexSkemaPotonganModal(pkg);
+}
+
+function triggerMenuHapusPaket() {
+    if (!currentPaketData) return;
+    const pkg = currentPaketData;
+    closeActionMenu();
+    const deleteUrl = '<?= APP_URL ?>/paket/delete/' + (pkg.kode_paket || pkg.id);
+    if (typeof confirmAction === 'function') {
+        confirmAction(deleteUrl, {
+            title: 'Hapus Paket Kegiatan?',
+            text: 'Paket "' + pkg.nama_paket + '" beserta seluruh alokasi barang akan dihapus permanen.',
+            icon: 'warning',
+            confirmText: 'Ya, Hapus Paket',
+            confirmColor: '#e11d48'
+        });
+    } else {
+        if (confirm('Hapus paket "' + pkg.nama_paket + '"?')) {
+            window.location.href = deleteUrl;
+        }
+    }
+}
+
 let targetGroupSelectId = null;
 let targetSkemaPrefix = 'tambah';
 

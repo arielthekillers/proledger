@@ -1723,6 +1723,12 @@ class PaketController {
     
     private function view($view, $data = []) {
         extract($data);
+        if (!empty($_GET['modal']) && $_GET['modal'] === '1') {
+            require_once VIEW_PATH . '/layout/header_modal.php';
+            require_once VIEW_PATH . '/' . $view . '.php';
+            require_once VIEW_PATH . '/layout/footer_modal.php';
+            return;
+        }
         require_once VIEW_PATH . '/layout/header.php';
         require_once VIEW_PATH . '/' . $view . '.php';
         require_once VIEW_PATH . '/layout/footer.php';

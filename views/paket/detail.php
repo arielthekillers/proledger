@@ -98,10 +98,19 @@ if (isset($_GET['from']) && $_GET['from'] === 'perusahaan' && isset($_GET['sourc
     </div>
     
     <div class="flex items-center gap-2 shrink-0">
-        <a href="<?= $backUrl ?>" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors shadow-2xs flex items-center gap-1.5 text-xs">
-            <ion-icon name="arrow-back-outline"></ion-icon>
-            <span><?= $backLabel ?></span>
-        </a>
+        <?php if (!empty($_GET['modal'])): ?>
+            <a href="<?= APP_URL ?>/paket/detail/<?= $paket['kode_paket'] ?: $paket['id'] ?>?tab=<?= $activeTab ?>" target="_blank" 
+               class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 hover:text-blue-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors shadow-2xs flex items-center gap-1.5 text-xs"
+               title="Buka Halaman Lengkap di Tab Baru">
+                <ion-icon name="open-outline"></ion-icon>
+                <span>Halaman Penuh</span>
+            </a>
+        <?php else: ?>
+            <a href="<?= $backUrl ?>" class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors shadow-2xs flex items-center gap-1.5 text-xs">
+                <ion-icon name="arrow-back-outline"></ion-icon>
+                <span><?= $backLabel ?></span>
+            </a>
+        <?php endif; ?>
 
         <?php if ($role === 'admin' || $role === 'user'): ?>
             <button type="button" onclick="openModalSkemaPotongan()" 
