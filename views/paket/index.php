@@ -1570,9 +1570,11 @@ foreach ($paket as $p) {
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Status Pengiriman <span class="text-rose-500">*</span></label>
                 <select name="status_distribusi" id="nativeStatusDistSelect" required
                         class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all font-semibold">
-                    <option value="Menunggu Pengiriman">Menunggu Pengiriman</option>
+                    <option value="Belum Dikirim">Belum Dikirim (Menunggu)</option>
                     <option value="Dalam Perjalanan">Dalam Perjalanan (Proses Kirim)</option>
-                    <option value="Tiba di Tujuan">Tiba di Tujuan (Sudah Diterima)</option>
+                    <option value="Tiba dirumah/kantor">Tiba di Rumah/Kantor</option>
+                    <option value="Tiba di Gudang">Tiba di Gudang (Transit)</option>
+                    <option value="Tiba di Tujuan">Tiba di Tujuan (Diterima di Lokasi)</option>
                 </select>
             </div>
 
@@ -1992,7 +1994,26 @@ function openNativeUpdateStatusDistribusiModal(dist) {
     if (sub) sub.textContent = (dist.nama_tujuan || '-') + ' (' + (dist.nama_komponen || dist.komponen || '-') + ')';
 
     const sel = document.getElementById('nativeStatusDistSelect');
-    if (sel) sel.value = dist.status_distribusi || 'Menunggu Pengiriman';
+    if (sel) {
+        let val = (dist.status_distribusi || '').trim();
+        if (!val) val = 'Belum Dikirim';
+        if (val === 'Menunggu Pengiriman') val = 'Belum Dikirim';
+        if (val === 'Dalam Pengiriman') val = 'Dalam Perjalanan';
+        if (val === 'Tiba di Rumah/Kantor') val = 'Tiba dirumah/kantor';
+
+        let found = false;
+        for (let i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value.toLowerCase() === val.toLowerCase()) {
+                sel.selectedIndex = i;
+                found = true;
+                break;
+            }
+        }
+        if (!found && val) {
+            const newOpt = new Option(val, val, true, true);
+            sel.add(newOpt);
+        }
+    }
 
     document.getElementById('nativeStatusDistTglKirim').value = dist.tanggal_kirim || '';
     document.getElementById('nativeStatusDistTglTerima').value = dist.tanggal_terima || '';

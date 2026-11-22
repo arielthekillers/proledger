@@ -67,8 +67,10 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                             <td class="py-2.5 px-3 text-xs font-bold text-slate-800 break-words">
                                 <?= htmlspecialchars($namaKomp) ?>
                             </td>
-                            <td class="py-2.5 px-3 text-xs text-slate-600 break-words font-normal">
-                                <?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>
+                            <td class="py-2.5 px-3 text-xs text-slate-700 font-normal">
+                                <div class="truncate max-w-[190px]" title="<?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>">
+                                    <?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>
+                                </div>
                             </td>
                             <td class="py-2.5 px-2 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
                                 <?= (float)$dist['jumlah'] ?> <?= htmlspecialchars($dist['satuan'] ?? 'Unit') ?>
