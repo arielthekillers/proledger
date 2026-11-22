@@ -792,8 +792,8 @@ foreach ($paket as $p) {
                     </div>
                     <div class="relative" id="potongan_pasal_wrap">
                         <input type="number" step="0.1" min="0" max="100" name="persen_pasal" id="potongan_persen_pasal" value="13" oninput="updateIndexPotonganCalc()"
-                               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-amber-500 font-mono transition-all">
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
+                               class="w-full pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-amber-500 font-mono transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">%</span>
                     </div>
                 </div>
 
@@ -807,8 +807,8 @@ foreach ($paket as $p) {
                     </div>
                     <div class="relative" id="potongan_admin_wrap">
                         <input type="number" step="0.1" min="0" max="100" name="persen_admin" id="potongan_persen_admin" value="2" oninput="updateIndexPotonganCalc()"
-                               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-amber-500 font-mono transition-all">
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
+                               class="w-full pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-amber-500 font-mono transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">%</span>
                     </div>
                 </div>
             </div>
