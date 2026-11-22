@@ -38,10 +38,10 @@ foreach (($groupedDistribusi ?? []) as $grp) {
             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                 <tr>
                     <th class="py-2.5 px-3 w-10 text-center">NO</th>
-                    <th class="py-2.5 px-3 w-56">KOMPONEN DIKIRIM</th>
-                    <th class="py-2.5 px-3 w-48">TUJUAN PENERIMA</th>
-                    <th class="py-2.5 px-2 text-center w-24">TOTAL QTY</th>
-                    <th class="py-2.5 px-2 text-center w-36">STATUS PENERIMAAN</th>
+                    <th class="py-2.5 px-3 w-48">KOMPONEN DIKIRIM</th>
+                    <th class="py-2.5 px-3 w-44">TUJUAN PENERIMA</th>
+                    <th class="py-2.5 px-2 text-center w-20">TOTAL QTY</th>
+                    <th class="py-2.5 px-2 text-center w-32">STATUS PENERIMAAN</th>
                     <th class="py-2.5 px-3 text-right">AKSI BAST</th>
                 </tr>
             </thead>

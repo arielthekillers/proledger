@@ -40,13 +40,13 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                 <tr>
                     <th class="py-2.5 px-3 w-10 text-center">NO</th>
-                    <th class="py-2.5 px-3 w-44">KOMPONEN BARANG</th>
-                    <th class="py-2.5 px-3 w-48">TITIK TUJUAN</th>
-                    <th class="py-2.5 px-2 text-center w-20">QTY</th>
+                    <th class="py-2.5 px-3 w-40">KOMPONEN BARANG</th>
+                    <th class="py-2.5 px-3 w-44">TITIK TUJUAN</th>
+                    <th class="py-2.5 px-2 text-center w-16">QTY</th>
                     <th class="py-2.5 px-2 text-center w-36">STATUS DISTRIBUSI</th>
                     <th class="py-2.5 px-3">PENGIRIMAN & RESI</th>
                     <?php if ($role === 'admin' || $role === 'user'): ?>
-                        <th class="py-2.5 px-3 text-right w-24">AKSI</th>
+                        <th class="py-2.5 px-3 text-center w-32">AKSI</th>
                     <?php endif; ?>
                 </tr>
             </thead>
@@ -99,17 +99,17 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
                                 <?php endif; ?>
                             </td>
                             <?php if ($role === 'admin' || $role === 'user'): ?>
-                                <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                    <div class="flex items-center justify-end gap-1">
+                                <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                                    <div class="flex items-center justify-center gap-1.5">
                                         <button type="button" 
                                                 onclick='openNativeUpdateStatusDistribusiModal(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                                class="px-2 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1">
+                                                class="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1 shadow-2xs">
                                             <ion-icon name="create-outline"></ion-icon>
                                             <span>Ubah</span>
                                         </button>
                                         <button type="button" 
                                                 onclick="deleteDistribusiAjax('<?= $paket['kode_paket'] ?: $paket['id'] ?>', '<?= $dist['id'] ?>')"
-                                                class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors text-xs cursor-pointer"
+                                                class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors text-xs cursor-pointer"
                                                 title="Hapus Alokasi">
                                             <ion-icon name="trash-outline"></ion-icon>
                                         </button>

@@ -36,13 +36,13 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                     <th class="py-2.5 px-3 w-10 text-center">NO</th>
                     <th class="py-2.5 px-3 w-40">KOMPONEN BARANG</th>
                     <th class="py-2.5 px-3 w-40">TUJUAN PENERIMA</th>
-                    <th class="py-2.5 px-2 text-center w-20">QTY</th>
+                    <th class="py-2.5 px-2 text-center w-16">QTY</th>
                     <th class="py-2.5 px-3">PESANAN TOKO</th>
                     <th class="py-2.5 px-3 text-right w-28">HARGA BELI</th>
-                    <th class="py-2.5 px-3 text-right w-32">TOTAL BELI</th>
-                    <th class="py-2.5 px-2 text-center w-28">STATUS</th>
+                    <th class="py-2.5 px-3 text-right w-28">TOTAL BELI</th>
+                    <th class="py-2.5 px-2 text-center w-32">STATUS</th>
                     <?php if ($role === 'admin' || $role === 'user'): ?>
-                        <th class="py-2.5 px-3 text-right w-16">AKSI</th>
+                        <th class="py-2.5 px-3 text-center w-24">AKSI</th>
                     <?php endif; ?>
                 </tr>
             </thead>
@@ -106,10 +106,10 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                                 <?php endif; ?>
                             </td>
                             <?php if ($role === 'admin' || $role === 'user'): ?>
-                                <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                                <td class="py-2.5 px-3 text-center whitespace-nowrap">
                                     <button type="button" 
                                             onclick='openNativeUpdateStatusBarangModal(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                            class="px-2 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1">
+                                            class="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1 shadow-2xs">
                                         <ion-icon name="create-outline"></ion-icon>
                                         <span>Ubah</span>
                                     </button>

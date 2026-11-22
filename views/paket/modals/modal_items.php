@@ -32,14 +32,14 @@ foreach ($items as $it) {
             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                 <tr>
                     <th class="py-2.5 px-3 w-10 text-center">NO</th>
-                    <th class="py-2.5 px-3 w-48">KOMPONEN BARANG</th>
+                    <th class="py-2.5 px-3 w-44">KOMPONEN BARANG</th>
                     <th class="py-2.5 px-3">SPESIFIKASI</th>
-                    <th class="py-2.5 px-2 text-center w-24">QTY</th>
+                    <th class="py-2.5 px-2 text-center w-20">QTY</th>
                     <th class="py-2.5 px-3 text-right w-28">HARGA SATUAN</th>
                     <th class="py-2.5 px-3 text-right w-32">TOTAL HARGA</th>
                     <th class="py-2.5 px-2 text-center w-20">ALOKASI</th>
                     <?php if ($role === 'admin' || $role === 'user'): ?>
-                        <th class="py-2.5 px-3 text-right w-16">AKSI</th>
+                        <th class="py-2.5 px-3 text-center w-24">AKSI</th>
                     <?php endif; ?>
                 </tr>
             </thead>
@@ -86,17 +86,17 @@ foreach ($items as $it) {
                                 </span>
                             </td>
                             <?php if ($role === 'admin' || $role === 'user'): ?>
-                                <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                    <div class="flex items-center justify-end gap-1">
+                                <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                                    <div class="flex items-center justify-center gap-1.5">
                                         <button type="button" 
                                                 onclick='openNativeEditItemModal(<?= json_encode($it, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                                class="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors text-xs cursor-pointer"
+                                                class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-xs cursor-pointer"
                                                 title="Edit Item">
                                             <ion-icon name="create-outline"></ion-icon>
                                         </button>
                                         <button type="button" 
                                                 onclick="deleteItemAjax('<?= $paket['kode_paket'] ?: $paket['id'] ?>', '<?= $it['id'] ?>', '<?= htmlspecialchars(addslashes($itNama)) ?>')"
-                                                class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors text-xs cursor-pointer"
+                                                class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors text-xs cursor-pointer"
                                                 title="Hapus Item">
                                             <ion-icon name="trash-outline"></ion-icon>
                                         </button>
