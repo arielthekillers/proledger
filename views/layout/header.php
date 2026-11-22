@@ -51,86 +51,64 @@
     <script>window.APP_URL = '<?= APP_URL ?>';</script>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased font-sans text-sm">
+    <?php
+    $role = $_SESSION['admin_role'] ?? 'user';
+    $pendingBadge = 0;
+    if ($role === 'admin') {
+        require_once MODEL_PATH . '/Admin.php';
+        $navAdminModel = new Admin();
+        $pendingBadge = $navAdminModel->getPendingCount();
+
+        $navItemDetails = [
+            'users' => ['icon' => 'people-circle-outline', 'label' => 'Kelola Pengguna', 'url' => APP_URL . '/user', 'roles' => ['admin'], 'badge' => $pendingBadge],
+        ];
+    } else {
+        $navItemDetails = [
+            'dashboard' => ['icon' => 'grid-outline', 'label' => 'Dashboard', 'url' => APP_URL . '/', 'roles' => ['user', 'perusahaan']],
+            'paket' => ['icon' => 'cube-outline', 'label' => 'Paket Kegiatan', 'url' => APP_URL . '/paket', 'roles' => ['user', 'perusahaan']],
+            'group' => ['icon' => 'folder-open-outline', 'label' => 'Group Paket', 'url' => APP_URL . '/group', 'roles' => ['user', 'perusahaan']],
+            'perusahaan' => ['icon' => 'business-outline', 'label' => 'Perusahaan', 'url' => APP_URL . '/perusahaan', 'roles' => ['user', 'perusahaan']],
+        ];
+    }
+    $activePage = $active ?? '';
+    ?>
     
-    <div class="flex min-h-screen">
-        <!-- Sidebar -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-60 bg-slate-900 text-white transform transition-all duration-300 ease-in-out -translate-x-full md:translate-x-0 shadow-lg flex flex-col overflow-hidden">
-            <!-- Brand -->
-            <div class="h-14 flex items-center px-5 border-b border-white/10 whitespace-nowrap">
-                <?php $role = $_SESSION['admin_role'] ?? 'user'; ?>
-                <a href="<?= ($role === 'admin') ? APP_URL . '/user' : APP_URL . '/' ?>" class="flex items-center gap-2.5 text-lg font-bold tracking-tight">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-md shadow-blue-500/30 shrink-0 flex items-center justify-center">
-                        <ion-icon name="cube" class="text-white text-lg md hydrated"></ion-icon>
-                    </div>
-                    <span class="sidebar-text font-bold text-lg tracking-tight transition-opacity duration-300">Paket<span class="text-blue-400">Flow</span></span>
-                </a>
-            </div>
-            
-            <!-- Nav -->
-            <nav class="flex-1 px-3 py-3 space-y-1 overflow-y-auto overflow-x-hidden">
-                <?php 
-                $pendingBadge = 0;
-                if ($role === 'admin') {
-                    require_once MODEL_PATH . '/Admin.php';
-                    $navAdminModel = new Admin();
-                    $pendingBadge = $navAdminModel->getPendingCount();
+    <div class="min-h-screen flex flex-col">
+        <!-- Top Navigation Bar -->
+        <header class="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/80 shadow-2xs">
+            <div class="h-14 px-4 md:px-6 flex items-center justify-between gap-4">
+                <!-- Left: Brand + Horizontal Nav Links -->
+                <div class="flex items-center gap-4 min-w-0">
+                    <!-- Mobile Nav Toggle -->
+                    <button type="button" onclick="toggleMobileNav()" class="md:hidden p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer">
+                        <ion-icon name="menu-outline" class="text-xl"></ion-icon>
+                    </button>
 
-                    // Admin KHUSUS Management User saja (Tidak ada menu proyek)
-                    $navItemDetails = [
-                        'users' => ['icon' => 'people-circle-outline', 'label' => 'Kelola Pengguna', 'url' => APP_URL . '/user', 'roles' => ['admin'], 'badge' => $pendingBadge],
-                    ];
-                } else {
-                    // Menu untuk User / Pelaksana Proyek
-                    $navItemDetails = [
-                        'dashboard' => ['icon' => 'grid-outline', 'label' => 'Dashboard', 'url' => APP_URL . '/', 'roles' => ['user', 'perusahaan']],
-                        'paket' => ['icon' => 'cube-outline', 'label' => 'Paket Kegiatan', 'url' => APP_URL . '/paket', 'roles' => ['user', 'perusahaan']],
-                        'group' => ['icon' => 'folder-open-outline', 'label' => 'Group Paket', 'url' => APP_URL . '/group', 'roles' => ['user', 'perusahaan']],
-                        'perusahaan' => ['icon' => 'business-outline', 'label' => 'Perusahaan', 'url' => APP_URL . '/perusahaan', 'roles' => ['user', 'perusahaan']],
-                    ];
-                }
-                
-                $activePage = $active ?? '';
-                ?>
-                
-                <?php foreach($navItemDetails as $key => $nav): ?>
-                    <?php if(in_array($role, $nav['roles'])): ?>
-                    <a href="<?= $nav['url'] ?>" 
-                       title="<?= $nav['label'] ?>"
-                       class="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 group whitespace-nowrap text-sm <?= $activePage === $key ? 'bg-blue-600 text-white shadow-md shadow-blue-600/25 font-semibold' : 'text-slate-400 hover:text-white hover:bg-white/5 font-medium' ?>">
-                        <ion-icon name="<?= $nav['icon'] ?>" class="text-lg shrink-0"></ion-icon>
-                        <span class="sidebar-text transition-opacity duration-300"><?= $nav['label'] ?></span>
-                        <?php if(!empty($nav['badge'])): ?>
-                            <span class="ml-auto bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full sidebar-text shadow-sm"><?= $nav['badge'] ?></span>
-                        <?php elseif($activePage === $key): ?>
-                            <ion-icon name="chevron-forward-outline" class="ml-auto opacity-70 text-xs sidebar-text"></ion-icon>
-                        <?php endif; ?>
+                    <!-- Brand -->
+                    <a href="<?= ($role === 'admin') ? APP_URL . '/user' : APP_URL . '/' ?>" class="flex items-center gap-2.5 shrink-0">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-sm shadow-blue-500/25 flex items-center justify-center">
+                            <ion-icon name="cube" class="text-white text-lg"></ion-icon>
+                        </div>
+                        <span class="font-bold text-lg tracking-tight text-slate-800">Paket<span class="text-blue-600">Flow</span></span>
                     </a>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </nav>
-        </aside>
-        
-        <!-- Overlay for mobile -->
-        <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-40 hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
 
-        <!-- Main Content -->
-        <main id="mainContent" class="flex-1 md:ml-60 min-h-screen flex flex-col transition-all duration-300">
-            <!-- Topbar -->
-            <header class="h-14 bg-white/90 backdrop-blur-md sticky top-0 z-30 px-5 flex items-center justify-between border-b border-slate-200/70 support-backdrop-blur:bg-white/90">
-                <div class="flex items-center gap-3">
-                    <!-- Mobile Toggle -->
-                    <button onclick="toggleSidebar()" class="md:hidden p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg">
-                        <ion-icon name="menu-outline" class="text-xl"></ion-icon>
-                    </button>
-                    <!-- Desktop Toggle -->
-                    <button onclick="toggleDesktopSidebar()" class="hidden md:block p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-transform active:scale-95">
-                        <ion-icon name="menu-outline" class="text-xl"></ion-icon>
-                    </button>
-                    
-                    <div>
-                        <h1 class="text-base md:text-lg font-bold text-slate-800 leading-tight"><?= $title ?? 'Dashboard' ?></h1>
-                        <p class="text-[11px] text-slate-400 hidden md:block"><?= date('l, d F Y') ?></p>
-                    </div>
+                    <div class="hidden md:block h-5 w-px bg-slate-200"></div>
+
+                    <!-- Desktop Horizontal Nav -->
+                    <nav class="hidden md:flex items-center gap-1">
+                        <?php foreach ($navItemDetails as $key => $nav): ?>
+                            <?php if (in_array($role, $nav['roles'])): ?>
+                                <a href="<?= $nav['url'] ?>"
+                                   class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap <?= $activePage === $key ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200/80 shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium border border-transparent' ?>">
+                                    <ion-icon name="<?= $nav['icon'] ?>" class="text-base shrink-0"></ion-icon>
+                                    <span><?= $nav['label'] ?></span>
+                                    <?php if (!empty($nav['badge'])): ?>
+                                        <span class="ml-1 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full"><?= $nav['badge'] ?></span>
+                                    <?php endif; ?>
+                                </a>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </nav>
                 </div>
                 
                 <!-- Right Controls: Company Switcher & User Profile -->
@@ -199,7 +177,7 @@
 
                     <!-- User Menu -->
                     <div class="relative">
-                        <button onclick="toggleUserMenu()" class="flex items-center gap-2.5 focus:outline-none group">
+                        <button onclick="toggleUserMenu()" class="flex items-center gap-2.5 focus:outline-none group cursor-pointer">
                             <div class="hidden md:block text-right">
                                 <div class="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors"><?= $_SESSION['admin_name'] ?? 'Administrator' ?></div>
                                 <div class="text-[10px] text-slate-400 capitalize"><?= $_SESSION['admin_role'] ?? 'Admin' ?></div>
@@ -230,10 +208,31 @@
                         </div>
                     </div>
                 </div>
-            </header>
+            </div>
 
+            <!-- Mobile Nav Dropdown -->
+            <div id="mobileNavMenu" class="hidden md:hidden border-t border-slate-100 bg-white px-4 py-2.5 space-y-1">
+                <?php foreach ($navItemDetails as $key => $nav): ?>
+                    <?php if (in_array($role, $nav['roles'])): ?>
+                        <a href="<?= $nav['url'] ?>"
+                           class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all <?= $activePage === $key ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-50 font-medium' ?>">
+                            <span class="flex items-center gap-2">
+                                <ion-icon name="<?= $nav['icon'] ?>" class="text-base"></ion-icon>
+                                <span><?= $nav['label'] ?></span>
+                            </span>
+                            <?php if (!empty($nav['badge'])): ?>
+                                <span class="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full"><?= $nav['badge'] ?></span>
+                            <?php endif; ?>
+                        </a>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        </header>
+
+        <!-- Main Content (Full Width) -->
+        <main id="mainContent" class="flex-1 flex flex-col w-full">
             <!-- Page Content Wrapper -->
-            <div class="p-4 md:p-5 flex-1">
+            <div class="p-4 md:p-5 flex-1 w-full">
                 <?php 
                 $flashSuccess = flash('success');
                 $flashError = flash('error');

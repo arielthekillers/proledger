@@ -10,90 +10,13 @@
     </div><!-- End Flex Wrapper -->
 
     <script>
-        // DOM Elements
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        const mainContent = document.getElementById('mainContent');
-        const sidebarTexts = document.querySelectorAll('.sidebar-text');
-        const navLinks = sidebar.querySelectorAll('nav a');
-        const sidebarHead = sidebar.querySelector('div.h-14') || sidebar.firstElementChild;
-
-        // Mobile Toggle
-        function toggleSidebar() {
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('opacity-0');
-                setTimeout(() => overlay.classList.add('hidden'), 300);
+        // Mobile Navigation Toggle
+        function toggleMobileNav() {
+            const mobileMenu = document.getElementById('mobileNavMenu');
+            if (mobileMenu) {
+                mobileMenu.classList.toggle('hidden');
             }
         }
-
-        // Desktop Toggle
-        function toggleDesktopSidebar() {
-            const isCollapsed = sidebar.classList.contains('w-16');
-            
-            if (isCollapsed) {
-                expandSidebar();
-                localStorage.setItem('sidebarCollapsed', 'false');
-            } else {
-                collapseSidebar();
-                localStorage.setItem('sidebarCollapsed', 'true');
-            }
-        }
-
-        function collapseSidebar() {
-            sidebar.classList.replace('w-60', 'w-16');
-            mainContent.classList.replace('md:ml-60', 'md:ml-16');
-            
-            sidebarTexts.forEach(el => el.classList.add('hidden'));
-            
-            navLinks.forEach(link => {
-                link.classList.remove('px-3', 'gap-2.5');
-                link.classList.add('px-2', 'justify-center');
-            });
-            
-            if (sidebarHead) {
-                sidebarHead.classList.remove('px-5');
-                sidebarHead.classList.add('px-0', 'justify-center');
-            }
-        }
-
-        function expandSidebar() {
-            sidebar.classList.replace('w-16', 'w-60');
-            mainContent.classList.replace('md:ml-16', 'md:ml-60');
-            
-            sidebarTexts.forEach(el => el.classList.remove('hidden'));
-            
-            navLinks.forEach(link => {
-                link.classList.add('px-3', 'gap-2.5');
-                link.classList.remove('px-2', 'justify-center');
-            });
-            
-            if (sidebarHead) {
-                sidebarHead.classList.add('px-5');
-                sidebarHead.classList.remove('px-0', 'justify-center');
-            }
-        }
-
-        // Initialize State on Load
-        document.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
-                sidebar.classList.add('duration-0');
-                mainContent.classList.add('duration-0');
-                
-                collapseSidebar();
-                
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        sidebar.classList.remove('duration-0');
-                        mainContent.classList.remove('duration-0');
-                    }, 50);
-                });
-            }
-        });
 
         // User Menu Logic
         function toggleUserMenu() {
