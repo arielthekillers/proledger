@@ -81,7 +81,7 @@ class PaketDistribusi {
                 COUNT(*) as total_baris,
                 COUNT(DISTINCT nama_tujuan) as total_tujuan,
                 COALESCE(SUM(jumlah), 0) as total_qty_dialokasikan,
-                SUM(CASE WHEN status_distribusi = 'Tiba di Tujuan' THEN 1 ELSE 0 END) as total_diterima,
+                SUM(CASE WHEN status_distribusi IN ('Tiba di Tujuan', 'Tiba di Gudang') THEN 1 ELSE 0 END) as total_diterima,
                 SUM(CASE WHEN status_barang = 'Sudah Dipesan' THEN 1 ELSE 0 END) as total_dipesan,
                 SUM(CASE WHEN status_barang = 'Belum Dipesan' OR status_barang IS NULL THEN 1 ELSE 0 END) as total_belum_pesan
             FROM paket_distribusi
@@ -191,23 +191,26 @@ class PaketDistribusi {
     }
 
     /**
-     * Update Status Distribusi (Tiba dirumah/kantor, Tiba di Gudang, Tiba di Tujuan)
+     * Update Status Distribusi (Tiba di Rumah, Tiba di Gudang, Tiba di Tujuan)
      */
     public function updateStatusDistribusi($id, $statusDistribusi) {
         $statusDistribusi = trim($statusDistribusi);
-        $isTujuan = ($statusDistribusi === 'Tiba di Tujuan');
-        $tanggalTerima = $isTujuan ? date('Y-m-d') : null;
+        if (stripos($statusDistribusi, 'gudang') !== false) {
+            $statusDistribusi = 'Tiba di Gudang';
+        } elseif (stripos($statusDistribusi, 'tujuan') !== false) {
+            $statusDistribusi = 'Tiba di Tujuan';
+        } else {
+            $statusDistribusi = 'Tiba di Rumah';
+        }
 
         $stmt = $this->db->prepare("
             UPDATE paket_distribusi SET
                 status_distribusi = ?,
-                tanggal_terima = COALESCE(tanggal_terima, ?),
                 updated_at = NOW()
             WHERE id = ?
         ");
         return $stmt->execute([
             $statusDistribusi,
-            $tanggalTerima,
             (int)$id
         ]);
     }

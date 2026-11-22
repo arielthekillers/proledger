@@ -355,11 +355,12 @@ class PaketController {
             }
         }
 
-        // 3. Distribusi: Alokasi yang status distribusinya sudah tiba di tujuan
+        // 3. Distribusi: Alokasi yang status distribusinya sudah tiba di tujuan atau tiba di gudang (sudah sampai)
         $totalDist = count($distribusiList);
         $distDone = 0;
         foreach ($distribusiList as $dist) {
-            if (($dist['status_distribusi'] ?? '') === 'Tiba di Tujuan') {
+            $s = trim($dist['status_distribusi'] ?? '');
+            if ($s === 'Tiba di Tujuan' || $s === 'Tiba di Gudang') {
                 $distDone++;
             }
         }
@@ -1192,7 +1193,7 @@ class PaketController {
             redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
         }
 
-        $statusDistribusi = trim($_POST['status_distribusi'] ?? 'Tiba dirumah/kantor');
+        $statusDistribusi = trim($_POST['status_distribusi'] ?? 'Tiba di Rumah');
 
         try {
             $this->distribusiModel->updateStatusDistribusi($distribusiId, $statusDistribusi);

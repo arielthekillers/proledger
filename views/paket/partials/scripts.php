@@ -747,12 +747,12 @@ function openModalUpdateStatusDistribusi(dist) {
     const qtyText = (parseFloat(dist.jumlah) || 1) + ' ' + (dist.satuan || 'Unit');
     document.getElementById('status_distribusi_modal_item').textContent = (dist.nama_komponen || '-') + ' (' + qtyText + ')';
 
-    const sDist = dist.status_distribusi || 'Tiba dirumah/kantor';
+    const sDist = dist.status_distribusi || 'Tiba di Rumah';
     const optKantor = document.getElementById('dist_opt_kantor');
     const optGudang = document.getElementById('dist_opt_gudang');
     const optTujuan = document.getElementById('dist_opt_tujuan');
 
-    if (optKantor) optKantor.checked = (sDist === 'Tiba dirumah/kantor' || sDist === 'Tiba di Rumah/Kantor' || sDist === 'kantor');
+    if (optKantor) optKantor.checked = (sDist === 'Tiba di Rumah' || sDist === 'Tiba dirumah/kantor' || sDist === 'Tiba di Rumah/Kantor' || sDist === 'kantor');
     if (optGudang) optGudang.checked = (sDist === 'Tiba di Gudang' || sDist === 'gudang');
     if (optTujuan) optTujuan.checked = (sDist === 'Tiba di Tujuan');
 

@@ -40,7 +40,7 @@ class PaketKegiatan {
                         pd.paket_id,
                         COUNT(DISTINCT pd.id) as total_dist,
                         COUNT(DISTINCT CASE WHEN pd.status_barang = 'Sudah Dipesan' THEN pd.id END) as pesan_done,
-                        COUNT(DISTINCT CASE WHEN pd.status_distribusi = 'Tiba di Tujuan' THEN pd.id END) as dist_done,
+                        COUNT(DISTINCT CASE WHEN pd.status_distribusi IN ('Tiba di Tujuan', 'Tiba di Gudang') THEN pd.id END) as dist_done,
                         COUNT(DISTINCT pdk.distribusi_id) as dok_done
                     FROM paket_distribusi pd
                     LEFT JOIN paket_dokumentasi pdk ON pd.id = pdk.distribusi_id

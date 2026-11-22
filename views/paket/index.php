@@ -1547,7 +1547,7 @@ foreach ($paket as $p) {
 <!-- NATIVE SUB-MODAL: UPDATE STATUS DISTRIBUSI / PENGIRIMAN        -->
 <!-- ============================================================== -->
 <div id="modalNativeStatusDistribusi" class="app-modal fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
-    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden flex flex-col">
         <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-base shadow-xs">
@@ -1558,56 +1558,30 @@ foreach ($paket as $p) {
                     <p class="text-[10px] text-slate-400" id="nativeStatusDistSub">-</p>
                 </div>
             </div>
-            <button type="button" onclick="window.ProModal.close('modalNativeStatusDistribusi')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+            <button type="button" onclick="window.ProModal.close('modalNativeStatusDistribusi')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer">
                 <ion-icon name="close-outline" class="text-lg"></ion-icon>
             </button>
         </div>
 
-        <form id="formNativeStatusDistribusi" onsubmit="submitNativeStatusDistribusi(event)" class="overflow-y-auto p-5 space-y-3.5">
+        <form id="formNativeStatusDistribusi" onsubmit="submitNativeStatusDistribusi(event)" class="p-5 space-y-4">
             <input type="hidden" id="nativeStatusDistId" name="dist_id">
 
             <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Status Pengiriman <span class="text-rose-500">*</span></label>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Status Pengiriman <span class="text-rose-500">*</span></label>
                 <select name="status_distribusi" id="nativeStatusDistSelect" required
-                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all font-semibold">
-                    <option value="Belum Dikirim">Belum Dikirim (Menunggu)</option>
-                    <option value="Dalam Perjalanan">Dalam Perjalanan (Proses Kirim)</option>
-                    <option value="Tiba dirumah/kantor">Tiba di Rumah/Kantor</option>
-                    <option value="Tiba di Gudang">Tiba di Gudang (Transit)</option>
-                    <option value="Tiba di Tujuan">Tiba di Tujuan (Diterima di Lokasi)</option>
+                        class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all font-semibold text-slate-800">
+                    <option value="Tiba di Rumah">Tiba di Rumah (Transit)</option>
+                    <option value="Tiba di Gudang">Tiba di Gudang</option>
+                    <option value="Tiba di Tujuan">Tiba di Tujuan</option>
                 </select>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2.5">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tgl Kirim</label>
-                    <input type="date" name="tanggal_kirim" id="nativeStatusDistTglKirim"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tgl Tiba</label>
-                    <input type="date" name="tanggal_terima" id="nativeStatusDistTglTerima"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all">
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Penerima di Lokasi</label>
-                <input type="text" name="nama_penerima" id="nativeStatusDistPenerima" placeholder="Nama Guru / Staf Penerima..."
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all">
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan</label>
-                <textarea name="catatan" id="nativeStatusDistCatatan" rows="2" placeholder="Catatan penerimaan..."
-                          class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all resize-none"></textarea>
+                <p class="text-[10px] text-slate-400 mt-1.5">Tiba di Gudang & Tiba di Tujuan menandakan barang sudah sampai.</p>
             </div>
 
             <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button type="button" onclick="window.ProModal.close('modalNativeStatusDistribusi')"
-                        class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold">Batal</button>
+                        class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold cursor-pointer">Batal</button>
                 <button type="submit" id="btnSubmitNativeStatusDist"
-                        class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-all">Simpan Status</button>
+                        class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-all shadow-xs cursor-pointer">Simpan Status</button>
             </div>
         </form>
     </div>
@@ -1991,34 +1965,19 @@ function openNativeUpdateStatusDistribusiModal(dist) {
     if (!dist) return;
     document.getElementById('nativeStatusDistId').value = dist.id;
     const sub = document.getElementById('nativeStatusDistSub');
-    if (sub) sub.textContent = (dist.nama_tujuan || '-') + ' (' + (dist.nama_komponen || dist.komponen || '-') + ')';
+    if (sub) sub.textContent = (dist.nama_tujuan || '-') + ' (' + (dist.nama_komponen || dist.komponen || dist.nama_barang || '-') + ')';
 
     const sel = document.getElementById('nativeStatusDistSelect');
     if (sel) {
         let val = (dist.status_distribusi || '').trim();
-        if (!val) val = 'Belum Dikirim';
-        if (val === 'Menunggu Pengiriman') val = 'Belum Dikirim';
-        if (val === 'Dalam Pengiriman') val = 'Dalam Perjalanan';
-        if (val === 'Tiba di Rumah/Kantor') val = 'Tiba dirumah/kantor';
-
-        let found = false;
-        for (let i = 0; i < sel.options.length; i++) {
-            if (sel.options[i].value.toLowerCase() === val.toLowerCase()) {
-                sel.selectedIndex = i;
-                found = true;
-                break;
-            }
-        }
-        if (!found && val) {
-            const newOpt = new Option(val, val, true, true);
-            sel.add(newOpt);
+        if (val.toLowerCase().includes('gudang')) {
+            sel.value = 'Tiba di Gudang';
+        } else if (val.toLowerCase().includes('tujuan')) {
+            sel.value = 'Tiba di Tujuan';
+        } else {
+            sel.value = 'Tiba di Rumah';
         }
     }
-
-    document.getElementById('nativeStatusDistTglKirim').value = dist.tanggal_kirim || '';
-    document.getElementById('nativeStatusDistTglTerima').value = dist.tanggal_terima || '';
-    document.getElementById('nativeStatusDistPenerima').value = dist.nama_penerima || '';
-    document.getElementById('nativeStatusDistCatatan').value = dist.catatan || '';
 
     window.ProModal.open('modalNativeStatusDistribusi');
 }

@@ -7,7 +7,8 @@ $totalDist = count($distribusiList);
 $distDone = 0;
 $totalQty = 0;
 foreach ($distribusiList as $dist) {
-    if (($dist['status_distribusi'] ?? '') === 'Tiba di Tujuan') {
+    $s = trim($dist['status_distribusi'] ?? '');
+    if ($s === 'Tiba di Tujuan' || $s === 'Tiba di Gudang') {
         $distDone++;
     }
     $totalQty += (float)$dist['jumlah'];
@@ -64,12 +65,20 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
                 <?php else: ?>
                     <?php $no = 1; foreach ($distribusiList as $dist): ?>
                         <?php 
-                        $sDist = $dist['status_distribusi'] ?? 'Belum Dikirim';
-                        $badgeClass = 'bg-slate-100 text-slate-600 border-slate-200';
-                        if ($sDist === 'Tiba di Tujuan') $badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold';
-                        elseif ($sDist === 'Tiba di Gudang') $badgeClass = 'bg-blue-50 text-blue-700 border-blue-200';
-                        elseif ($sDist === 'Tiba dirumah/kantor' || $sDist === 'Tiba di Rumah/Kantor') $badgeClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
-                        elseif ($sDist === 'Dalam Pengiriman' || $sDist === 'Dalam Perjalanan') $badgeClass = 'bg-amber-50 text-amber-800 border-amber-200';
+                        $sDist = trim($dist['status_distribusi'] ?? '');
+                        if (empty($sDist)) {
+                            $sDist = 'Belum Dikirim';
+                            $badgeClass = 'bg-slate-100 text-slate-600 border-slate-200';
+                        } elseif ($sDist === 'Tiba di Tujuan') {
+                            $badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold';
+                        } elseif ($sDist === 'Tiba di Gudang') {
+                            $badgeClass = 'bg-blue-50 text-blue-700 border-blue-200 font-bold';
+                        } elseif ($sDist === 'Tiba di Rumah' || stripos($sDist, 'rumah') !== false || stripos($sDist, 'kantor') !== false) {
+                            $sDist = 'Tiba di Rumah';
+                            $badgeClass = 'bg-amber-50 text-amber-800 border-amber-200 font-semibold';
+                        } else {
+                            $badgeClass = 'bg-slate-100 text-slate-600 border-slate-200';
+                        }
                         ?>
                         <tr class="hover:bg-slate-50/70 transition-colors">
                             <td class="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]"><?= $no++ ?></td>
@@ -149,7 +158,7 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
     <div class="flex items-center justify-between text-[11px] text-slate-500 px-1">
         <div class="flex items-center gap-1.5">
             <ion-icon name="information-circle-outline" class="text-indigo-500 text-sm"></ion-icon>
-            <span>Alokasi yang telah berstatus <strong>"Tiba di Tujuan"</strong> siap diterbitkan berkas Berita Acara Serah Terima (BAST).</span>
+            <span>Status <strong>"Tiba di Gudang"</strong> & <strong>"Tiba di Tujuan"</strong> menandakan barang sudah sampai & siap diterbitkan BAST. Status <strong>"Tiba di Rumah"</strong> adalah transit.</span>
         </div>
         <span class="font-medium text-slate-600">Realisasi Distribusi: <strong><?= $distDone ?></strong> dari <strong><?= $totalDist ?></strong> lokasi (<?= $pctDist ?>%)</span>
     </div>

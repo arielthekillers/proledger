@@ -698,13 +698,13 @@
                 <label class="block text-xs font-semibold text-slate-700">Pilih Status Distribusi:</label>
                 
                 <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-blue-400 cursor-pointer transition-all bg-white has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/50">
-                    <input type="radio" name="status_distribusi" value="Tiba dirumah/kantor" id="dist_opt_kantor" class="text-blue-600 focus:ring-blue-500">
+                    <input type="radio" name="status_distribusi" value="Tiba di Rumah" id="dist_opt_kantor" class="text-blue-600 focus:ring-blue-500">
                     <div class="flex-1">
                         <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                             <ion-icon name="home-outline" class="text-blue-600"></ion-icon>
-                            <span>Tiba dirumah/kantor</span>
+                            <span>Tiba di Rumah (Transit)</span>
                         </div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">Barang telah tiba dan diterima di rumah atau kantor</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Barang transit di rumah sebelum menuju gudang atau titik tujuan</div>
                     </div>
                 </label>
 
