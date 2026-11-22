@@ -402,6 +402,15 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
 </div>
 
 <script>
+// Teleport sub-modals ke document.body agar tidak terpotong oleh transform/overflow parent modal
+(function() {
+    ['modalNativeDistribusi', 'modalQuickTambahTujuan'].forEach(function(id) {
+        document.querySelectorAll('body > #' + id).forEach(function(oldEl) { oldEl.remove(); });
+        var el = document.getElementById(id);
+        if (el) document.body.appendChild(el);
+    });
+})();
+
 window.paketDistribusiItems = <?= json_encode(array_values($items), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 window.currentDistribusiItem = null;
 
