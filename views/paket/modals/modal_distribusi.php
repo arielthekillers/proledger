@@ -405,8 +405,8 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
 window.paketDistribusiItems = <?= json_encode(array_values($items), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 window.currentDistribusiItem = null;
 
-function openNativeTambahDistribusiModal() {
-    resetTujuanTableSelection();
+window.doOpenNativeTambahDistribusiModal = function() {
+    window.resetTujuanTableSelection();
     const sel = document.getElementById('native_dist_item_select');
     if (sel) {
         sel.value = '';
@@ -414,25 +414,26 @@ function openNativeTambahDistribusiModal() {
         const firstAvailable = (window.paketDistribusiItems || []).find(it => (parseFloat(it.remaining_qty) || 0) > 0);
         if (firstAvailable) {
             sel.value = firstAvailable.id;
-            onDistribusiItemSelectChange(firstAvailable.id);
+            window.onDistribusiItemSelectChange(firstAvailable.id);
         } else {
-            onDistribusiItemSelectChange('');
+            window.onDistribusiItemSelectChange('');
         }
     }
     window.ProModal.open('modalNativeDistribusi');
-}
+};
+window.openNativeTambahDistribusiModal = window.doOpenNativeTambahDistribusiModal;
 
-function onDistribusiItemSelectChange(itemId) {
+window.onDistribusiItemSelectChange = function(itemId) {
     document.getElementById('tambah_dist_item_id_hidden').value = itemId || '';
     if (!itemId) {
-        updateDistribusiQuotaCard(null);
+        window.updateDistribusiQuotaCard(null);
         return;
     }
     const item = (window.paketDistribusiItems || []).find(it => it.id == itemId);
-    updateDistribusiQuotaCard(item || null);
-}
+    window.updateDistribusiQuotaCard(item || null);
+};
 
-function updateDistribusiQuotaCard(item) {
+window.updateDistribusiQuotaCard = function(item) {
     window.currentDistribusiItem = item;
     const inputJumlah = document.getElementById('tambah_dist_jumlah');
     const btnSubmit = document.getElementById('btnSubmitDistribusi');
@@ -484,10 +485,10 @@ function updateDistribusiQuotaCard(item) {
         errBox.classList.remove('hidden');
     }
 
-    validateDistribusiQty();
-}
+    window.validateDistribusiQty();
+};
 
-function validateDistribusiQty() {
+window.validateDistribusiQty = function() {
     if (!window.currentDistribusiItem) return;
 
     const inputJumlah = document.getElementById('tambah_dist_jumlah');
@@ -536,9 +537,9 @@ function validateDistribusiQty() {
 
     btnSubmit.disabled = false;
     btnSubmit.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
-}
+};
 
-function selectTujuanRow(tr, id, nama, kota) {
+window.selectTujuanRow = function(tr, id, nama, kota) {
     document.querySelectorAll('#tbodyListTujuan tr').forEach(r => {
         r.classList.remove('bg-indigo-50/90');
         const rad = r.querySelector('.tujuan-radio');
@@ -562,10 +563,10 @@ function selectTujuanRow(tr, id, nama, kota) {
     if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
     if (text) text.innerHTML = '<strong class="text-emerald-800">' + escapeHtml(nama) + '</strong> <span class="text-emerald-600">(' + escapeHtml(kota || '-') + ') terpilih</span>';
 
-    validateDistribusiQty();
-}
+    window.validateDistribusiQty();
+};
 
-function resetTujuanTableSelection() {
+window.resetTujuanTableSelection = function() {
     document.getElementById('tambah_dist_lokasi_id').value = '';
     document.getElementById('tambah_dist_nama_tujuan').value = '';
 
@@ -586,11 +587,11 @@ function resetTujuanTableSelection() {
     const searchInput = document.getElementById('search_tujuan_table');
     if (searchInput) {
         searchInput.value = '';
-        filterTujuanTable('');
+        window.filterTujuanTable('');
     }
-}
+};
 
-function filterTujuanTable(query) {
+window.filterTujuanTable = function(query) {
     const q = (query || '').toLowerCase().trim();
     const rows = document.querySelectorAll('#tbodyListTujuan .tujuan-row');
     rows.forEach(r => {
@@ -601,9 +602,9 @@ function filterTujuanTable(query) {
             r.classList.add('hidden');
         }
     });
-}
+};
 
-function openQuickTambahTujuanModal() {
+window.openQuickTambahTujuanModal = function() {
     const inputNama = document.getElementById('quick_nama_lokasi');
     if (inputNama) inputNama.value = '';
     const selKab = document.getElementById('quick_kabupaten');
@@ -615,13 +616,13 @@ function openQuickTambahTujuanModal() {
     setTimeout(() => {
         if (inputNama) inputNama.focus();
     }, 150);
-}
+};
 
-function closeQuickTambahTujuanModal() {
+window.closeQuickTambahTujuanModal = function() {
     window.ProModal.close('modalQuickTambahTujuan');
-}
+};
 
-function handleQuickTambahTujuan(e) {
+window.handleQuickTambahTujuan = function(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSubmitQuickTujuan');
     const nama = document.getElementById('quick_nama_lokasi').value.trim();
@@ -656,7 +657,7 @@ function handleQuickTambahTujuan(e) {
                 tr.className = 'tujuan-row hover:bg-indigo-50/60 cursor-pointer transition-colors';
                 tr.setAttribute('data-id', lok.id);
                 tr.setAttribute('data-search', ((lok.nama_lokasi || '') + ' ' + (lok.kab_kota || '')).toLowerCase());
-                tr.onclick = function() { selectTujuanRow(this, lok.id, lok.nama_lokasi, lok.kab_kota); };
+                tr.onclick = function() { window.selectTujuanRow(this, lok.id, lok.nama_lokasi, lok.kab_kota); };
                 tr.innerHTML = `
                     <td class="py-2.5 px-3 text-center">
                         <input type="radio" name="selected_lokasi_radio" value="${lok.id}" 
@@ -672,7 +673,7 @@ function handleQuickTambahTujuan(e) {
                     </td>
                 `;
                 tbody.insertBefore(tr, tbody.firstChild);
-                selectTujuanRow(tr, lok.id, lok.nama_lokasi, lok.kab_kota);
+                window.selectTujuanRow(tr, lok.id, lok.nama_lokasi, lok.kab_kota);
 
                 const countLabel = document.getElementById('tujuan_count_label');
                 if (countLabel) {
@@ -681,7 +682,7 @@ function handleQuickTambahTujuan(e) {
                 }
             }
 
-            closeQuickTambahTujuanModal();
+            window.closeQuickTambahTujuanModal();
             if (window.ProToast) window.ProToast.success(data.message || 'Tujuan berhasil ditambahkan!');
             document.getElementById('formQuickTujuan').reset();
         } else {
@@ -693,9 +694,9 @@ function handleQuickTambahTujuan(e) {
         btn.innerHTML = '<ion-icon name="checkmark-outline" class="text-sm"></ion-icon> <span>Simpan & Pilih Tujuan</span>';
         if (window.ProToast) window.ProToast.error('Koneksi terputus saat menyimpan tujuan.');
     });
-}
+};
 
-function submitNativeDistribusiForm(e) {
+window.submitNativeDistribusiForm = function(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSubmitDistribusi');
     const form = document.getElementById('formNativeDistribusi');
@@ -733,7 +734,7 @@ function submitNativeDistribusiForm(e) {
         window.ProModal.close('modalNativeDistribusi');
         refreshCurrentNativeModal();
     });
-}
+};
 
 function escapeHtml(text) {
     if (!text) return '';
@@ -741,4 +742,5 @@ function escapeHtml(text) {
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
     });
 }
+window.escapeHtml = escapeHtml;
 </script>

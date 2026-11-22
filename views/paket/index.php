@@ -1704,6 +1704,15 @@ function openPaketNativeModal(idOrKode, module, namaPaket) {
                 if (actionContainer) {
                     actionContainer.innerHTML = actionSource ? actionSource.innerHTML : '';
                 }
+
+                // Execute scripts inside injected HTML
+                const scripts = bodyEl.querySelectorAll('script');
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.text = oldScript.innerHTML;
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
             }
         })
         .catch(err => {
@@ -1736,6 +1745,17 @@ function refreshCurrentNativeModal() {
         openPaketNativeModal(currentOpenKode, currentOpenModule, sub);
     }
 }
+
+/**
+ * Native Tambah Distribusi Modal Trigger Fallback
+ */
+window.openNativeTambahDistribusiModal = function(kode) {
+    if (typeof window.doOpenNativeTambahDistribusiModal === 'function') {
+        window.doOpenNativeTambahDistribusiModal(kode);
+    } else {
+        window.ProModal.open('modalNativeDistribusi');
+    }
+};
 
 /**
  * Native Upload BAST Modal Trigger
