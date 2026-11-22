@@ -35,12 +35,12 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                 <tr>
                     <th class="py-2.5 px-3 w-10 text-center">NO</th>
                     <th class="py-2.5 px-3 w-44">KOMPONEN BARANG</th>
-                    <th class="py-2.5 px-3 w-44">TUJUAN PENERIMA</th>
-                    <th class="py-2.5 px-2 text-center w-20">QTY</th>
-                    <th class="py-2.5 px-3">PESANAN TOKO</th>
-                    <th class="py-2.5 px-3 text-right w-32">HARGA BELI</th>
-                    <th class="py-2.5 px-3 text-right w-36">TOTAL BELI</th>
-                    <th class="py-2.5 px-3 text-center w-40">STATUS PESANAN</th>
+                    <th class="py-2.5 px-3">TUJUAN PENERIMA</th>
+                    <th class="py-2.5 px-2 text-center w-16">QTY</th>
+                    <th class="py-2.5 px-3 w-36">PESANAN TOKO</th>
+                    <th class="py-2.5 px-3 text-right w-28">HARGA BELI</th>
+                    <th class="py-2.5 px-3 text-right w-32">TOTAL BELI</th>
+                    <th class="py-2.5 px-3 text-center w-36">STATUS PESANAN</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -68,7 +68,7 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                                 <?= htmlspecialchars($namaKomp) ?>
                             </td>
                             <td class="py-2.5 px-3 text-xs text-slate-700 font-normal">
-                                <div class="truncate max-w-[190px]" title="<?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>">
+                                <div class="truncate" title="<?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>">
                                     <?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>
                                 </div>
                             </td>

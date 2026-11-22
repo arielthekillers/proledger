@@ -41,13 +41,13 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                 <tr>
                     <th class="py-2.5 px-3 w-10 text-center">NO</th>
-                    <th class="py-2.5 px-3 w-40">KOMPONEN BARANG</th>
-                    <th class="py-2.5 px-3 w-44">TITIK TUJUAN</th>
+                    <th class="py-2.5 px-3 w-44">KOMPONEN BARANG</th>
+                    <th class="py-2.5 px-3">TITIK TUJUAN</th>
                     <th class="py-2.5 px-2 text-center w-16">QTY</th>
-                    <th class="py-2.5 px-2 text-center w-40">STATUS DISTRIBUSI</th>
-                    <th class="py-2.5 px-3">PENGIRIMAN & RESI</th>
+                    <th class="py-2.5 px-2 text-center w-36">STATUS DISTRIBUSI</th>
+                    <th class="py-2.5 px-3 w-36">PENGIRIMAN & RESI</th>
                     <?php if ($role === 'admin' || $role === 'user'): ?>
-                        <th class="py-2.5 px-3 text-center w-14">AKSI</th>
+                        <th class="py-2.5 px-3 text-center w-12">AKSI</th>
                     <?php endif; ?>
                 </tr>
             </thead>
@@ -86,7 +86,7 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
                                 <?= htmlspecialchars($dist['nama_barang'] ?? $dist['nama_komponen'] ?? '-') ?>
                             </td>
                             <td class="py-2.5 px-3 text-xs text-slate-700 font-normal">
-                                <div class="truncate max-w-[190px]" title="<?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>">
+                                <div class="truncate" title="<?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>">
                                     <?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>
                                 </div>
                             </td>
