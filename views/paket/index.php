@@ -1399,77 +1399,7 @@ foreach ($paket as $p) {
     </div>
 </div>
 
-<!-- ============================================================== -->
-<!-- NATIVE SUB-MODAL: TAMBAH DISTRIBUSI ALOKASI                    -->
-<!-- ============================================================== -->
-<div id="modalNativeDistribusi" class="app-modal fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
-    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
-        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
-            <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-lg shadow-xs">
-                    <ion-icon name="navigate-outline"></ion-icon>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-800 text-sm">Tambah Alokasi Distribusi</h3>
-                    <p class="text-[11px] text-slate-400">Tentukan tujuan pengiriman dan jumlah unit komponen</p>
-                </div>
-            </div>
-            <button type="button" onclick="window.ProModal.close('modalNativeDistribusi')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-                <ion-icon name="close-outline" class="text-xl"></ion-icon>
-            </button>
-        </div>
 
-        <form id="formNativeDistribusi" action="" method="POST" class="overflow-y-auto p-5 space-y-4">
-            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
-            <input type="hidden" name="redirect_to" id="nativeDistribusiRedirect" value="">
-
-            <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Pilih Item Komponen <span class="text-rose-500">*</span></label>
-                <select name="item_id" id="nativeDistribusiItemId" required
-                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all font-semibold">
-                    <option value="">-- Pilih Komponen Barang --</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Nama Tujuan / Sekolah Penerima <span class="text-rose-500">*</span></label>
-                <input type="text" name="nama_tujuan" id="nativeDistribusiTujuan" required placeholder="Contoh: SMAN 1 Balikpapan"
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all font-semibold">
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Jumlah Unit Alokasi <span class="text-rose-500">*</span></label>
-                    <input type="number" name="jumlah" id="nativeDistribusiJumlah" value="1" min="1" step="any" required
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all font-semibold">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Kabupaten / Kota</label>
-                    <input type="text" name="kab_kota" id="nativeDistribusiKabKota" placeholder="Kota / Wilayah"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all">
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan Tambahan (Opsional)</label>
-                <textarea name="catatan" id="nativeDistribusiCatatan" rows="2" placeholder="Catatan tujuan atau instruksi khusus..."
-                          class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 transition-all resize-none"></textarea>
-            </div>
-
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
-                <button type="button" onclick="window.ProModal.close('modalNativeDistribusi')"
-                        class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold transition-colors">
-                    Batal
-                </button>
-                <button type="submit"
-                        class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
-                    <ion-icon name="checkmark-circle-outline"></ion-icon>
-                    <span>Simpan Alokasi</span>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <!-- ============================================================== -->
 <!-- NATIVE SUB-MODAL: UPDATE STATUS PEMESANAN BARANG               -->
@@ -1860,35 +1790,7 @@ function openNativeEditItemModal(it) {
     window.ProModal.open('modalNativeItem');
 }
 
-/**
- * Native Tambah Distribusi Modal Trigger
- */
-function openNativeTambahDistribusiModal(kode) {
-    const targetKode = kode || currentOpenKode;
-    const form = document.getElementById('formNativeDistribusi');
-    if (form) {
-        form.action = '<?= APP_URL ?>/paket/storeDistribusi/' + encodeURIComponent(targetKode);
-        document.getElementById('nativeDistribusiRedirect').value = '<?= APP_URL ?>/paket?open_modal=' + encodeURIComponent(targetKode) + '&tab=distribusi';
-        document.getElementById('nativeDistribusiTujuan').value = '';
-        document.getElementById('nativeDistribusiJumlah').value = '1';
-        document.getElementById('nativeDistribusiCatatan').value = '';
-        
-        // Populate items from rows if available
-        const select = document.getElementById('nativeDistribusiItemId');
-        if (select) {
-            select.innerHTML = '<option value="">-- Pilih Komponen Barang --</option>';
-            const itemSelectOptions = document.querySelectorAll('#modalModuleBody [data-item-select-id]');
-            if (itemSelectOptions.length > 0) {
-                itemSelectOptions.forEach(opt => {
-                    const id = opt.getAttribute('data-item-select-id');
-                    const name = opt.getAttribute('data-item-select-name') || ('Item #' + id);
-                    select.innerHTML += `<option value="${id}">${name}</option>`;
-                });
-            }
-        }
-    }
-    window.ProModal.open('modalNativeDistribusi');
-}
+
 
 /**
  * Native Update Status Barang Modal Trigger & AJAX Submit

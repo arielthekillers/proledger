@@ -941,7 +941,16 @@ class PaketController {
     public function storeDistribusi($idOrKode) {
         $paket = $this->getAccessiblePaket($idOrKode);
 
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') || 
+                  (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) ||
+                  (isset($_GET['ajax']) && $_GET['ajax'] == '1');
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Metode request tidak valid.']);
+                exit;
+            }
             redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=distribusi#distribusi');
             return;
         }
@@ -983,6 +992,11 @@ class PaketController {
         }
 
         if (!$itemId || empty($namaTujuan)) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Item komponen dan pilihan tujuan penerima wajib ditentukan.']);
+                exit;
+            }
             flash('error', 'Item komponen dan pilihan tujuan penerima wajib ditentukan.');
             redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
             return;
@@ -990,6 +1004,11 @@ class PaketController {
 
         $item = $this->itemModel->getById($itemId);
         if (!$item || $item['paket_id'] != $paket['id']) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Item komponen tidak ditemukan dalam paket ini.']);
+                exit;
+            }
             flash('error', 'Item komponen tidak ditemukan dalam paket ini.');
             redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
             return;
@@ -1002,19 +1021,37 @@ class PaketController {
         $remainingQuota = max(0, $totalItemQty - $alreadyAllocated);
 
         if ($remainingQuota <= 0) {
-            flash('error', 'Gagal: Seluruh kuota untuk item "' . $item['komponen'] . '" (' . $totalItemQty . ' ' . $item['satuan'] . ') sudah terdistribusi penuh. Tidak dapat menambah alokasi.');
+            $msg = 'Gagal: Seluruh kuota untuk item "' . $item['komponen'] . '" (' . $totalItemQty . ' ' . $item['satuan'] . ') sudah terdistribusi penuh. Tidak dapat menambah alokasi.';
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => $msg]);
+                exit;
+            }
+            flash('error', $msg);
             redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
             return;
         }
 
         if ($jumlah <= 0) {
-            flash('error', 'Jumlah alokasi harus lebih besar dari 0.');
+            $msg = 'Jumlah alokasi harus lebih besar dari 0.';
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => $msg]);
+                exit;
+            }
+            flash('error', $msg);
             redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
             return;
         }
 
         if ($jumlah > $remainingQuota) {
-            flash('error', 'Gagal: Jumlah alokasi (' . $jumlah . ' ' . $item['satuan'] . ') melebihi sisa kuota yang tersedia (' . $remainingQuota . ' ' . $item['satuan'] . ').');
+            $msg = 'Gagal: Jumlah alokasi (' . $jumlah . ' ' . $item['satuan'] . ') melebihi sisa kuota yang tersedia (' . $remainingQuota . ' ' . $item['satuan'] . ').';
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => $msg]);
+                exit;
+            }
+            flash('error', $msg);
             redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
             return;
         }
@@ -1043,9 +1080,21 @@ class PaketController {
                 'catatan' => trim($_POST['catatan'] ?? '')
             ]);
 
-            flash('success', 'Alokasi distribusi ' . htmlspecialchars($item['komponen']) . ' ke ' . htmlspecialchars($namaTujuan) . ' (' . $jumlah . ' ' . htmlspecialchars($item['satuan']) . ') berhasil ditambahkan!');
+            $successMsg = 'Alokasi distribusi ' . htmlspecialchars($item['komponen']) . ' ke ' . htmlspecialchars($namaTujuan) . ' (' . $jumlah . ' ' . htmlspecialchars($item['satuan']) . ') berhasil ditambahkan!';
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => $successMsg]);
+                exit;
+            }
+            flash('success', $successMsg);
         } catch (Exception $e) {
-            flash('error', 'Gagal menambahkan alokasi pengiriman: ' . $e->getMessage());
+            $errorMsg = 'Gagal menambahkan alokasi pengiriman: ' . $e->getMessage();
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => $errorMsg]);
+                exit;
+            }
+            flash('error', $errorMsg);
         }
 
         redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=' . $redirectTab . '#' . $redirectTab);
