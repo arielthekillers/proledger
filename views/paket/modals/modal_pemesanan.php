@@ -29,18 +29,18 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
 
 <!-- 1. Langsung Tabel Pemesanan (Full Width, No Horizontal Scroll) -->
 <div class="space-y-3">
-    <div class="bg-white rounded-xl border border-slate-200/90 overflow-hidden shadow-2xs">
+    <div class="bg-white rounded-xl border border-slate-200/90 overflow-visible shadow-2xs">
         <table class="w-full text-left text-xs table-fixed">
             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                 <tr>
-                    <th class="py-2.5 px-3 w-10 text-center">NO</th>
-                    <th class="py-2.5 px-3 w-44">KOMPONEN BARANG</th>
+                    <th class="py-2.5 px-3 w-10 text-center rounded-tl-xl">NO</th>
+                    <th class="py-2.5 px-3 w-40">KOMPONEN BARANG</th>
                     <th class="py-2.5 px-3">TUJUAN PENERIMA</th>
                     <th class="py-2.5 px-2 text-center w-16">QTY</th>
-                    <th class="py-2.5 px-3 w-36">PESANAN TOKO</th>
+                    <th class="py-2.5 px-3 w-32">PESANAN TOKO</th>
                     <th class="py-2.5 px-3 text-right w-28">HARGA BELI</th>
                     <th class="py-2.5 px-3 text-right w-32">TOTAL BELI</th>
-                    <th class="py-2.5 px-3 text-center w-36">STATUS PESANAN</th>
+                    <th class="py-2.5 px-3 text-center w-44 rounded-tr-xl">STATUS PESANAN</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -75,12 +75,33 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                             <td class="py-2.5 px-2 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
                                 <?= (float)$dist['jumlah'] ?> <?= htmlspecialchars($dist['satuan'] ?? 'Unit') ?>
                             </td>
-                            <td class="py-2.5 px-3 text-xs text-slate-700 break-words">
+                            <td class="py-2.5 px-3 text-xs text-slate-700">
                                 <?php if (!empty($dist['nama_barang'])): ?>
-                                    <div class="font-medium text-slate-800"><?= htmlspecialchars($dist['nama_barang']) ?></div>
-                                    <?php if (!empty($dist['ekspedisi'])): ?>
-                                        <div class="text-[10px] text-slate-400 mt-0.5"><?= htmlspecialchars($dist['ekspedisi']) ?> <?= !empty($dist['no_resi']) ? '(' . htmlspecialchars($dist['no_resi']) . ')' : '' ?></div>
-                                    <?php endif; ?>
+                                    <?php $hasShipping = !empty($dist['ekspedisi']) || !empty($dist['no_resi']); ?>
+                                    <div class="relative group/toko inline-flex items-center gap-1 max-w-full cursor-default">
+                                        <span class="font-medium text-slate-800 truncate"><?= htmlspecialchars($dist['nama_barang']) ?></span>
+                                        <?php if ($hasShipping): ?>
+                                            <ion-icon name="information-circle-outline" class="text-blue-500 text-xs shrink-0"></ion-icon>
+                                            <div class="hidden group-hover/toko:block absolute left-0 bottom-full mb-1.5 z-40 w-56 p-2.5 bg-slate-800 text-white rounded-xl shadow-xl text-[11px] leading-relaxed pointer-events-none">
+                                                <div class="font-bold text-white border-b border-slate-700 pb-1 mb-1 flex items-center gap-1.5">
+                                                    <ion-icon name="storefront-outline" class="text-blue-400"></ion-icon>
+                                                    <span class="truncate"><?= htmlspecialchars($dist['nama_barang']) ?></span>
+                                                </div>
+                                                <?php if (!empty($dist['ekspedisi'])): ?>
+                                                    <div class="flex items-center justify-between gap-2 text-slate-300">
+                                                        <span>Ekspedisi:</span>
+                                                        <span class="font-semibold text-white"><?= htmlspecialchars($dist['ekspedisi']) ?></span>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <?php if (!empty($dist['no_resi'])): ?>
+                                                    <div class="flex items-center justify-between gap-2 text-slate-300">
+                                                        <span>No. Resi:</span>
+                                                        <span class="font-mono text-emerald-300"><?= htmlspecialchars($dist['no_resi']) ?></span>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
                                 <?php else: ?>
                                     <span class="text-slate-400 italic text-[11px]">-</span>
                                 <?php endif; ?>
