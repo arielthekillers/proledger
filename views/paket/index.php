@@ -1095,72 +1095,71 @@ foreach ($paket as $p) {
 <!-- ========================================== -->
 <!-- MODAL 5: QUICK TAMBAH SKEMA (AJAX)         -->
 <!-- ========================================== -->
-<div id="modalQuickTambahSkema" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
-    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-sm w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden">
+<div id="modalQuickTambahSkema" class="app-modal fixed inset-0 z-[80] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden">
         <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
             <h3 class="font-bold text-slate-800 text-xs flex items-center gap-2">
                 <ion-icon name="options-outline" class="text-blue-600 text-base"></ion-icon>
                 <span>Buat Skema Potongan Baru</span>
             </h3>
-            <button type="button" data-modal-close="modalQuickTambahSkema" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg">
+            <button type="button" data-modal-close="modalQuickTambahSkema" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
                 <ion-icon name="close-outline" class="text-lg"></ion-icon>
             </button>
         </div>
-        <form id="formQuickSkema" onsubmit="handleQuickTambahSkema(event)" class="p-5 space-y-3.5">
+        <form id="formQuickSkema" onsubmit="handleQuickTambahSkema(event)" class="p-5 space-y-4">
             <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Skema <span class="text-red-500">*</span></label>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label for="quick_nama_skema" class="text-xs font-semibold text-slate-700">Nama Skema <span class="text-red-500">*</span></label>
+                    <span class="text-[11px] text-slate-400">Total: <strong id="quick_lbl_total_persen" class="font-mono text-blue-600">15%</strong></span>
+                </div>
                 <input type="text" id="quick_nama_skema" required 
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white"
+                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all"
                        placeholder="Misal: Skema 1, atau 20% Non-Admin">
             </div>
 
-            <!-- Toggle Pasal -->
-            <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
-                <label class="flex items-center gap-2 cursor-pointer select-none">
-                    <input type="checkbox" id="quick_ada_pasal" value="1" checked onchange="toggleQuickModalFields()" class="w-4 h-4 rounded text-blue-600 focus:ring-0 cursor-pointer">
-                    <span class="text-xs font-bold text-slate-800">Aktifkan Potongan Pasal</span>
-                </label>
-                <div class="relative" id="quick_pasal_wrap">
-                    <input type="number" step="0.1" min="0" max="100" id="quick_persen_pasal" value="13" oninput="updateQuickModalTotal()"
-                           class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500 font-mono transition-all">
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
+            <!-- Pasal & Admin Side-by-Side (Clean, tanpa box berlapis) -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="flex items-center gap-2 cursor-pointer select-none mb-1.5">
+                        <input type="checkbox" id="quick_ada_pasal" value="1" checked onchange="toggleQuickModalFields()" class="w-4 h-4 rounded text-blue-600 focus:ring-0 cursor-pointer">
+                        <span class="text-xs font-semibold text-slate-700">Potongan Pasal</span>
+                    </label>
+                    <div class="relative" id="quick_pasal_wrap">
+                        <input type="number" step="0.1" min="0" max="100" id="quick_persen_pasal" value="13" oninput="updateQuickModalTotal()"
+                               class="w-full pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 font-mono transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">%</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="flex items-center gap-2 cursor-pointer select-none mb-1.5">
+                        <input type="checkbox" id="quick_ada_admin" value="1" checked onchange="toggleQuickModalFields()" class="w-4 h-4 rounded text-blue-600 focus:ring-0 cursor-pointer">
+                        <span class="text-xs font-semibold text-slate-700">Biaya Admin</span>
+                    </label>
+                    <div class="relative" id="quick_admin_wrap">
+                        <input type="number" step="0.1" min="0" max="100" id="quick_persen_admin" value="2" oninput="updateQuickModalTotal()"
+                               class="w-full pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-blue-500 font-mono transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">%</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Toggle Admin -->
-            <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
-                <label class="flex items-center gap-2 cursor-pointer select-none">
-                    <input type="checkbox" id="quick_ada_admin" value="1" checked onchange="toggleQuickModalFields()" class="w-4 h-4 rounded text-blue-600 focus:ring-0 cursor-pointer">
-                    <span class="text-xs font-bold text-slate-800">Aktifkan Biaya Admin (Fee)</span>
-                </label>
-                <div class="relative" id="quick_admin_wrap">
-                    <input type="number" step="0.1" min="0" max="100" id="quick_persen_admin" value="2" oninput="updateQuickModalTotal()"
-                           class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500 font-mono transition-all">
-                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
-                </div>
-            </div>
-
-            <!-- Pilihan Dasar Potongan: Kontrak vs DPP -->
-            <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50">
-                <label class="flex items-start gap-2 cursor-pointer select-none">
+            <!-- Pilihan Dasar Potongan -->
+            <div class="pt-3 border-t border-slate-100">
+                <label class="flex items-start gap-2.5 cursor-pointer select-none">
                     <input type="checkbox" id="quick_tipe_potongan" value="kontrak" onchange="updateQuickModalTotal()" class="w-4 h-4 rounded text-blue-600 focus:ring-0 mt-0.5 cursor-pointer">
                     <div>
-                        <span class="text-xs font-bold text-slate-800 block">Potongan Diambil dari Nilai Kontrak</span>
-                        <span class="text-[11px] text-slate-500 block leading-tight">Tidak dicentang: potongan dihitung dari DPP (setelah kena pajak). Centang ini jika potongan dihitung dari Nilai Kontrak (sebelum pajak).</span>
+                        <span class="text-xs font-semibold text-slate-700 block">Hitung Potongan dari Nilai Kontrak</span>
+                        <span class="text-[11px] text-slate-400 block leading-snug">Jika tidak dicentang, potongan dihitung dari DPP (setelah PPN 11%).</span>
                     </div>
                 </label>
             </div>
 
-            <div class="p-2 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-between text-xs">
-                <span class="text-slate-600">Total Potongan Skema:</span>
-                <strong id="quick_lbl_total_persen" class="font-mono text-blue-700 font-bold">15%</strong>
-            </div>
-
-            <div class="pt-2 border-t border-slate-100 flex justify-end gap-2">
-                <button type="button" data-modal-close="modalQuickTambahSkema" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs">
+            <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                <button type="button" data-modal-close="modalQuickTambahSkema" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs cursor-pointer">
                     Batal
                 </button>
-                <button type="submit" id="btnSubmitQuickSkema" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs shadow-xs flex items-center gap-1.5">
+                <button type="submit" id="btnSubmitQuickSkema" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-xs shadow-xs flex items-center gap-1.5 cursor-pointer">
                     <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
                     <span>Simpan & Gunakan</span>
                 </button>
