@@ -22,7 +22,7 @@ $danaBersih = $acuan - $totalPasal;
 <!-- Header Action Teleport Source -->
 <div id="modalActionSource" class="hidden">
     <button type="button" 
-            onclick="triggerMenuSkemaPotongan()" 
+            onclick='openIndexSkemaPotonganModal(<?= json_encode($paket, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)' 
             class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer">
         <ion-icon name="options-outline" class="text-sm"></ion-icon>
         <span>Ubah Skema Potongan</span>

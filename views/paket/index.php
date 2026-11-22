@@ -183,14 +183,14 @@ foreach ($paket as $p) {
                 <tr>
                     <th class="py-2.5 px-3 w-16 text-center">KODE</th>
                     <th class="py-2.5 px-3 min-w-[200px]">Nama Paket</th>
-                    <th class="py-2.5 px-3 text-right" title="Nilai Kontrak Awal & Nilai Hasil Negosiasi (Acuan Utama)">Nilai Kontrak</th>
+                    <th class="py-2.5 px-3 text-right" title="Nilai Hasil Negosiasi (Acuan Utama) & Nilai Kontrak Awal">Nilai Kontrak</th>
                     <th class="py-2.5 px-3 text-right">DPP</th>
-                    <th class="py-2.5 px-3 text-right">Potongan Pasal</th>
-                    <th class="py-2.5 px-3 text-right">Admin</th>
-                    <th class="py-2.5 px-3 text-right">Total Pasal</th>
+                    <th class="py-2.5 px-3 text-right" title="Klik angka untuk Pengaturan Potongan Pasal & Admin">Total Pasal</th>
+                    <th class="py-2.5 px-3 text-right" title="Dana Bersih Setelah Potongan (Klik untuk Informasi & Finansial)">Nilai Bersih</th>
                     <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Pemesanan Barang (Supplier/Toko)">Pemesanan</th>
                     <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Pengiriman & Distribusi">Distribusi</th>
                     <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Foto Dokumentasi Titik Penerima">Dokumentasi</th>
+                    <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Upload Berkas BAST Titik Penerima">BAST</th>
                     <th class="py-2.5 px-3 text-center">Pencairan</th>
                     <th class="py-2.5 px-3 text-right w-16">Aksi</th>
                 </tr>
@@ -244,6 +244,7 @@ foreach ($paket as $p) {
                         $pasalVal = calculatePasal($basis, $persenPasal);
                         $adminVal = calculateAdmin($basis, $persenAdmin);
                         $totalPasal = $pasalVal + $adminVal;
+                        $nilaiBersih = $acuan - $totalPasal;
 
                         $rawSt = strtolower($p['status'] ?? 'proses');
                         $normStatus = ($rawSt === 'cair') ? 'selesai' : $rawSt;
@@ -301,15 +302,15 @@ foreach ($paket as $p) {
                                 <?php endif; ?>
                             </td>
 
-                            <!-- Nilai Kontrak (Pagu Awal & Pagu Nego) -->
+                            <!-- Nilai Kontrak (Pagu Nego di Atas, Pagu Awal Dicoret di Bawah) -->
                             <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                <!-- Pagu Awal: Grey & Coretan di Tengah Text -->
-                                <div class="font-mono text-slate-400 line-through text-[11px] leading-4" title="Nilai Kontrak / Pagu Awal">
-                                    <?= formatRupiah($effectivePagu) ?>
-                                </div>
-                                <!-- Pagu Nego: Ditampilkan di Bawah Pagu Awal (Acuan Utama) -->
+                                <!-- Pagu Nego: Ditampilkan di Atas (Acuan Utama) -->
                                 <div class="font-mono font-bold text-slate-800 text-xs leading-5" title="Nilai Hasil Negosiasi (Acuan Utama): <?= formatRupiah($acuan) ?>">
                                     <?= formatRupiah($acuan) ?>
+                                </div>
+                                <!-- Pagu Awal: Grey & Coretan di Tengah Text di Bawah -->
+                                <div class="font-mono text-slate-400 line-through text-[11px] leading-4" title="Nilai Kontrak / Pagu Awal">
+                                    <?= formatRupiah($effectivePagu) ?>
                                 </div>
                             </td>
 
@@ -325,44 +326,50 @@ foreach ($paket as $p) {
                                 </div>
                             </td>
 
-                            <!-- Potongan Pasal (Fleksibel) -->
+                            <!-- Total Pasal (Klik untuk Buka Popup Pengaturan Pasal) -->
                             <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                <div class="font-mono text-slate-800 text-xs font-semibold leading-5">
-                                    <?= formatRupiah($pasalVal) ?>
-                                </div>
-                                <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
-                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                                        <?= (float)$persenPasal ?>%
-                                    </span>
-                                </div>
-                            </td>
-
-                            <!-- 2% / Admin (Fleksibel) -->
-                            <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                <div class="font-mono text-slate-700 text-xs leading-5">
-                                    <?= ($persenAdmin > 0) ? formatRupiah($adminVal) : '-' ?>
-                                </div>
-                                <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
-                                    <?php if ($persenAdmin > 0): ?>
-                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                                            <?= (float)$persenAdmin ?>%
+                                <?php if ($role === 'admin' || $role === 'user'): ?>
+                                    <button type="button"
+                                            onclick='openIndexSkemaPotonganModal(<?= json_encode($p, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                            class="text-right group/pasal hover:bg-amber-50/80 px-2 py-1 -my-1 -mx-2 rounded-lg transition-all cursor-pointer inline-block"
+                                            title="Klik untuk Pengaturan Potongan Pasal & Admin">
+                                        <div class="font-mono font-bold text-slate-800 group-hover/pasal:text-amber-800 text-xs leading-5">
+                                            <?= formatRupiah($totalPasal) ?>
+                                        </div>
+                                        <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
+                                            <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300/80">
+                                                <?= (float)$totalPersen ?>%
+                                            </span>
+                                        </div>
+                                    </button>
+                                <?php else: ?>
+                                    <div class="font-mono font-bold text-slate-800 text-xs leading-5">
+                                        <?= formatRupiah($totalPasal) ?>
+                                    </div>
+                                    <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
+                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300/80">
+                                            <?= (float)$totalPersen ?>%
                                         </span>
-                                    <?php else: ?>
-                                        <span class="inline-block text-[9px] text-transparent select-none">-</span>
-                                    <?php endif; ?>
-                                </div>
+                                    </div>
+                                <?php endif; ?>
                             </td>
 
-                            <!-- Total Pasal -->
+                            <!-- Nilai Bersih (Klik untuk Buka Popup Informasi & Finansial) -->
                             <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                <div class="font-mono font-bold text-slate-800 text-xs leading-5">
-                                    <?= formatRupiah($totalPasal) ?>
-                                </div>
-                                <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
-                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300/80">
-                                        <?= (float)$totalPersen ?>%
-                                    </span>
-                                </div>
+                                <button type="button"
+                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'info', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')"
+                                        class="text-right group/bersih hover:bg-emerald-50/80 px-2 py-1 -my-1 -mx-2 rounded-lg transition-all cursor-pointer inline-block"
+                                        title="Klik untuk buka Popup Informasi & Finansial Paket">
+                                    <div class="font-mono font-bold text-emerald-700 group-hover/bersih:text-emerald-800 text-xs leading-5">
+                                        <?= formatRupiah($nilaiBersih) ?>
+                                    </div>
+                                    <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
+                                        <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                                            <ion-icon name="wallet-outline" class="text-[10px]"></ion-icon>
+                                            <span>Info & Finansial</span>
+                                        </span>
+                                    </div>
+                                </button>
                             </td>
 
                             <!-- Progres Pemesanan (Lingkaran - Klik untuk Buka Popup) -->
@@ -392,6 +399,16 @@ foreach ($paket as $p) {
                                         class="hover:scale-105 transition-transform inline-block cursor-pointer" 
                                         title="Klik untuk buka Popup Dokumentasi">
                                     <?= renderCircularProgress($p['dok_done'] ?? 0, $p['total_dist'] ?? 0, 'dokumentasi') ?>
+                                </button>
+                            </td>
+
+                            <!-- Progres BAST (Lingkaran - Klik untuk Buka Popup Berkas BAST) -->
+                            <td class="py-2 px-2 text-center whitespace-nowrap">
+                                <button type="button" 
+                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'dokumen', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
+                                        class="hover:scale-105 transition-transform inline-block cursor-pointer" 
+                                        title="Klik untuk buka Popup Berkas BAST">
+                                    <?= renderCircularProgress($p['bast_done'] ?? 0, $p['total_bast'] ?? 0, 'bast') ?>
                                 </button>
                             </td>
 
@@ -711,7 +728,7 @@ foreach ($paket as $p) {
 <!-- ========================================== -->
 <!-- MODAL: SKEMA POTONGAN (POPUP MANDIRI INDEX)-->
 <!-- ========================================== -->
-<div id="modalSkemaPotongan" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+<div id="modalSkemaPotongan" class="app-modal fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
     <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-xl w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
         <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2">

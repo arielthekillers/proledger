@@ -206,6 +206,13 @@ function renderCircularProgress($done, $total, $type = 'pemesanan') {
             ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
             : ($done > 0 ? 'bg-indigo-50 text-indigo-800 border-indigo-200' : 'bg-slate-100 text-slate-500 border-slate-200');
         $label = 'Distribusi';
+    } elseif ($type === 'bast') {
+        $strokeColor = $isComplete ? 'text-emerald-500' : ($done > 0 ? 'text-purple-500' : 'text-slate-300');
+        $textColor = $isComplete ? 'text-emerald-700' : ($done > 0 ? 'text-purple-700' : 'text-slate-400');
+        $badgeClass = $isComplete 
+            ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+            : ($done > 0 ? 'bg-purple-50 text-purple-800 border-purple-200' : 'bg-slate-100 text-slate-500 border-slate-200');
+        $label = 'BAST';
     } else {
         $strokeColor = $isComplete ? 'text-emerald-500' : ($done > 0 ? 'text-teal-500' : 'text-slate-300');
         $textColor = $isComplete ? 'text-emerald-700' : ($done > 0 ? 'text-teal-700' : 'text-slate-400');
