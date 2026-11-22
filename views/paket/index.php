@@ -1231,7 +1231,7 @@ foreach ($paket as $p) {
 <!-- DYNAMIC NATIVE AJAX MODAL (BEST PRACTICE / NO IFRAME)          -->
 <!-- ============================================================== -->
 <div id="modalModuleDynamic" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 transition-all duration-200 opacity-0 pointer-events-none hidden">
-    <div id="modalModuleCard" class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-5xl transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[90vh] flex flex-col">
+    <div id="modalModuleCard" class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-6xl transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[90vh] flex flex-col">
         <!-- Header -->
         <div class="px-5 py-3.5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2.5 min-w-0">
@@ -1248,7 +1248,8 @@ foreach ($paket as $p) {
             </div>
 
             <!-- Right Actions in Modal Header -->
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="flex items-center gap-2.5 shrink-0">
+                <div id="modalModuleHeaderAction" class="flex items-center gap-2"></div>
                 <button type="button" onclick="closeModuleModal()"
                         class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
                         title="Tutup Popup (Esc)">
@@ -1767,17 +1768,14 @@ function openPaketNativeModal(idOrKode, module, namaPaket) {
     if (iconEl) iconEl.setAttribute('name', cfg.icon);
     if (iconWrap) iconWrap.className = 'w-8 h-8 rounded-xl flex items-center justify-center text-lg shrink-0 ' + cfg.bg;
 
+    const headerActionEl = document.getElementById('modalModuleHeaderAction');
+    if (headerActionEl) headerActionEl.innerHTML = '';
+
     // Show clean skeleton loader
     if (bodyEl) {
         bodyEl.innerHTML = `
             <div class="animate-pulse space-y-4 py-2">
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div class="h-20 bg-slate-200/80 rounded-xl"></div>
-                    <div class="h-20 bg-slate-200/80 rounded-xl"></div>
-                    <div class="h-20 bg-slate-200/80 rounded-xl"></div>
-                    <div class="h-20 bg-slate-200/80 rounded-xl"></div>
-                </div>
-                <div class="h-56 bg-slate-200/80 rounded-xl"></div>
+                <div class="h-44 bg-slate-200/80 rounded-xl"></div>
             </div>
         `;
     }
@@ -1794,6 +1792,12 @@ function openPaketNativeModal(idOrKode, module, namaPaket) {
         .then(html => {
             if (bodyEl) {
                 bodyEl.innerHTML = html;
+                // Teleport action button to modal header if present
+                const actionSource = bodyEl.querySelector('#modalActionSource');
+                const actionContainer = document.getElementById('modalModuleHeaderAction');
+                if (actionContainer) {
+                    actionContainer.innerHTML = actionSource ? actionSource.innerHTML : '';
+                }
             }
         })
         .catch(err => {
@@ -1814,6 +1818,8 @@ function openPaketNativeModal(idOrKode, module, namaPaket) {
 
 function closeModuleModal() {
     window.ProModal.close('modalModuleDynamic');
+    const headerActionEl = document.getElementById('modalModuleHeaderAction');
+    if (headerActionEl) headerActionEl.innerHTML = '';
     currentOpenKode = null;
     currentOpenModule = null;
 }
