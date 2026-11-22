@@ -756,10 +756,14 @@ foreach ($paket as $p) {
             <input type="hidden" name="redirect_to" value="index">
             <input type="hidden" id="potongan_acuan_hidden" value="0">
 
-            <!-- Dropdown Pilih Skema -->
+            <!-- Preset Skema -->
             <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label for="potongan_skema_id" class="text-xs font-semibold text-slate-700">Pilih Preset Skema</label>
+                    <span class="text-[11px] text-slate-400">Total Potongan: <strong id="potongan_lbl_sum_persen" class="text-amber-600 font-mono">15%</strong></span>
+                </div>
                 <select name="skema_id" id="potongan_skema_id" onchange="onSkemaSelectChange('potongan', this)"
-                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-amber-500 text-xs font-semibold text-slate-700 transition-all cursor-pointer">
+                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-amber-500 text-xs font-semibold text-slate-700 transition-all cursor-pointer">
                     <option value="">-- Kustom / Atur Sendiri --</option>
                     <?php if (!empty($skemas)): ?>
                         <?php foreach ($skemas as $sk): ?>
@@ -776,91 +780,78 @@ foreach ($paket as $p) {
                 </select>
             </div>
 
-            <!-- Checkbox & Input Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <!-- Box 1: Potongan Pasal -->
-                <div id="potongan_card_pasal" class="p-2.5 rounded-xl border border-amber-200 bg-white shadow-2xs transition-all">
+            <!-- Tarif Pasal & Admin (Clean, tanpa box berlapis) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                <div id="potongan_card_pasal" class="transition-opacity">
                     <div class="flex items-center justify-between mb-1.5">
                         <label class="flex items-center gap-2 cursor-pointer select-none">
                             <input type="checkbox" name="ada_pasal" id="potongan_ada_pasal" value="1" checked onchange="togglePasalCheck('potongan')" class="w-4 h-4 rounded text-amber-600 focus:ring-0 cursor-pointer">
-                            <span class="text-xs font-bold text-slate-800">Potongan Pasal</span>
+                            <span class="text-xs font-semibold text-slate-700">Potongan Pasal</span>
                         </label>
                         <span id="potongan_badge_pasal" class="text-[10px] text-emerald-600 font-semibold">Aktif</span>
                     </div>
                     <div class="relative" id="potongan_pasal_wrap">
                         <input type="number" step="0.1" min="0" max="100" name="persen_pasal" id="potongan_persen_pasal" value="13" oninput="updateIndexPotonganCalc()"
-                               class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:border-amber-500 font-mono transition-all">
-                        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
+                               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-amber-500 font-mono transition-all">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
                     </div>
                 </div>
 
-                <!-- Box 2: Biaya Admin Fee -->
-                <div id="potongan_card_admin" class="p-2.5 rounded-xl border border-amber-200 bg-white shadow-2xs transition-all">
+                <div id="potongan_card_admin" class="transition-opacity">
                     <div class="flex items-center justify-between mb-1.5">
                         <label class="flex items-center gap-2 cursor-pointer select-none">
                             <input type="checkbox" name="ada_admin" id="potongan_ada_admin" value="1" checked onchange="toggleAdminCheck('potongan')" class="w-4 h-4 rounded text-amber-600 focus:ring-0 cursor-pointer">
-                            <span class="text-xs font-bold text-slate-800">Biaya Admin (Fee)</span>
+                            <span class="text-xs font-semibold text-slate-700">Biaya Admin (Fee)</span>
                         </label>
                         <span id="potongan_badge_admin" class="text-[10px] text-emerald-600 font-semibold">Aktif</span>
                     </div>
                     <div class="relative" id="potongan_admin_wrap">
                         <input type="number" step="0.1" min="0" max="100" name="persen_admin" id="potongan_persen_admin" value="2" oninput="updateIndexPotonganCalc()"
-                               class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:border-amber-500 font-mono transition-all">
-                        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
+                               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:bg-white focus:border-amber-500 font-mono transition-all">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Pilihan Dasar Potongan: Kontrak vs DPP -->
-            <div class="p-2.5 rounded-xl border border-slate-200 bg-white/70">
-                <label class="flex items-start gap-2 cursor-pointer select-none">
+            <!-- Basis Perhitungan & Simpan Skema -->
+            <div class="pt-3 border-t border-slate-100 space-y-2.5">
+                <label class="flex items-start gap-2.5 cursor-pointer select-none">
                     <input type="checkbox" name="tipe_potongan" id="potongan_tipe_potongan" value="kontrak" onchange="updateIndexPotonganCalc()" class="w-4 h-4 rounded text-amber-600 focus:ring-0 mt-0.5 cursor-pointer">
                     <div>
-                        <span class="text-xs font-bold text-slate-800 block">Potongan Diambil dari Nilai Kontrak</span>
-                        <span class="text-[10px] text-slate-500 block leading-tight">Tidak dicentang: potongan dihitung dari DPP (setelah kena pajak). Centang ini jika potongan dihitung dari Nilai Kontrak (sebelum pajak).</span>
+                        <span class="text-xs font-semibold text-slate-700 block">Hitung Potongan dari Nilai Kontrak</span>
+                        <span class="text-[11px] text-slate-400 block leading-snug">Jika tidak dicentang, potongan dihitung dari DPP (setelah PPN 11%).</span>
                     </div>
                 </label>
-            </div>
 
-            <div class="flex items-center justify-between pt-1">
-                <button type="button" onclick="promptSaveCurrentAsSkema('potongan')" class="text-[11px] text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-1 hover:underline">
+                <button type="button" onclick="promptSaveCurrentAsSkema('potongan')" class="text-[11px] text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center gap-1 hover:underline cursor-pointer">
                     <ion-icon name="bookmark-outline" class="text-xs"></ion-icon>
                     <span>Simpan nilai ini sebagai skema baru</span>
                 </button>
-                <span class="text-[10px] text-slate-400">Total Potongan: <strong id="potongan_lbl_sum_persen" class="text-amber-700 font-mono">15%</strong></span>
             </div>
 
-            <!-- LIVE CALCULATION BREAKDOWN BOX -->
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
-                <div class="flex items-center justify-between pb-2 border-b border-slate-200/60 text-xs">
-                    <span class="font-bold text-slate-700 flex items-center gap-1.5">
-                        <ion-icon name="calculator-outline" class="text-amber-600 text-sm"></ion-icon>
-                        <span>Rincian Perhitungan DPP & Potongan</span>
-                    </span>
-                    <span class="text-[11px] text-slate-500">
-                        Acuan Kontrak: <strong id="potongan_preview_acuan" class="font-mono text-slate-800">Rp 0</strong>
-                    </span>
+            <!-- Live Preview Ringkas (1 strip bersih, tanpa kotak di dalam kotak) -->
+            <div class="px-3.5 py-3 bg-slate-50 rounded-xl space-y-2.5">
+                <div class="flex items-center justify-between text-[11px] text-slate-500 pb-2 border-b border-slate-200/70">
+                    <span class="font-semibold text-slate-700">Simulasi Potongan</span>
+                    <span>Acuan: <strong id="potongan_preview_acuan" class="font-mono text-slate-800">Rp 0</strong></span>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
-                    <div class="p-2 bg-white rounded-lg border border-slate-100 shadow-2xs">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">DPP (-11% PPN)</span>
-                        <span class="font-mono font-bold text-slate-800 text-xs" id="potongan_preview_dpp">Rp 0</span>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div>
+                        <span class="block text-[10px] font-medium text-slate-400 uppercase">DPP (-11%)</span>
+                        <span class="font-mono font-bold text-slate-700 text-xs" id="potongan_preview_dpp">Rp 0</span>
                     </div>
-
-                    <div class="p-2 bg-white rounded-lg border border-slate-100 shadow-2xs">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Pasal (<span id="potongan_lbl_pasal">13</span>%)</span>
-                        <span class="font-mono font-bold text-slate-800 text-xs" id="potongan_preview_pasal13">Rp 0</span>
+                    <div>
+                        <span class="block text-[10px] font-medium text-slate-400 uppercase">Pasal (<span id="potongan_lbl_pasal">13</span>%)</span>
+                        <span class="font-mono font-bold text-slate-700 text-xs" id="potongan_preview_pasal13">Rp 0</span>
                     </div>
-
-                    <div class="p-2 bg-white rounded-lg border border-slate-100 shadow-2xs">
-                        <span class="block text-[10px] font-bold text-slate-400 uppercase">Admin (<span id="potongan_lbl_admin">2</span>%)</span>
-                        <span class="font-mono font-bold text-slate-800 text-xs" id="potongan_preview_admin2">Rp 0</span>
+                    <div>
+                        <span class="block text-[10px] font-medium text-slate-400 uppercase">Admin (<span id="potongan_lbl_admin">2</span>%)</span>
+                        <span class="font-mono font-bold text-slate-700 text-xs" id="potongan_preview_admin2">Rp 0</span>
                     </div>
-
-                    <div class="p-2 bg-amber-50/80 rounded-lg border border-amber-200/60 shadow-2xs">
-                        <span class="block text-[10px] font-bold text-amber-800 uppercase">Total Pasal (<span id="potongan_lbl_total_pasal">15</span>%)</span>
-                        <span class="font-mono font-bold text-amber-700 text-xs" id="potongan_preview_total_pasal">Rp 0</span>
+                    <div>
+                        <span class="block text-[10px] font-bold text-amber-700 uppercase">Total (<span id="potongan_lbl_total_pasal">15</span>%)</span>
+                        <span class="font-mono font-extrabold text-amber-700 text-xs" id="potongan_preview_total_pasal">Rp 0</span>
                     </div>
                 </div>
             </div>
@@ -868,11 +859,11 @@ foreach ($paket as $p) {
             <!-- Footer -->
             <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 shrink-0">
                 <button type="button" data-modal-close="modalSkemaPotongan" 
-                        class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs transition-colors">
+                        class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs transition-colors cursor-pointer">
                     Batal
                 </button>
                 <button type="submit" 
-                        class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-xs shadow-xs transition-all flex items-center gap-1.5">
+                        class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
                     <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
                     <span>Simpan Perubahan</span>
                 </button>
