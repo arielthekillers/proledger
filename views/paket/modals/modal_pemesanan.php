@@ -34,22 +34,19 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                 <tr>
                     <th class="py-2.5 px-3 w-10 text-center">NO</th>
-                    <th class="py-2.5 px-3 w-40">KOMPONEN BARANG</th>
-                    <th class="py-2.5 px-3 w-40">TUJUAN PENERIMA</th>
-                    <th class="py-2.5 px-2 text-center w-16">QTY</th>
+                    <th class="py-2.5 px-3 w-44">KOMPONEN BARANG</th>
+                    <th class="py-2.5 px-3 w-44">TUJUAN PENERIMA</th>
+                    <th class="py-2.5 px-2 text-center w-20">QTY</th>
                     <th class="py-2.5 px-3">PESANAN TOKO</th>
-                    <th class="py-2.5 px-3 text-right w-28">HARGA BELI</th>
-                    <th class="py-2.5 px-3 text-right w-28">TOTAL BELI</th>
-                    <th class="py-2.5 px-2 text-center w-32">STATUS</th>
-                    <?php if ($role === 'admin' || $role === 'user'): ?>
-                        <th class="py-2.5 px-3 text-center w-24">AKSI</th>
-                    <?php endif; ?>
+                    <th class="py-2.5 px-3 text-right w-32">HARGA BELI</th>
+                    <th class="py-2.5 px-3 text-right w-36">TOTAL BELI</th>
+                    <th class="py-2.5 px-3 text-center w-40">STATUS PESANAN</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($distribusiList)): ?>
                     <tr>
-                        <td colspan="9" class="py-8 text-center text-slate-400 text-xs">
+                        <td colspan="8" class="py-8 text-center text-slate-400 text-xs">
                             <div class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl text-slate-300">
                                 <ion-icon name="bag-outline"></ion-icon>
                             </div>
@@ -70,7 +67,7 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                             <td class="py-2.5 px-3 text-xs font-bold text-slate-800 break-words">
                                 <?= htmlspecialchars($namaKomp) ?>
                             </td>
-                            <td class="py-2.5 px-3 text-xs font-semibold text-slate-800 break-words">
+                            <td class="py-2.5 px-3 text-xs text-slate-600 break-words font-normal">
                                 <?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>
                             </td>
                             <td class="py-2.5 px-2 text-center whitespace-nowrap font-bold text-slate-800 text-xs">
@@ -92,29 +89,23 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                             <td class="py-2.5 px-3 text-right whitespace-nowrap text-xs font-mono font-bold text-slate-800">
                                 <?= $subTotalBeli > 0 ? 'Rp ' . number_format($subTotalBeli, 0, ',', '.') : '-' ?>
                             </td>
-                            <td class="py-2.5 px-2 text-center whitespace-nowrap">
-                                <?php if ($isPesan): ?>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        <ion-icon name="checkmark-circle" class="text-xs text-emerald-600"></ion-icon>
-                                        <span>Sudah Dipesan</span>
-                                    </span>
+                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                                <?php if ($role === 'admin' || $role === 'user'): ?>
+                                    <button type="button" 
+                                            onclick='openNativeUpdateStatusBarangModal(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer shadow-2xs hover:scale-102 <?= $isPesan ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100 hover:border-amber-300' ?>"
+                                            title="Klik untuk mengubah status pesanan & rincian toko">
+                                        <ion-icon name="<?= $isPesan ? 'checkmark-circle' : 'time-outline' ?>" class="text-xs"></ion-icon>
+                                        <span><?= $isPesan ? 'Sudah Dipesan' : 'Belum Dipesan' ?></span>
+                                        <ion-icon name="create-outline" class="text-[11px] opacity-60"></ion-icon>
+                                    </button>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                                        <ion-icon name="time-outline" class="text-xs text-amber-600"></ion-icon>
-                                        <span>Belum Dipesan</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium border <?= $isPesan ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200' ?>">
+                                        <ion-icon name="<?= $isPesan ? 'checkmark-circle' : 'time-outline' ?>" class="text-xs"></ion-icon>
+                                        <span><?= $isPesan ? 'Sudah Dipesan' : 'Belum Dipesan' ?></span>
                                     </span>
                                 <?php endif; ?>
                             </td>
-                            <?php if ($role === 'admin' || $role === 'user'): ?>
-                                <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                                    <button type="button" 
-                                            onclick='openNativeUpdateStatusBarangModal(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                            class="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1 shadow-2xs">
-                                        <ion-icon name="create-outline"></ion-icon>
-                                        <span>Ubah</span>
-                                    </button>
-                                </td>
-                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -135,12 +126,9 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                     <td class="py-2.5 px-3 text-right text-xs font-mono font-extrabold text-slate-900 whitespace-nowrap">
                         Rp <?= number_format($totalBeli, 0, ',', '.') ?>
                     </td>
-                    <td class="py-2.5 px-2 text-center text-xs whitespace-nowrap">
+                    <td class="py-2.5 px-3 text-center text-xs whitespace-nowrap">
                         <span class="text-[11px] font-bold text-emerald-700"><?= $pesanDone ?>/<?= $totalDist ?> Selesai</span>
                     </td>
-                    <?php if ($role === 'admin' || $role === 'user'): ?>
-                        <td class="py-2.5 px-3"></td>
-                    <?php endif; ?>
                 </tr>
             </tfoot>
         </table>
@@ -150,7 +138,7 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
     <div class="flex items-center justify-between text-[11px] text-slate-500 px-1">
         <div class="flex items-center gap-1.5">
             <ion-icon name="information-circle-outline" class="text-amber-500 text-sm"></ion-icon>
-            <span>Total belanja toko akan otomatis dijadikan acuan HPP riil pada modul Estimasi Margin Profit.</span>
+            <span>Klik tombol pada kolom <strong>Status Pesanan</strong> untuk mengupdate status, toko, no. resi, dan harga beli.</span>
         </div>
         <span class="font-medium text-slate-600">Realisasi Pesanan: <strong><?= $pesanDone ?></strong> dari <strong><?= $totalDist ?></strong> barang (<?= $pctPesan ?>%)</span>
     </div>

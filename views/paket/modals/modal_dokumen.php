@@ -73,7 +73,7 @@ foreach (($groupedDistribusi ?? []) as $grp) {
                                 <div class="font-bold text-slate-800" title="<?= $itemsSummary ?>"><?= $itemsSummary ?></div>
                                 <div class="text-[10px] text-slate-400"><?= $itemCount ?> macam komponen</div>
                             </td>
-                            <td class="py-2.5 px-3 text-xs font-semibold text-slate-800 break-words">
+                            <td class="py-2.5 px-3 text-xs text-slate-600 break-words font-normal">
                                 <?= htmlspecialchars($grp['nama_tujuan']) ?>
                             </td>
                             <td class="py-2.5 px-2 text-center whitespace-nowrap font-bold text-slate-800 text-xs">

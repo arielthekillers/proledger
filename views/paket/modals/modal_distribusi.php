@@ -43,10 +43,10 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
                     <th class="py-2.5 px-3 w-40">KOMPONEN BARANG</th>
                     <th class="py-2.5 px-3 w-44">TITIK TUJUAN</th>
                     <th class="py-2.5 px-2 text-center w-16">QTY</th>
-                    <th class="py-2.5 px-2 text-center w-36">STATUS DISTRIBUSI</th>
+                    <th class="py-2.5 px-2 text-center w-40">STATUS DISTRIBUSI</th>
                     <th class="py-2.5 px-3">PENGIRIMAN & RESI</th>
                     <?php if ($role === 'admin' || $role === 'user'): ?>
-                        <th class="py-2.5 px-3 text-center w-32">AKSI</th>
+                        <th class="py-2.5 px-3 text-center w-14">AKSI</th>
                     <?php endif; ?>
                 </tr>
             </thead>
@@ -76,7 +76,7 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
                             <td class="py-2.5 px-3 text-xs font-bold text-slate-800 break-words">
                                 <?= htmlspecialchars($dist['nama_barang'] ?? $dist['nama_komponen'] ?? '-') ?>
                             </td>
-                            <td class="py-2.5 px-3 text-xs font-semibold text-slate-800 break-words">
+                            <td class="py-2.5 px-3 text-xs text-slate-600 break-words font-normal">
                                 <?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>
                                 <?php if (!empty($dist['kab_kota'])): ?>
                                     <div class="text-[10px] text-slate-400 font-normal"><?= htmlspecialchars($dist['kab_kota']) ?></div>
@@ -86,9 +86,19 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
                                 <?= (float)$dist['jumlah'] ?> <?= htmlspecialchars($dist['satuan'] ?? 'Unit') ?>
                             </td>
                             <td class="py-2.5 px-2 text-center whitespace-nowrap">
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border <?= $badgeClass ?>">
-                                    <?= htmlspecialchars($sDist) ?>
-                                </span>
+                                <?php if ($role === 'admin' || $role === 'user'): ?>
+                                    <button type="button" 
+                                            onclick='openNativeUpdateStatusDistribusiModal(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer shadow-2xs hover:scale-102 <?= $badgeClass ?>"
+                                            title="Klik untuk mengubah status pengiriman">
+                                        <span><?= htmlspecialchars($sDist) ?></span>
+                                        <ion-icon name="create-outline" class="text-[10px] opacity-60"></ion-icon>
+                                    </button>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border <?= $badgeClass ?>">
+                                        <?= htmlspecialchars($sDist) ?>
+                                    </span>
+                                <?php endif; ?>
                             </td>
                             <td class="py-2.5 px-3 text-xs text-slate-600 break-words">
                                 <?php if (!empty($dist['ekspedisi']) || !empty($dist['no_resi'])): ?>
@@ -100,20 +110,12 @@ $pctDist = ($totalDist > 0) ? round(($distDone / $totalDist) * 100) : 0;
                             </td>
                             <?php if ($role === 'admin' || $role === 'user'): ?>
                                 <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                                    <div class="flex items-center justify-center gap-1.5">
-                                        <button type="button" 
-                                                onclick='openNativeUpdateStatusDistribusiModal(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                                                class="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1 shadow-2xs">
-                                            <ion-icon name="create-outline"></ion-icon>
-                                            <span>Ubah</span>
-                                        </button>
-                                        <button type="button" 
-                                                onclick="deleteDistribusiAjax('<?= $paket['kode_paket'] ?: $paket['id'] ?>', '<?= $dist['id'] ?>')"
-                                                class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors text-xs cursor-pointer"
-                                                title="Hapus Alokasi">
-                                            <ion-icon name="trash-outline"></ion-icon>
-                                        </button>
-                                    </div>
+                                    <button type="button" 
+                                            onclick="deleteDistribusiAjax('<?= $paket['kode_paket'] ?: $paket['id'] ?>', '<?= $dist['id'] ?>')"
+                                            class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors text-xs cursor-pointer"
+                                            title="Hapus Alokasi">
+                                        <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+                                    </button>
                                 </td>
                             <?php endif; ?>
                         </tr>
