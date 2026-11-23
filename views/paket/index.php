@@ -67,46 +67,7 @@
 <!-- ========================================== -->
 <!-- 2. COMPACT SEARCH & FILTER BAR             -->
 <!-- ========================================== -->
-<?php
-$countAll = count($paket);
-$countProses = 0;
-$countSelesai = 0;
-$countBelum = 0;
-foreach ($paket as $p) {
-    $st = strtolower($p['status'] ?? '');
-    if ($st === 'cair' || $st === 'selesai') $countSelesai++;
-    elseif ($st === 'proses') $countProses++;
-    elseif ($st === 'belum') $countBelum++;
-}
-?>
 <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-3 mb-4">
-    <!-- Top Row: Quick Status Pills -->
-    <div class="flex items-center gap-1.5 overflow-x-auto pb-2.5 border-b border-slate-100 mb-3 text-xs scrollbar-none">
-        <button type="button" onclick="setQuickStatusPill('')" id="pill_status_all"
-                class="pill-status-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-slate-900 text-white shadow-2xs flex items-center gap-1.5 shrink-0">
-            <span>Semua Pencairan</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20"><?= $countAll ?></span>
-        </button>
-        <button type="button" onclick="setQuickStatusPill('belum')" id="pill_status_belum"
-                class="pill-status-btn px-3 py-1.5 rounded-xl font-semibold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 shrink-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-            <span>Belum</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200/80 text-slate-800"><?= $countBelum ?></span>
-        </button>
-        <button type="button" onclick="setQuickStatusPill('proses')" id="pill_status_proses"
-                class="pill-status-btn px-3 py-1.5 rounded-xl font-semibold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 shrink-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
-            <span>Proses</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200/80 text-slate-800"><?= $countProses ?></span>
-        </button>
-        <button type="button" onclick="setQuickStatusPill('selesai')" id="pill_status_selesai"
-                class="pill-status-btn px-3 py-1.5 rounded-xl font-semibold transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 shrink-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <span>Selesai</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200/80 text-slate-800"><?= $countSelesai ?></span>
-        </button>
-    </div>
-
     <div class="flex flex-col md:flex-row items-center justify-between gap-3">
         <!-- Left: Search Box -->
         <div class="relative w-full md:w-72">
@@ -132,7 +93,7 @@ foreach ($paket as $p) {
 
             <!-- Filter Tahun Anggaran -->
             <select id="filterTahunSelect" onchange="filterPaketTable()" 
-                    class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-blue-500 transition-all cursor-pointer font-semibold">
+                    class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-blue-500 transition-all cursor-pointer">
                 <option value="">Semua Tahun</option>
                 <?php
                 $curY = (int)date('Y');
@@ -159,9 +120,9 @@ foreach ($paket as $p) {
             <select id="filterStatusSelect" onchange="filterPaketTable()" 
                     class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-blue-500 transition-all cursor-pointer">
                 <option value="">Semua Pencairan</option>
-                <option value="belum">BELUM</option>
-                <option value="proses">PROSES</option>
-                <option value="selesai">SELESAI</option>
+                <option value="belum">Belum</option>
+                <option value="proses">Proses</option>
+                <option value="selesai">Selesai</option>
             </select>
 
             <!-- Reset Button -->
