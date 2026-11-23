@@ -96,14 +96,15 @@ class LokasiPenerima {
 
         $stmt = $this->db->prepare("
             INSERT INTO lokasi_penerima (
-                nama_lokasi, kategori, nama_pic, no_kontak, alamat_lengkap, kab_kota, kabupaten_id, no_rekening, nama_rekening
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                nama_lokasi, kategori, nama_pic, jabatan_pic, no_kontak, alamat_lengkap, kab_kota, kabupaten_id, no_rekening, nama_rekening
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
             trim($data['nama_lokasi']),
             !empty($data['kategori']) ? trim($data['kategori']) : 'Sekolah',
             !empty($data['nama_pic']) ? trim($data['nama_pic']) : null,
+            !empty($data['jabatan_pic']) ? trim($data['jabatan_pic']) : 'Kepala Sekolah',
             !empty($data['no_kontak']) ? trim($data['no_kontak']) : null,
             !empty($data['alamat_lengkap']) ? trim($data['alamat_lengkap']) : null,
             $kabKota,
@@ -124,6 +125,7 @@ class LokasiPenerima {
                 nama_lokasi = ?,
                 kategori = ?,
                 nama_pic = ?,
+                jabatan_pic = ?,
                 no_kontak = ?,
                 alamat_lengkap = ?,
                 kab_kota = ?,
@@ -136,6 +138,7 @@ class LokasiPenerima {
             trim($data['nama_lokasi']),
             !empty($data['kategori']) ? trim($data['kategori']) : 'Sekolah',
             !empty($data['nama_pic']) ? trim($data['nama_pic']) : null,
+            !empty($data['jabatan_pic']) ? trim($data['jabatan_pic']) : 'Kepala Sekolah',
             !empty($data['no_kontak']) ? trim($data['no_kontak']) : null,
             !empty($data['alamat_lengkap']) ? trim($data['alamat_lengkap']) : null,
             !empty($data['kab_kota']) ? trim($data['kab_kota']) : null,

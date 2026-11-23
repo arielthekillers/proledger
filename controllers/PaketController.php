@@ -1447,6 +1447,9 @@ class PaketController {
         $namaLokasi = trim($_POST['nama_lokasi'] ?? '');
         $kabKota = trim($_POST['kab_kota'] ?? '');
         $kabupatenId = !empty($_POST['kabupaten_id']) ? (int)$_POST['kabupaten_id'] : null;
+        $namaPic = trim($_POST['nama_pic'] ?? '');
+        $jabatanPic = trim($_POST['jabatan_pic'] ?? '');
+        $alamatLengkap = trim($_POST['alamat_lengkap'] ?? '');
 
         if (empty($namaLokasi)) {
             echo json_encode(['success' => false, 'message' => 'Nama tujuan / instansi wajib diisi']);
@@ -1463,6 +1466,9 @@ class PaketController {
                 'nama_lokasi' => $namaLokasi,
                 'kab_kota' => $kabKota,
                 'kabupaten_id' => $kabupatenId,
+                'nama_pic' => $namaPic ?: null,
+                'jabatan_pic' => $jabatanPic ?: 'Kepala Sekolah',
+                'alamat_lengkap' => $alamatLengkap ?: null,
                 'kategori' => 'Sekolah'
             ]);
 

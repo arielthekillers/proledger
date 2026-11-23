@@ -75,6 +75,7 @@ class PerusahaanController {
         }
 
         $nama = trim($_POST['nama'] ?? '');
+        $namaDirektur = trim($_POST['nama_direktur'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $telepon = trim($_POST['telepon'] ?? '');
         $alamat = trim($_POST['alamat'] ?? '');
@@ -92,6 +93,7 @@ class PerusahaanController {
         $data = [
             'user_id' => $userId,
             'nama' => $nama,
+            'nama_direktur' => $namaDirektur ?: null,
             'email' => $email ?: null,
             'telepon' => $telepon ?: null,
             'alamat' => $alamat ?: null,
@@ -166,6 +168,7 @@ class PerusahaanController {
         }
 
         $nama = trim($_POST['nama'] ?? '');
+        $namaDirektur = trim($_POST['nama_direktur'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $telepon = trim($_POST['telepon'] ?? '');
         $alamat = trim($_POST['alamat'] ?? '');
@@ -180,6 +183,7 @@ class PerusahaanController {
 
         $data = [
             'nama' => $nama,
+            'nama_direktur' => $namaDirektur ?: null,
             'email' => $email ?: null,
             'telepon' => $telepon ?: null,
             'alamat' => $alamat ?: null,

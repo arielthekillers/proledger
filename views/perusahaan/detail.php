@@ -535,12 +535,24 @@ $kopsuratUrls = !empty($perusahaan['kopsurat']) ? Uploader::getAllUrls($perusaha
         <form id="formEditPerusahaan" method="POST" action="<?= APP_URL ?>/perusahaan/update/<?= $perusahaan['id'] ?>" class="p-6 space-y-4">
             <?= csrfField() ?>
 
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Perusahaan / CV / PT <span class="text-red-500">*</span></label>
-                <div class="relative">
-                    <ion-icon name="business-outline" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"></ion-icon>
-                    <input type="text" id="edit_nama" name="nama" value="<?= htmlspecialchars($perusahaan['nama']) ?>" required 
-                           class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Perusahaan / CV / PT <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <ion-icon name="business-outline" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"></ion-icon>
+                        <input type="text" id="edit_nama" name="nama" value="<?= htmlspecialchars($perusahaan['nama']) ?>" required 
+                               class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Direktur / Pimpinan</label>
+                    <div class="relative">
+                        <ion-icon name="person-outline" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"></ion-icon>
+                        <input type="text" id="edit_nama_direktur" name="nama_direktur" value="<?= htmlspecialchars($perusahaan['nama_direktur'] ?? '') ?>"
+                               class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all"
+                               placeholder="Untuk tanda tangan BAST">
+                    </div>
                 </div>
             </div>
 

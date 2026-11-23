@@ -30,9 +30,11 @@ $isBulk = !empty($isBulk);
 $tglBast = !empty($bastDate) ? $bastDate : date('Y-m-d');
 $hariTgl = tanggalIndonesia($tglBast);
 
+require_once HELPER_PATH . '/Uploader.php';
 $kopUrl = null;
 if (!empty($perusahaan['kopsurat'])) {
-    $kopUrl = APP_URL . '/' . ltrim($perusahaan['kopsurat'], '/');
+    $kopUrls = Uploader::getAllUrls($perusahaan['kopsurat'], 'perusahaan', 'kopsurat');
+    $kopUrl = $kopUrls['large'] ?? ($kopUrls['medium'] ?? ($kopUrls['small'] ?? null));
 }
 
 // Menyiapkan daftar data BAST yang akan dicetak
