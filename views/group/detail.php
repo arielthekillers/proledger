@@ -348,24 +348,24 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                             data-units="<?= $m['item_qty'] ?>">
 
                             <!-- Kode -->
-                            <td class="py-3 px-3 text-center">
+                            <td class="py-2.5 px-3 text-center">
                                 <span class="px-2 py-0.5 font-mono font-bold text-[11px] bg-slate-100 text-slate-700 rounded-md tracking-wider">
                                     <?= htmlspecialchars($p['kode_paket'] ?: '#' . $p['id']) ?>
                                 </span>
                             </td>
 
                             <!-- Nama Paket & Badges -->
-                            <td class="py-3 px-3 min-w-[200px]">
+                            <td class="py-2.5 px-3 min-w-[200px]">
                                 <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>"
                                    class="font-bold text-slate-800 hover:text-blue-600 text-xs transition-colors block">
                                     <?= htmlspecialchars($p['nama_paket']) ?>
                                 </a>
                                 <div class="flex items-center gap-1 flex-wrap mt-1">
-                                    <span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/80 text-[10px]">
+                                    <span class="px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200/80 text-[10px]">
                                         TA <?= htmlspecialchars((string)($p['tahun_anggaran'] ?? date('Y'))) ?>
                                     </span>
                                     <?php foreach ($tagsArr as $tg): ?>
-                                        <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px]">
+                                        <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 text-[10px]">
                                             #<?= htmlspecialchars($tg) ?>
                                         </span>
                                     <?php endforeach; ?>
@@ -373,7 +373,7 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                             </td>
 
                             <!-- Nilai Kontrak -->
-                            <td class="py-3 px-3 text-right whitespace-nowrap align-top">
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap align-top">
                                 <div class="font-mono font-bold text-slate-900 text-xs">
                                     <?= formatRupiah($m['acuan']) ?>
                                 </div>
@@ -385,7 +385,7 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                             </td>
 
                             <!-- DPP -->
-                            <td class="py-3 px-3 text-right whitespace-nowrap align-top">
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap align-top">
                                 <div class="font-mono font-semibold text-slate-800 text-xs">
                                     <?= formatRupiah($m['dpp']) ?>
                                 </div>
@@ -393,7 +393,7 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                             </td>
 
                             <!-- Total Pasal -->
-                            <td class="py-3 px-3 text-right whitespace-nowrap align-top">
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap align-top">
                                 <div class="font-mono font-bold text-amber-700 text-xs">
                                     <?= formatRupiah($m['total_pasal']) ?>
                                 </div>
@@ -401,14 +401,14 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                             </td>
 
                             <!-- Nilai Bersih -->
-                            <td class="py-3 px-3 text-right whitespace-nowrap align-top">
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap align-top">
                                 <div class="font-mono font-bold text-emerald-700 text-xs">
                                     <?= formatRupiah($m['nilai_bersih']) ?>
                                 </div>
                             </td>
 
                             <!-- HPP -->
-                            <td class="py-3 px-3 text-right whitespace-nowrap align-top">
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap align-top">
                                 <div class="font-mono font-semibold text-slate-700 text-xs">
                                     <?= formatRupiah($m['hpp']) ?>
                                 </div>
@@ -416,7 +416,7 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                             </td>
 
                             <!-- Profit -->
-                            <td class="py-3 px-3 text-right whitespace-nowrap align-top">
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap align-top">
                                 <div class="font-mono font-bold text-xs <?= $m['profit'] >= 0 ? 'text-emerald-700' : 'text-rose-600' ?>">
                                     <?= formatRupiah($m['profit']) ?>
                                 </div>
@@ -426,24 +426,24 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                             </td>
 
                             <!-- Komponen -->
-                            <td class="py-3 px-3 text-center whitespace-nowrap align-top">
+                            <td class="py-2.5 px-3 text-center whitespace-nowrap align-top">
                                 <div class="font-bold text-slate-800 text-xs"><?= $m['item_count'] ?> Item</div>
                                 <div class="text-[10px] text-slate-400 mt-0.5"><?= rtrim(rtrim(number_format($m['item_qty'], 2, ',', '.'), '0'), ',') ?> Unit</div>
                             </td>
 
                             <!-- Progress Rings -->
-                            <td class="py-3 px-2 text-center"><?php $renderTableRing($m['order_pct'], '#f59e0b', 'text-amber-600'); ?></td>
-                            <td class="py-3 px-2 text-center"><?php $renderTableRing($m['dist_pct'], '#6366f1', 'text-indigo-600'); ?></td>
-                            <td class="py-3 px-2 text-center"><?php $renderTableRing($m['dok_pct'], '#10b981', 'text-emerald-600'); ?></td>
-                            <td class="py-3 px-2 text-center"><?php $renderTableRing($m['bast_pct'], '#a855f7', 'text-purple-600'); ?></td>
+                            <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?></td>
+                            <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?></td>
+                            <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['dok_done'] ?? 0, $p['total_dist'] ?? 0, 'dokumentasi') ?></td>
+                            <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['bast_done'] ?? 0, $p['total_bast'] ?? 0, 'bast') ?></td>
 
                             <!-- Pencairan -->
-                            <td class="py-3 px-3 text-center whitespace-nowrap">
+                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
                                 <?= getStatusBadge($p['status']) ?>
                             </td>
 
                             <!-- Aksi -->
-                            <td class="py-3 px-3 text-right">
+                            <td class="py-2.5 px-3 text-right">
                                 <a href="<?= APP_URL ?>/paket/detail/<?= $p['kode_paket'] ?: $p['id'] ?>"
                                    class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-base inline-block"
                                    title="Lihat Detail Paket">

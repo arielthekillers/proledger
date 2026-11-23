@@ -205,26 +205,26 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                                 data-search="<?= htmlspecialchars(strtolower(($p['nama_paket'] ?? '') . ' ' . ($p['kode_paket'] ?? ''))) ?>"
                                 data-company="<?= htmlspecialchars(strtolower($p['perusahaan_nama'])) ?>"
                                 data-kontrak="<?= $p['acuan'] ?>">
-                                <td class="py-3 px-3 text-center">
+                                <td class="py-2.5 px-3 text-center">
                                     <span class="px-2 py-0.5 font-mono font-bold text-[11px] bg-slate-100 text-slate-700 rounded-md">
                                         <?= htmlspecialchars($p['kode_paket'] ?: '#' . $p['id']) ?>
                                     </span>
                                 </td>
-                                <td class="py-3 px-3 min-w-[220px]">
+                                <td class="py-2.5 px-3 min-w-[220px]">
                                     <div class="font-bold text-slate-800 text-xs"><?= htmlspecialchars($p['nama_paket']) ?></div>
                                     <div class="text-[10px] text-slate-400 mt-0.5">TA <?= (int)($p['tahun_anggaran'] ?? date('Y')) ?></div>
                                 </td>
-                                <td class="py-3 px-3 whitespace-nowrap font-semibold text-slate-700"><?= htmlspecialchars($p['perusahaan_nama']) ?></td>
-                                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap"><?= formatRupiah($p['acuan']) ?></td>
-                                <td class="py-3 px-3 text-center whitespace-nowrap">
+                                <td class="py-2.5 px-3 whitespace-nowrap font-semibold text-slate-700"><?= htmlspecialchars($p['perusahaan_nama']) ?></td>
+                                <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap"><?= formatRupiah($p['acuan']) ?></td>
+                                <td class="py-2.5 px-3 text-center whitespace-nowrap">
                                     <div class="font-bold text-slate-800 text-xs"><?= $p['item_count'] ?> Item</div>
                                     <div class="text-[10px] text-slate-400"><?= rtrim(rtrim(number_format($p['item_qty'], 2, ',', '.'), '0'), ',') ?> Unit</div>
                                 </td>
-                                <td class="py-3 px-2 text-center"><?php $renderTableRing($p['order_pct'], '#f59e0b', 'text-amber-600'); ?></td>
-                                <td class="py-3 px-2 text-center"><?php $renderTableRing($p['dist_pct'], '#6366f1', 'text-indigo-600'); ?></td>
-                                <td class="py-3 px-2 text-center"><?php $renderTableRing($p['dok_pct'], '#10b981', 'text-emerald-600'); ?></td>
-                                <td class="py-3 px-2 text-center"><?php $renderTableRing($p['bast_pct'], '#a855f7', 'text-purple-600'); ?></td>
-                                <td class="py-3 px-3 text-center whitespace-nowrap"><?= getStatusBadge($p['status']) ?></td>
+                                <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?></td>
+                                <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?></td>
+                                <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['dok_done'] ?? 0, $p['total_dist'] ?? 0, 'dokumentasi') ?></td>
+                                <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['bast_done'] ?? 0, $p['total_bast'] ?? 0, 'bast') ?></td>
+                                <td class="py-2.5 px-3 text-center whitespace-nowrap"><?= getStatusBadge($p['status']) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

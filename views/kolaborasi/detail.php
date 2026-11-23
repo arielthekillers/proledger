@@ -297,43 +297,43 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                             data-kontrak="<?= $p['acuan'] ?>"
                             data-items="<?= $p['item_count'] ?>"
                             data-units="<?= $p['item_qty'] ?>">
-                            <td class="py-3 px-3 text-center">
+                            <td class="py-2.5 px-3 text-center">
                                 <span class="px-2 py-0.5 font-mono font-bold text-[11px] bg-slate-100 text-slate-700 rounded-md">
                                     <?= htmlspecialchars($p['kode_paket'] ?: '#' . $p['id']) ?>
                                 </span>
                             </td>
-                            <td class="py-3 px-3 min-w-[220px]">
+                            <td class="py-2.5 px-3 min-w-[220px]">
                                 <div class="font-bold text-slate-800 text-xs"><?= htmlspecialchars($p['nama_paket']) ?></div>
                                 <div class="flex items-center gap-1 flex-wrap mt-1">
-                                    <span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/80 text-[10px]">
+                                    <span class="px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200/80 text-[10px]">
                                         TA <?= (int)($p['tahun_anggaran'] ?? date('Y')) ?>
                                     </span>
-                                    <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px]">
+                                    <span class="px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 text-[10px]">
                                         <?= htmlspecialchars($p['nama_group']) ?>
                                     </span>
                                     <?php foreach ($tagsArr as $tg): ?>
-                                        <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px]">#<?= htmlspecialchars($tg) ?></span>
+                                        <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 text-[10px]">#<?= htmlspecialchars($tg) ?></span>
                                     <?php endforeach; ?>
                                 </div>
                             </td>
-                            <td class="py-3 px-3 whitespace-nowrap">
+                            <td class="py-2.5 px-3 whitespace-nowrap">
                                 <span class="inline-flex items-center gap-1.5 font-semibold text-slate-700 text-xs">
                                     <span class="w-2 h-2 rounded-full bg-blue-500"></span>
                                     <?= htmlspecialchars($p['perusahaan_nama']) ?>
                                 </span>
                             </td>
-                            <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                            <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
                                 <?= formatRupiah($p['acuan']) ?>
                             </td>
-                            <td class="py-3 px-3 text-center whitespace-nowrap">
+                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
                                 <div class="font-bold text-slate-800 text-xs"><?= $p['item_count'] ?> Item</div>
                                 <div class="text-[10px] text-slate-400"><?= rtrim(rtrim(number_format($p['item_qty'], 2, ',', '.'), '0'), ',') ?> Unit</div>
                             </td>
-                            <td class="py-3 px-2 text-center"><?php $renderTableRing($p['order_pct'], '#f59e0b', 'text-amber-600'); ?></td>
-                            <td class="py-3 px-2 text-center"><?php $renderTableRing($p['dist_pct'], '#6366f1', 'text-indigo-600'); ?></td>
-                            <td class="py-3 px-2 text-center"><?php $renderTableRing($p['dok_pct'], '#10b981', 'text-emerald-600'); ?></td>
-                            <td class="py-3 px-2 text-center"><?php $renderTableRing($p['bast_pct'], '#a855f7', 'text-purple-600'); ?></td>
-                            <td class="py-3 px-3 text-center whitespace-nowrap">
+                            <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?></td>
+                            <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?></td>
+                            <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['dok_done'] ?? 0, $p['total_dist'] ?? 0, 'dokumentasi') ?></td>
+                            <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['bast_done'] ?? 0, $p['total_bast'] ?? 0, 'bast') ?></td>
+                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
                                 <?= getStatusBadge($p['status']) ?>
                             </td>
                         </tr>
