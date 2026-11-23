@@ -391,6 +391,32 @@ class KolaborasiController {
         redirect('/kolaborasi');
     }
 
+    /**
+     * AJAX Read-Only Modal Content untuk paket di dalam kolaborasi
+     */
+    public function modalView($kolabId, $paketIdOrKode, $module = 'info') {
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $membership = $this->kolabModel->getMembership((int)$kolabId, $userId);
+        if (!$membership || $membership['status'] !== 'joined') {
+            http_response_code(403);
+            echo '<div class="p-6 text-center text-xs text-rose-600">Akses ditolak.</div>';
+            exit;
+        }
+
+        $allowedModules = ['info', 'items', 'pemesanan', 'distribusi', 'dokumentasi', 'dokumen'];
+        $module = in_array($module, $allowedModules, true) ? $module : 'info';
+
+        $modalData = $this->kolabModel->getReadonlyModalData((int)$kolabId, (string)$paketIdOrKode);
+        if (!$modalData) {
+            http_response_code(404);
+            echo '<div class="p-6 text-center text-xs text-slate-500">Data paket tidak ditemukan di kolaborasi ini.</div>';
+            exit;
+        }
+
+        require VIEW_PATH . '/kolaborasi/_readonly_modal.php';
+        exit;
+    }
+
     private function view($view, $data = []) {
         extract($data);
         require_once VIEW_PATH . '/layout/header.php';

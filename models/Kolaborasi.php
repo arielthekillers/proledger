@@ -374,12 +374,13 @@ class Kolaborasi {
 
     /**
      * Ambil seluruh paket & rekapitulasi aman untuk Dashboard Kolaborasi
-     * STRICT PRIVACY: Tidak pernah mengambil/mengembalikan HPP, belanja toko, profit, atau potongan internal.
+     * STRICT PRIVACY: Tidak pernah mengambil/mengembalikan HPP, belanja toko, profit, atau supplier.
      */
     public function getDashboardData(int $kolabId): array {
         $stmt = $this->db->prepare("
             SELECT pk.id, pk.kode_paket, pk.nama_paket, pk.tahun_anggaran, pk.tags,
-                   pk.pagu, pk.pagu_nego, pk.status, pk.group_id, pk.perusahaan_id, pk.created_at,
+                   pk.pagu, pk.pagu_nego, pk.tipe_potongan, pk.persen_pasal, pk.persen_admin,
+                   pk.status, pk.group_id, pk.perusahaan_id, pk.created_at,
                    COALESCE(pi_sum.total_item_harga, 0) as total_item_harga,
                    COALESCE(pi_sum.total_item_qty, 0) as total_item_qty,
                    COALESCE(pi_sum.total_item_count, 0) as total_item_count,
@@ -433,6 +434,9 @@ class Kolaborasi {
         $summary = [
             'total_paket'     => 0,
             'total_kontrak'   => 0,
+            'total_dpp'       => 0,
+            'total_pasal'     => 0,
+            'total_bersih'    => 0,
             'total_items'     => 0,
             'total_units'     => 0,
             'total_lokasi'    => 0,
@@ -453,6 +457,14 @@ class Kolaborasi {
             $effectivePagu = ($itemTotal > 0) ? $itemTotal : (float)($r['pagu'] ?? 0);
             $hasNego = (!empty($r['pagu_nego']) && (float)$r['pagu_nego'] > 0);
             $acuan = $hasNego ? (float)$r['pagu_nego'] : $effectivePagu;
+
+            $tipePotongan = $r['tipe_potongan'] ?? 'dpp';
+            $dpp = calculateDPP($acuan);
+            $basis = ($tipePotongan === 'kontrak') ? $acuan : $dpp;
+            $persenPasal = isset($r['persen_pasal']) && $r['persen_pasal'] !== '' ? (float)$r['persen_pasal'] : 13.0;
+            $persenAdmin = isset($r['persen_admin']) && $r['persen_admin'] !== '' ? (float)$r['persen_admin'] : 2.0;
+            $totalPasal = calculatePasal($basis, $persenPasal) + calculateAdmin($basis, $persenAdmin);
+            $nilaiBersih = $acuan - $totalPasal;
 
             $totalDist = (int)$r['total_dist'];
             $totalBast = (int)$r['total_bast'];
@@ -498,6 +510,9 @@ class Kolaborasi {
 
             $summary['total_paket']++;
             $summary['total_kontrak'] += $acuan;
+            $summary['total_dpp']     += $dpp;
+            $summary['total_pasal']   += $totalPasal;
+            $summary['total_bersih']  += $nilaiBersih;
             $summary['total_items']   += (int)$r['total_item_count'];
             $summary['total_units']   += (float)$r['total_item_qty'];
             $summary['total_lokasi']  += $totalBast;
@@ -517,7 +532,12 @@ class Kolaborasi {
                 'norm_status'     => $normStatus,
                 'perusahaan_nama' => $compKey,
                 'nama_group'      => $r['nama_group'],
+                'effective_pagu'  => $effectivePagu,
                 'acuan'           => $acuan,
+                'dpp'             => $dpp,
+                'total_pasal'     => $totalPasal,
+                'total_persen'    => $persenPasal + $persenAdmin,
+                'nilai_bersih'    => $nilaiBersih,
                 'item_count'      => (int)$r['total_item_count'],
                 'item_qty'        => (float)$r['total_item_qty'],
                 'total_dist'      => $totalDist,
@@ -557,6 +577,98 @@ class Kolaborasi {
             'pakets'       => $pakets,
             'companyStats' => array_values($companyStats),
             'summary'      => $summary,
+        ];
+    }
+
+    /**
+     * Ambil 1 paket yang terverifikasi berada di dalam kolaborasi untuk popup read-only
+     */
+    public function getPaketInKolaborasi(int $kolabId, string $idOrKode) {
+        $stmt = $this->db->prepare("
+            SELECT pk.id, pk.kode_paket, pk.nama_paket, pk.nomor_sp, pk.kab_kota,
+                   pk.tahun_anggaran, pk.tags, pk.pagu, pk.pagu_nego,
+                   pk.tipe_potongan, pk.persen_pasal, pk.persen_admin, pk.status,
+                   p.nama as perusahaan_nama, pg.nama_group
+            FROM kolaborasi_groups kg
+            INNER JOIN paket_kegiatan pk ON pk.group_id = kg.group_id
+            LEFT JOIN perusahaan p ON pk.perusahaan_id = p.id
+            LEFT JOIN paket_group pg ON pk.group_id = pg.id
+            WHERE kg.kolaborasi_id = ?
+              AND (pk.kode_paket = ? OR pk.id = ?)
+            LIMIT 1
+        ");
+        $stmt->execute([$kolabId, $idOrKode, is_numeric($idOrKode) ? (int)$idOrKode : -1]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Ambil data read-only untuk modal detail di halaman Kolaborasi / Monitoring Publik
+     * STRICT PRIVACY: Tidak menyertakan harga belanja toko, supplier/toko, HPP, atau profit.
+     */
+    public function getReadonlyModalData(int $kolabId, string $idOrKode): ?array {
+        $paket = $this->getPaketInKolaborasi($kolabId, $idOrKode);
+        if (!$paket) return null;
+
+        $paketId = (int)$paket['id'];
+
+        require_once MODEL_PATH . '/PaketItem.php';
+        require_once MODEL_PATH . '/PaketDistribusi.php';
+        require_once MODEL_PATH . '/PaketDokumentasi.php';
+        require_once MODEL_PATH . '/PaketDokumen.php';
+
+        $itemModel = new PaketItem();
+        $distModel = new PaketDistribusi();
+        $fotoModel = new PaketDokumentasi();
+        $dokModel  = new PaketDokumen();
+
+        $items = $itemModel->getByPaketId($paketId);
+        $itemSummary = $itemModel->getSummaryByPaketId($paketId);
+        $rawDist = $distModel->getByPaketId($paketId);
+        $fotos = $fotoModel->getByPaketId($paketId);
+        $dokumens = $dokModel->getByPaketId($paketId);
+
+        // Sanitasi distribusi: hapus harga_satuan (harga beli toko) dan nama_toko/supplier
+        $distribusi = array_map(function ($d) {
+            return [
+                'id'               => (int)$d['id'],
+                'item_id'          => (int)$d['item_id'],
+                'nama_item'        => $d['nama_item'] ?? '-',
+                'satuan'           => $d['satuan'] ?? 'Unit',
+                'nama_tujuan'      => $d['nama_tujuan'] ?? '-',
+                'alamat_tujuan'    => $d['alamat_tujuan'] ?? '',
+                'kabupaten'        => $d['kabupaten'] ?? '',
+                'jumlah'           => (float)($d['jumlah'] ?? 0),
+                'status_barang'    => $d['status_barang'] ?? 'Belum Dipesan',
+                'status_distribusi'=> $d['status_distribusi'] ?? 'Belum Dikirim',
+            ];
+        }, $rawDist);
+
+        $itemTotal = (float)($itemSummary['grand_total'] ?? 0);
+        $effectivePagu = ($itemTotal > 0) ? $itemTotal : (float)$paket['pagu'];
+        $hasNego = (!empty($paket['pagu_nego']) && (float)$paket['pagu_nego'] > 0);
+        $acuan = $hasNego ? (float)$paket['pagu_nego'] : $effectivePagu;
+        $dpp = calculateDPP($acuan);
+        $basis = (($paket['tipe_potongan'] ?? 'dpp') === 'kontrak') ? $acuan : $dpp;
+        $persenPasal = isset($paket['persen_pasal']) && $paket['persen_pasal'] !== '' ? (float)$paket['persen_pasal'] : 13.0;
+        $persenAdmin = isset($paket['persen_admin']) && $paket['persen_admin'] !== '' ? (float)$paket['persen_admin'] : 2.0;
+        $totalPasal = calculatePasal($basis, $persenPasal) + calculateAdmin($basis, $persenAdmin);
+        $nilaiBersih = $acuan - $totalPasal;
+
+        return [
+            'paket'      => $paket,
+            'items'      => $items,
+            'distribusi' => $distribusi,
+            'fotos'      => $fotos,
+            'dokumens'   => $dokumens,
+            'finansial'  => [
+                'effective_pagu' => $effectivePagu,
+                'acuan'          => $acuan,
+                'dpp'            => $dpp,
+                'persen_pasal'   => $persenPasal,
+                'persen_admin'   => $persenAdmin,
+                'total_pasal'    => $totalPasal,
+                'nilai_bersih'   => $nilaiBersih,
+            ],
         ];
     }
 }

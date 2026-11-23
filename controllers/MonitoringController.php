@@ -15,14 +15,40 @@ class MonitoringController {
     }
 
     /**
-     * Redirect /monitoring ke halaman login/error jika tanpa token
+     * Redirect /monitoring ke halaman error jika tanpa token, atau tangani /monitoring/{token}/modalView/{kode}/{module}
      */
-    public function index($token = null) {
+    public function index($token = null, $subAction = null, $paketIdOrKode = null, $module = 'info') {
         if (empty($token)) {
             $this->renderNotFound('Token monitoring tidak ditemukan.');
             return;
         }
+        if ($subAction === 'modalView' && !empty($paketIdOrKode)) {
+            $this->modalView((string)$token, (string)$paketIdOrKode, (string)$module);
+            return;
+        }
         $this->show((string)$token);
+    }
+
+    private function modalView(string $token, string $paketIdOrKode, string $module) {
+        $kolab = $this->kolabModel->getByShareToken($token);
+        if (!$kolab) {
+            http_response_code(404);
+            echo '<div class="p-6 text-center text-xs text-rose-600">Link monitoring tidak valid.</div>';
+            exit;
+        }
+
+        $allowedModules = ['info', 'items', 'pemesanan', 'distribusi', 'dokumentasi', 'dokumen'];
+        $module = in_array($module, $allowedModules, true) ? $module : 'info';
+
+        $modalData = $this->kolabModel->getReadonlyModalData((int)$kolab['id'], $paketIdOrKode);
+        if (!$modalData) {
+            http_response_code(404);
+            echo '<div class="p-6 text-center text-xs text-slate-500">Data paket tidak ditemukan.</div>';
+            exit;
+        }
+
+        require VIEW_PATH . '/kolaborasi/_readonly_modal.php';
+        exit;
     }
 
     /**

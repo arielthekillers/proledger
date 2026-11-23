@@ -143,7 +143,7 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
         <?php if (!empty($companyStats)): ?>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
                 <?php foreach ($companyStats as $cs): ?>
-                    <button type="button" onclick="filterPublicCompany('<?= htmlspecialchars(strtolower($cs['nama']), ENT_QUOTES) ?>')"
+                    <button type="button" onclick="filterByCompany('<?= htmlspecialchars(strtolower($cs['nama']), ENT_QUOTES) ?>')"
                             class="text-left bg-white rounded-2xl shadow-xs border border-slate-200/80 p-3.5 hover:border-blue-300 transition-all cursor-pointer">
                         <div class="flex items-center justify-between gap-2 mb-1.5">
                             <span class="font-bold text-slate-800 text-xs truncate"><?= htmlspecialchars($cs['nama']) ?></span>
@@ -164,86 +164,11 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
             </div>
         <?php endif; ?>
 
-        <!-- Table -->
-        <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
-            <div class="p-3.5 px-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider">
-                    Daftar Paket Kegiatan (<span id="pubVisibleCount"><?= count($pakets) ?></span>)
-                </h3>
-                <div class="flex items-center gap-2 flex-wrap">
-                    <input type="text" id="pubSearch" onkeyup="filterPublicTable()" placeholder="Cari paket atau kode..."
-                           class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500">
-                    <select id="pubCompany" onchange="filterPublicTable()"
-                            class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 cursor-pointer">
-                        <option value="">Semua Perusahaan</option>
-                        <?php foreach ($companyStats as $cs): ?>
-                            <option value="<?= htmlspecialchars(strtolower($cs['nama'])) ?>"><?= htmlspecialchars($cs['nama']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50/80 text-[10px] uppercase tracking-wider text-slate-500 font-bold border-b border-slate-200/80">
-                        <tr>
-                            <th class="py-3 px-3 text-center">Kode</th>
-                            <th class="py-3 px-3">Nama Paket</th>
-                            <th class="py-3 px-3">Perusahaan Pelaksana</th>
-                            <th class="py-3 px-3 text-right">Nilai Kontrak</th>
-                            <th class="py-3 px-3 text-center">Komponen</th>
-                            <th class="py-3 px-2 text-center">Order</th>
-                            <th class="py-3 px-2 text-center">Dist</th>
-                            <th class="py-3 px-2 text-center">Dok</th>
-                            <th class="py-3 px-2 text-center">BAST</th>
-                            <th class="py-3 px-3 text-center">Pencairan</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <?php foreach ($pakets as $p): ?>
-                            <tr class="hover:bg-slate-50/70 pub-row"
-                                data-search="<?= htmlspecialchars(strtolower(($p['nama_paket'] ?? '') . ' ' . ($p['kode_paket'] ?? ''))) ?>"
-                                data-company="<?= htmlspecialchars(strtolower($p['perusahaan_nama'])) ?>"
-                                data-kontrak="<?= $p['acuan'] ?>">
-                                <td class="py-2.5 px-3 text-center">
-                                    <span class="px-2 py-0.5 font-mono font-bold text-[11px] bg-slate-100 text-slate-700 rounded-md">
-                                        <?= htmlspecialchars($p['kode_paket'] ?: '#' . $p['id']) ?>
-                                    </span>
-                                </td>
-                                <td class="py-2.5 px-3 min-w-[220px]">
-                                    <div class="font-bold text-slate-800 text-xs"><?= htmlspecialchars($p['nama_paket']) ?></div>
-                                    <div class="text-[10px] text-slate-400 mt-0.5">TA <?= (int)($p['tahun_anggaran'] ?? date('Y')) ?></div>
-                                </td>
-                                <td class="py-2.5 px-3 whitespace-nowrap font-semibold text-slate-700"><?= htmlspecialchars($p['perusahaan_nama']) ?></td>
-                                <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap"><?= formatRupiah($p['acuan']) ?></td>
-                                <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                                    <div class="font-bold text-slate-800 text-xs"><?= $p['item_count'] ?> Item</div>
-                                    <div class="text-[10px] text-slate-400"><?= rtrim(rtrim(number_format($p['item_qty'], 2, ',', '.'), '0'), ',') ?> Unit</div>
-                                </td>
-                                <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?></td>
-                                <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?></td>
-                                <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['dok_done'] ?? 0, $p['total_dist'] ?? 0, 'dokumentasi') ?></td>
-                                <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['bast_done'] ?? 0, $p['total_bast'] ?? 0, 'bast') ?></td>
-                                <td class="py-2.5 px-3 text-center whitespace-nowrap"><?= getStatusBadge($p['status']) ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                    <?php if (!empty($pakets)): ?>
-                        <tfoot class="bg-slate-50/95 border-t-2 border-slate-200 font-bold text-xs">
-                            <tr>
-                                <td colspan="3" class="py-3 px-3 text-slate-700 uppercase text-[11px]">
-                                    Overall Total (<span id="pubFootCount"><?= $summary['total_paket'] ?></span> Paket)
-                                </td>
-                                <td class="py-3 px-3 text-right font-mono text-slate-900 whitespace-nowrap" id="pubFootKontrak">
-                                    <?= formatRupiah($summary['total_kontrak']) ?>
-                                </td>
-                                <td colspan="6"></td>
-                            </tr>
-                        </tfoot>
-                    <?php endif; ?>
-                </table>
-            </div>
-        </div>
+        <!-- Table + Read-Only Modals -->
+        <?php
+        $modalBaseUrl = APP_URL . '/monitoring/' . rawurlencode($kolab['share_token']) . '/modalView';
+        require __DIR__ . '/_paket_table.php';
+        ?>
     </main>
 
     <script>
@@ -281,31 +206,40 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                 });
             }, 60);
         });
-    });
-    function filterPublicCompany(comp) {
-        const sel = document.getElementById('pubCompany');
-        if (!sel) return;
-        sel.value = (sel.value === comp) ? '' : comp;
-        filterPublicTable();
-    }
-    function filterPublicTable() {
-        const q = (document.getElementById('pubSearch')?.value || '').toLowerCase().trim();
-        const comp = document.getElementById('pubCompany')?.value || '';
-        let vis = 0, sKontrak = 0;
-        document.querySelectorAll('.pub-row').forEach(row => {
-            const show = (!q || (row.dataset.search || '').includes(q)) && (!comp || (row.dataset.company || '') === comp);
-            row.style.display = show ? '' : 'none';
-            if (show) {
-                vis++;
-                sKontrak += parseFloat(row.dataset.kontrak || 0);
+
+        // Dark floating tooltip (.pro-dark-tooltip)
+        const darkTooltip = document.createElement('div');
+        darkTooltip.id = 'proGenericDarkTooltip';
+        darkTooltip.className = 'fixed z-[95] pointer-events-none hidden max-w-xs p-2.5 bg-slate-800 text-white rounded-xl shadow-xl text-[11px] leading-relaxed border border-slate-700/80';
+        document.body.appendChild(darkTooltip);
+
+        document.addEventListener('mouseover', function (e) {
+            const el = e.target.closest('.pro-dark-tooltip');
+            if (!el) return;
+            const title = el.getAttribute('data-tooltip-title') || '';
+            const body = el.getAttribute('data-tooltip-body') || '';
+            if (!title && !body) return;
+            darkTooltip.innerHTML = (title ? `<div class="font-bold text-white border-b border-slate-700 pb-1 mb-1">${title}</div>` : '') +
+                                    (body ? `<div class="text-slate-300">${body}</div>` : '');
+            darkTooltip.classList.remove('hidden');
+            const rect = el.getBoundingClientRect();
+            const tw = darkTooltip.offsetWidth || 200;
+            const th = darkTooltip.offsetHeight || 60;
+            let left = rect.left + (rect.width / 2) - (tw / 2);
+            let top = rect.top - th - 8;
+            if (left < 10) left = 10;
+            if (left + tw > window.innerWidth - 10) left = window.innerWidth - tw - 10;
+            if (top < 10) top = rect.bottom + 8;
+            darkTooltip.style.left = left + 'px';
+            darkTooltip.style.top = top + 'px';
+        });
+
+        document.addEventListener('mouseout', function (e) {
+            if (e.target.closest('.pro-dark-tooltip')) {
+                darkTooltip.classList.add('hidden');
             }
         });
-        document.getElementById('pubVisibleCount').textContent = vis;
-        const fc = document.getElementById('pubFootCount');
-        if (fc) fc.textContent = vis;
-        const fk = document.getElementById('pubFootKontrak');
-        if (fk) fk.textContent = 'Rp ' + Math.round(sKontrak).toLocaleString('id-ID');
-    }
+    });
     </script>
 </body>
 </html>
