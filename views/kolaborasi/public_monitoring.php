@@ -252,6 +252,34 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
             document.querySelectorAll('circle[data-ring-target]').forEach(el => {
                 el.style.strokeDashoffset = el.getAttribute('data-ring-target');
             });
+            setTimeout(() => {
+                document.querySelectorAll('.pro-progress-trigger').forEach(trigger => {
+                    const pct = parseInt(trigger.getAttribute('data-prog-pct') || '0', 10);
+                    const duration = Math.max(350, Math.round(250 + (pct / 100) * 1100));
+
+                    const circle = trigger.querySelector('.pro-progress-ring[data-target-offset]');
+                    if (circle) {
+                        circle.style.transitionDuration = duration + 'ms';
+                        circle.style.strokeDashoffset = circle.getAttribute('data-target-offset');
+                    }
+
+                    const pctEl = trigger.querySelector('.pro-progress-pct[data-target-pct]');
+                    if (pctEl) {
+                        if (pct <= 0) {
+                            pctEl.textContent = '0%';
+                            return;
+                        }
+                        const start = performance.now();
+                        function step(now) {
+                            const progress = Math.min(1, (now - start) / duration);
+                            const eased = 1 - Math.pow(1 - progress, 3);
+                            pctEl.textContent = Math.round(pct * eased) + '%';
+                            if (progress < 1) requestAnimationFrame(step);
+                        }
+                        requestAnimationFrame(step);
+                    }
+                });
+            }, 60);
         });
     });
     function filterPublicCompany(comp) {
