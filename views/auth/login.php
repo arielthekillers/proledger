@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk - PaketFlow</title>
+    <title>Masuk - SimPaket</title>
     <link rel="icon" type="image/svg+xml" href="<?= APP_URL ?>/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,10 +22,8 @@
     <div class="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden">
         <div class="p-8">
             <div class="flex flex-col items-center mb-8">
-                <div class="w-12 h-12 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl flex items-center justify-center text-white text-2xl mb-3 shadow-lg shadow-blue-500/30">
-                    <ion-icon name="cube"></ion-icon>
-                </div>
-                <h1 class="text-2xl font-bold text-slate-800">Paket<span class="text-blue-600">Flow</span></h1>
+                <img src="<?= APP_URL ?>/favicon.svg" alt="SimPaket" class="w-12 h-12 rounded-xl mb-3 shadow-lg shadow-blue-500/30">
+                <h1 class="text-2xl font-bold text-slate-800">Sim<span class="text-blue-600">Paket</span></h1>
                 <p class="text-slate-500 text-sm">Masuk ke Sistem Manajemen Paket</p>
             </div>
 
@@ -94,7 +92,7 @@
         
         <div class="bg-slate-50 px-8 py-4 border-t border-slate-100 text-center">
             <p class="text-xs text-slate-500">
-                &copy; <?= date('Y') ?> PaketFlow By <a href="https://sintesacorp.id" target="_blank" class="text-blue-600 hover:text-blue-700 font-semibold hover:underline">Sintesa Corp</a>
+                &copy; <?= date('Y') ?> SimPaket By <a href="https://sintesacorp.id" target="_blank" class="text-blue-600 hover:text-blue-700 font-semibold hover:underline">Sintesa Corp</a>
             </p>
         </div>
     </div>

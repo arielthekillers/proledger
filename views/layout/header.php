@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'PaketFlow' ?> - Manajemen Paket & Distribusi</title>
+    <title><?= $title ?? 'SimPaket' ?> - Sistem Manajemen Paket</title>
     <link rel="icon" type="image/svg+xml" href="<?= APP_URL ?>/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,10 +86,8 @@
 
                     <!-- Brand -->
                     <a href="<?= ($role === 'admin') ? APP_URL . '/user' : APP_URL . '/' ?>" class="flex items-center gap-2.5 shrink-0">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-sm shadow-blue-500/25 flex items-center justify-center">
-                            <ion-icon name="cube" class="text-white text-lg"></ion-icon>
-                        </div>
-                        <span class="font-bold text-lg tracking-tight text-slate-800">Paket<span class="text-blue-600">Flow</span></span>
+                        <img src="<?= APP_URL ?>/favicon.svg" alt="SimPaket" class="w-8 h-8 rounded-lg shadow-sm">
+                        <span class="font-bold text-lg tracking-tight text-slate-800">Sim<span class="text-blue-600">Paket</span></span>
                     </a>
 
                     <div class="hidden md:block h-5 w-px bg-slate-200"></div>

@@ -93,7 +93,7 @@ $kopsuratUrls = !empty($perusahaan['kopsurat']) ? Uploader::getAllUrls($perusaha
 
             <p class="text-xs text-slate-400 mb-3 flex items-center gap-1.5">
                 <ion-icon name="calendar-outline"></ion-icon>
-                <span>Terdaftar di PaketFlow sejak <?= date('d M Y', strtotime($perusahaan['created_at'])) ?></span>
+                <span>Terdaftar di SimPaket sejak <?= date('d M Y', strtotime($perusahaan['created_at'])) ?></span>
                 <?php if (!empty($perusahaan['owner_name'])): ?>
                     <span class="text-slate-300">&bull;</span>
                     <span class="text-slate-500 font-medium">Pemilik: <?= htmlspecialchars($perusahaan['owner_name']) ?></span>

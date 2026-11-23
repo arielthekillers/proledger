@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Akun - PaketFlow</title>
+    <title>Daftar Akun - SimPaket</title>
     <link rel="icon" type="image/svg+xml" href="<?= APP_URL ?>/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,11 +22,9 @@
     <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden my-8">
         <div class="p-8">
             <div class="flex flex-col items-center mb-6">
-                <div class="w-12 h-12 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl flex items-center justify-center text-white text-2xl mb-3 shadow-lg shadow-blue-500/30">
-                    <ion-icon name="person-add"></ion-icon>
-                </div>
+                <img src="<?= APP_URL ?>/favicon.svg" alt="SimPaket" class="w-12 h-12 rounded-xl mb-3 shadow-lg shadow-blue-500/30">
                 <h1 class="text-2xl font-bold text-slate-800">Daftar Akun Baru</h1>
-                <p class="text-slate-500 text-sm text-center">Buat akun untuk mengakses sistem PaketFlow</p>
+                <p class="text-slate-500 text-sm text-center">Buat akun untuk mengakses sistem SimPaket</p>
             </div>
 
             <?php if ($errorMsg = flash('error')): ?>
@@ -122,7 +120,7 @@
         
         <div class="bg-slate-50 px-8 py-4 border-t border-slate-100 text-center">
             <p class="text-xs text-slate-500">
-                &copy; <?= date('Y') ?> PaketFlow By <a href="https://sintesacorp.id" target="_blank" class="text-blue-600 hover:text-blue-700 font-semibold hover:underline">Sintesa Corp</a>
+                &copy; <?= date('Y') ?> SimPaket By <a href="https://sintesacorp.id" target="_blank" class="text-blue-600 hover:text-blue-700 font-semibold hover:underline">Sintesa Corp</a>
             </p>
         </div>
     </div>
