@@ -26,12 +26,20 @@ if (!empty($paket['tags'])) {
 
 <!-- Header Action Teleport Source -->
 <div id="modalActionSource" class="hidden">
-    <button type="button" 
-            onclick='openIndexSkemaPotonganModal(<?= json_encode($paket, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)' 
-            class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer">
-        <ion-icon name="options-outline" class="text-sm"></ion-icon>
-        <span>Ubah Skema Potongan</span>
-    </button>
+    <div class="flex items-center gap-2">
+        <button type="button" 
+                onclick='openEditPaketModal(<?= json_encode($paket, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)' 
+                class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer">
+            <ion-icon name="create-outline" class="text-sm"></ion-icon>
+            <span>Edit Paket</span>
+        </button>
+        <button type="button" 
+                onclick='openIndexSkemaPotonganModal(<?= json_encode($paket, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)' 
+                class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-all cursor-pointer">
+            <ion-icon name="options-outline" class="text-sm"></ion-icon>
+            <span>Ubah Skema Potongan</span>
+        </button>
+    </div>
 </div>
 
 <div class="space-y-4">

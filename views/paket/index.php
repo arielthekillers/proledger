@@ -668,7 +668,7 @@ foreach ($paket as $p) {
 <!-- ========================================== -->
 <!-- MODAL 2: EDIT PAKET KEGIATAN (POPUP)       -->
 <!-- ========================================== -->
-<div id="modalEditPaket" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+<div id="modalEditPaket" class="app-modal fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
     <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[92vh] flex flex-col">
         <!-- Header -->
         <div class="px-5 py-3.5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between shrink-0">
