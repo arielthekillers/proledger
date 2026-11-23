@@ -269,11 +269,16 @@ class PaketDistribusi {
     }
     
     /**
-     * Hapus alokasi distribusi
+     * Hapus alokasi distribusi beserta foto dokumentasi terkait & file fisiknya
      */
     public function delete($id) {
+        $distId = (int)$id;
+        require_once MODEL_PATH . '/PaketDokumentasi.php';
+        $fotoModel = new PaketDokumentasi();
+        $fotoModel->deleteByDistribusiId($distId);
+
         $stmt = $this->db->prepare("DELETE FROM paket_distribusi WHERE id = ?");
-        return $stmt->execute([(int)$id]);
+        return $stmt->execute([$distId]);
     }
 
     /**

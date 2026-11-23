@@ -346,9 +346,26 @@ class PerusahaanController {
             return;
         }
 
+        require_once MODEL_PATH . '/PaketGroup.php';
+        $groupModel = new PaketGroup();
+        $compGroups = array_filter($groupModel->getAll($id), fn($g) => (int)($g['perusahaan_id'] ?? 0) === (int)$id);
+        if (!empty($compGroups)) {
+            flash('error', 'Perusahaan tidak dapat dihapus karena masih memiliki ' . count($compGroups) . ' Group Paket terkait.');
+            redirect('/perusahaan');
+            return;
+        }
+
+        $comp = $this->perusahaanModel->getById($id);
+        if ($comp) {
+            require_once __DIR__ . '/../helpers/Uploader.php';
+            if (!empty($comp['logo'])) Uploader::deleteImage($comp['logo'], 'perusahaan', 'logo');
+            if (!empty($comp['avatar'])) Uploader::deleteImage($comp['avatar'], 'perusahaan', 'avatar');
+            if (!empty($comp['kopsurat'])) Uploader::deleteImage($comp['kopsurat'], 'perusahaan', 'kopsurat');
+        }
+
         $this->perusahaanModel->delete($id);
 
-        if (($SESSION['active_perusahaan_id'] ?? null) == $id) {
+        if (($_SESSION['active_perusahaan_id'] ?? null) == $id) {
             unset($_SESSION['active_perusahaan_id']);
             unset($_SESSION['active_perusahaan_nama']);
         }

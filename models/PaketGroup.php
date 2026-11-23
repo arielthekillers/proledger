@@ -332,11 +332,18 @@ class PaketGroup {
     }
 
     /**
-     * Hapus group (lepaskan paket anggota agar group_id menjadi NULL)
+     * Hapus group (lepaskan paket anggota agar group_id menjadi NULL & bersihkan relasi kolaborasi)
      */
     public function delete($id) {
         $stmtDetach = $this->db->prepare("UPDATE paket_kegiatan SET group_id = NULL WHERE group_id = ?");
         $stmtDetach->execute([$id]);
+
+        try {
+            $stmtKolab = $this->db->prepare("DELETE FROM kolaborasi_groups WHERE group_id = ?");
+            $stmtKolab->execute([$id]);
+        } catch (Throwable $e) {
+            // Abaikan jika tabel kolaborasi_groups belum tersedia
+        }
 
         $stmt = $this->db->prepare("DELETE FROM paket_group WHERE id = ?");
         return $stmt->execute([$id]);

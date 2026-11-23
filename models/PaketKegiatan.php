@@ -494,25 +494,32 @@ class PaketKegiatan {
         try {
             $this->db->beginTransaction();
 
-            // 1. Hapus seluruh alokasi distribusi
+            // 1. Hapus foto dokumentasi & file fisiknya (full + thumbnail)
+            require_once __DIR__ . '/../helpers/Uploader.php';
+            $stmtFotos = $this->db->prepare("SELECT file_path, thumb_path FROM paket_dokumentasi WHERE paket_id = ?");
+            $stmtFotos->execute([$paketId]);
+            $fotos = $stmtFotos->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($fotos as $foto) {
+                Uploader::deleteDocumentationImage($foto['file_path'] ?? null, $foto['thumb_path'] ?? null);
+            }
+            $this->db->prepare("DELETE FROM paket_dokumentasi WHERE paket_id = ?")->execute([$paketId]);
+
+            // 2. Hapus seluruh alokasi distribusi
             $stmtDist = $this->db->prepare("DELETE FROM paket_distribusi WHERE paket_id = ?");
             $stmtDist->execute([$paketId]);
 
-            // 2. Hapus seluruh item barang spesifikasi
+            // 3. Hapus seluruh item barang spesifikasi
             $stmtItem = $this->db->prepare("DELETE FROM paket_items WHERE paket_id = ?");
             $stmtItem->execute([$paketId]);
 
-            // 3. Ambil berkas fisik dokumen untuk dihapus dari disk
+            // 4. Ambil berkas fisik dokumen untuk dihapus dari disk
             $stmtDocs = $this->db->prepare("SELECT file_path FROM paket_dokumen WHERE paket_id = ?");
             $stmtDocs->execute([$paketId]);
             $docs = $stmtDocs->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($docs as $doc) {
                 if (!empty($doc['file_path'])) {
-                    $physicalFile = PUBLIC_PATH . '/' . ltrim($doc['file_path'], '/');
-                    if (file_exists($physicalFile) && is_file($physicalFile)) {
-                        @unlink($physicalFile);
-                    }
+                    Uploader::deleteFile($doc['file_path']);
                 }
             }
 
@@ -520,7 +527,7 @@ class PaketKegiatan {
             $stmtDelDocs = $this->db->prepare("DELETE FROM paket_dokumen WHERE paket_id = ?");
             $stmtDelDocs->execute([$paketId]);
 
-            // 4. Hapus paket kegiatan
+            // 5. Hapus paket kegiatan
             $stmt = $this->db->prepare("DELETE FROM paket_kegiatan WHERE id = ?");
             $res = $stmt->execute([$paketId]);
 
