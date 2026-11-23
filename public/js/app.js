@@ -140,6 +140,16 @@ window.ProModal = {
         const modal = document.getElementById(id);
         if (!modal) return;
 
+        // Pastikan modal yang baru dibuka selalu berada di paling depan
+        let maxZ = 50;
+        document.querySelectorAll('.app-modal:not(.hidden)').forEach(m => {
+            if (m !== modal) {
+                const z = parseInt(window.getComputedStyle(m).zIndex, 10) || 50;
+                if (z >= maxZ) maxZ = z;
+            }
+        });
+        modal.style.zIndex = maxZ + 10;
+
         modal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
 
