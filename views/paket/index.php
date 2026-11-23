@@ -187,7 +187,7 @@ foreach ($paket as $p) {
                     <th class="py-2.5 px-3 text-right">DPP</th>
                     <th class="py-2.5 px-3 text-right" title="Klik angka untuk Pengaturan Potongan Pasal & Admin">Total Pasal</th>
                     <th class="py-2.5 px-3 text-right" title="Dana Bersih Setelah Potongan (Klik untuk Informasi & Finansial)">Nilai Bersih</th>
-                    <th class="py-2.5 px-3 text-right" title="Total Belanja Toko / HPP (Klik untuk Kelola Pemesanan)">Belanja</th>
+                    <th class="py-2.5 px-3 text-right" title="Total Belanja Toko / HPP (Klik untuk Kelola Pemesanan)">HPP</th>
                     <th class="py-2.5 px-3 text-right" title="Estimasi Profit Bersih Setelah Potongan & Belanja (Klik untuk Rincian Profit)">Profit</th>
                     <th class="py-2.5 px-2 text-center" title="Jumlah Macam Item Komponen & Total Unit (Klik untuk Kelola Item)">Komponen</th>
                     <th class="py-2.5 px-2 text-center w-20" title="Progres Pemesanan Barang (Supplier/Toko)">Pemesanan</th>
