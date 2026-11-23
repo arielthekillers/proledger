@@ -651,21 +651,4 @@ function previewImageModal(url, title) {
     document.getElementById('imagePreviewDownload').href = url;
     window.ProModal.open('modalImagePreview');
 }
-
-/**
- * Buka modal edit profil perusahaan
- */
-function openEditPerusahaanModal(company) {
-    if (!company) return;
-
-    document.getElementById('edit_nama').value = company.nama || '';
-    document.getElementById('edit_email').value = company.email || '';
-    document.getElementById('edit_telepon').value = company.telepon || '';
-    document.getElementById('edit_website').value = company.website || '';
-    document.getElementById('edit_alamat').value = company.alamat || '';
-    document.getElementById('edit_keterangan').value = company.keterangan || '';
-    document.getElementById('editPerusahaanSubtitle').textContent = 'Mengubah: ' + (company.nama || '');
-
-    window.ProModal.open('modalEditPerusahaan');
-}
 </script>
