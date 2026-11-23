@@ -281,8 +281,85 @@
     </div>
 </div>
 
+<!-- ========================================== -->
+<!-- POPUP IMAGE VIEWER / LIGHTBOX              -->
+<!-- ========================================== -->
+<div id="kolabPhotoViewer" class="fixed inset-0 z-[70] bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="relative max-w-4xl w-full flex flex-col items-center">
+        <!-- Top bar -->
+        <div class="w-full flex items-center justify-between text-white mb-3 px-1">
+            <div class="min-w-0">
+                <div id="kpvCaption" class="text-xs sm:text-sm font-bold truncate"></div>
+                <div id="kpvCounter" class="text-[11px] text-slate-300 font-mono"></div>
+            </div>
+            <button type="button" onclick="closeKolabPhotoViewer()"
+                    class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xl transition-colors cursor-pointer shrink-0">
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+        </div>
+
+        <!-- Image stage -->
+        <div class="relative w-full flex items-center justify-center bg-slate-900/60 rounded-2xl border border-white/10 p-2 min-h-[260px] max-h-[78vh]">
+            <button type="button" id="kpvPrevBtn" onclick="stepKolabPhoto(-1)"
+                    class="absolute left-3 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-xl transition-colors cursor-pointer hidden">
+                <ion-icon name="chevron-back-outline"></ion-icon>
+            </button>
+
+            <img id="kpvImage" src="" alt="Preview Foto" class="max-w-full max-h-[74vh] object-contain rounded-xl shadow-2xl">
+
+            <button type="button" id="kpvNextBtn" onclick="stepKolabPhoto(1)"
+                    class="absolute right-3 z-10 w-10 h-10 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-xl transition-colors cursor-pointer hidden">
+                <ion-icon name="chevron-forward-outline"></ion-icon>
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 const KOLAB_MODAL_BASE = <?= json_encode($modalBaseUrl) ?>;
+let kpvPhotos = [];
+let kpvIndex = 0;
+
+function openKolabPhotoViewer(photos, startIdx, caption) {
+    if (!Array.isArray(photos) || photos.length === 0) return;
+    kpvPhotos = photos;
+    kpvIndex = Math.max(0, Math.min(startIdx || 0, photos.length - 1));
+    document.getElementById('kpvCaption').textContent = caption || 'Foto Dokumentasi';
+    renderKolabPhoto();
+    document.getElementById('kolabPhotoViewer').classList.remove('hidden');
+}
+
+function renderKolabPhoto() {
+    document.getElementById('kpvImage').src = kpvPhotos[kpvIndex];
+    document.getElementById('kpvCounter').textContent = (kpvIndex + 1) + ' / ' + kpvPhotos.length;
+    const multi = kpvPhotos.length > 1;
+    document.getElementById('kpvPrevBtn').classList.toggle('hidden', !multi);
+    document.getElementById('kpvNextBtn').classList.toggle('hidden', !multi);
+}
+
+function stepKolabPhoto(dir) {
+    if (kpvPhotos.length <= 1) return;
+    kpvIndex = (kpvIndex + dir + kpvPhotos.length) % kpvPhotos.length;
+    renderKolabPhoto();
+}
+
+function closeKolabPhotoViewer() {
+    document.getElementById('kolabPhotoViewer')?.classList.add('hidden');
+    const img = document.getElementById('kpvImage');
+    if (img) img.src = '';
+}
+
+document.getElementById('kolabPhotoViewer')?.addEventListener('click', function (e) {
+    if (e.target === this) closeKolabPhotoViewer();
+});
+
+document.addEventListener('keydown', function (e) {
+    const viewer = document.getElementById('kolabPhotoViewer');
+    if (!viewer || viewer.classList.contains('hidden')) return;
+    if (e.key === 'Escape') closeKolabPhotoViewer();
+    else if (e.key === 'ArrowLeft') stepKolabPhoto(-1);
+    else if (e.key === 'ArrowRight') stepKolabPhoto(1);
+});
 
 function openKolabReadonlyModal(idOrKode, mod, namaPaket) {
     const cfgMap = {

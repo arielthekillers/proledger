@@ -216,22 +216,32 @@ $fin        = $modalData['finansial'];
                                         <ion-icon name="image-outline" class="text-xs"></ion-icon>
                                         <span>Belum Ada</span>
                                     </span>
-                                <?php else: ?>
+                                <?php else:
+                                    $photoUrls = array_map(function ($p) {
+                                        return APP_URL . '/' . ltrim($p['file_path'], '/');
+                                    }, $photos);
+                                    $photosJson = htmlspecialchars(json_encode($photoUrls), ENT_QUOTES, 'UTF-8');
+                                    $caption = htmlspecialchars(($dist['nama_tujuan'] ?? '') . ' - ' . $dist['nama_komponen'], ENT_QUOTES, 'UTF-8');
+                                ?>
                                     <div class="flex items-center gap-1.5">
                                         <div class="flex items-center -space-x-1.5">
-                                            <?php foreach (array_slice($photos, 0, 3) as $p):
+                                            <?php foreach (array_slice($photos, 0, 3) as $pIdx => $p):
                                                 $thumb = !empty($p['thumb_path']) ? (APP_URL . '/' . ltrim($p['thumb_path'], '/')) : (APP_URL . '/' . ltrim($p['file_path'], '/'));
-                                                $full = APP_URL . '/' . ltrim($p['file_path'], '/');
                                             ?>
-                                                <a href="<?= htmlspecialchars($full) ?>" target="_blank" title="Klik untuk melihat foto">
+                                                <button type="button"
+                                                        onclick="openKolabPhotoViewer(<?= $photosJson ?>, <?= $pIdx ?>, '<?= $caption ?>')"
+                                                        title="Klik untuk melihat foto"
+                                                        class="cursor-pointer focus:outline-none">
                                                     <img src="<?= htmlspecialchars($thumb) ?>" alt="Foto"
                                                          class="w-7 h-7 rounded-lg object-cover border-2 border-white shadow-2xs hover:scale-110 transition-transform">
-                                                </a>
+                                                </button>
                                             <?php endforeach; ?>
                                         </div>
-                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200/80">
+                                        <button type="button"
+                                                onclick="openKolabPhotoViewer(<?= $photosJson ?>, 0, '<?= $caption ?>')"
+                                                class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200/80 cursor-pointer transition-colors">
                                             <?= $photoCount ?> Foto
-                                        </span>
+                                        </button>
                                     </div>
                                 <?php endif; ?>
                             </td>
