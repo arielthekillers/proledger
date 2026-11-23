@@ -111,6 +111,7 @@ class PaketController {
         $paket = $activeCompId ? $this->paketModel->getAll($filters) : [];
         $groups = $this->groupModel->getAll($activeCompId);
         $skemas = $this->skemaModel->getAll($activeCompId);
+        $kabupatenList = $this->lokasiModel->getAllKabupaten();
         
         $allTags = !empty($activeCompany['id']) ? $this->paketModel->getAllTags($activeCompany['id']) : [];
 
@@ -121,6 +122,7 @@ class PaketController {
             'paket' => array_values($paket),
             'groups' => $groups,
             'skemas' => $skemas,
+            'kabupatenList' => $kabupatenList,
             'allTags' => $allTags,
             'users' => [],
             'activeCompany' => $activeCompany,
