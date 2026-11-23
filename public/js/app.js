@@ -864,4 +864,29 @@ document.addEventListener('DOMContentLoaded', function () {
             progTooltip.classList.add('hidden');
         }
     });
+
+    // 12. Animate Circular Progress Rings & Percentages on Load
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            document.querySelectorAll('.pro-progress-ring[data-target-offset]').forEach(circle => {
+                circle.style.strokeDashoffset = circle.getAttribute('data-target-offset');
+            });
+            document.querySelectorAll('.pro-progress-pct[data-target-pct]').forEach(el => {
+                const target = parseInt(el.getAttribute('data-target-pct') || '0', 10);
+                if (target <= 0) {
+                    el.textContent = '0%';
+                    return;
+                }
+                const duration = 650;
+                const start = performance.now();
+                function step(now) {
+                    const progress = Math.min(1, (now - start) / duration);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    el.textContent = Math.round(target * eased) + '%';
+                    if (progress < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            });
+        }, 60);
+    });
 });

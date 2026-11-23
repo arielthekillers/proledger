@@ -231,13 +231,13 @@ function renderCircularProgress($done, $total, $type = 'pemesanan') {
     $html .= '<svg class="w-9 h-9 transform -rotate-90" viewBox="0 0 36 36">';
     $html .= '<circle cx="18" cy="18" r="' . $radius . '" stroke="currentColor" class="text-slate-100" stroke-width="3" fill="transparent"/>';
     if ($total > 0 && $pct > 0) {
-        $html .= '<circle cx="18" cy="18" r="' . $radius . '" stroke="currentColor" class="' . $strokeColor . '" stroke-width="3" stroke-linecap="round" fill="transparent" stroke-dasharray="' . round($circumference, 2) . '" stroke-dashoffset="' . round($dashoffset, 2) . '"/>';
+        $html .= '<circle cx="18" cy="18" r="' . $radius . '" stroke="currentColor" class="pro-progress-ring transition-[stroke-dashoffset] duration-700 ease-out ' . $strokeColor . '" stroke-width="3" stroke-linecap="round" fill="transparent" stroke-dasharray="' . round($circumference, 2) . '" stroke-dashoffset="' . round($circumference, 2) . '" data-target-offset="' . round($dashoffset, 2) . '"/>';
     }
     $html .= '</svg>';
     if ($isComplete) {
         $html .= '<ion-icon name="checkmark-outline" class="absolute text-sm text-emerald-600 font-extrabold"></ion-icon>';
     } else {
-        $html .= '<span class="absolute text-[9px] font-bold font-mono ' . $textColor . '">' . ($total > 0 ? $pct . '%' : '-') . '</span>';
+        $html .= '<span class="pro-progress-pct absolute text-[9px] font-bold font-mono ' . $textColor . '"' . ($total > 0 ? ' data-target-pct="' . $pct . '"' : '') . '>' . ($total > 0 ? '0%' : '-') . '</span>';
     }
     $html .= '</div>';
     $html .= '</div>';
