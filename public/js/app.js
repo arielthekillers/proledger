@@ -889,4 +889,42 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }, 60);
     });
+
+    // 13. Generic Sleek Dark Floating Tooltip (.pro-dark-tooltip)
+    const darkTooltip = document.createElement('div');
+    darkTooltip.id = 'proGenericDarkTooltip';
+    darkTooltip.className = 'fixed z-[95] pointer-events-none hidden max-w-xs p-2.5 bg-slate-800 text-white rounded-xl shadow-xl text-[11px] leading-relaxed border border-slate-700/80';
+    document.body.appendChild(darkTooltip);
+
+    document.addEventListener('mouseover', function (e) {
+        const el = e.target.closest('.pro-dark-tooltip');
+        if (!el) return;
+
+        const title = el.getAttribute('data-tooltip-title') || '';
+        const body = el.getAttribute('data-tooltip-body') || '';
+        if (!title && !body) return;
+
+        darkTooltip.innerHTML = (title ? `<div class="font-bold text-white border-b border-slate-700 pb-1 mb-1">${title}</div>` : '') +
+                                (body ? `<div class="text-slate-300">${body}</div>` : '');
+
+        darkTooltip.classList.remove('hidden');
+        const rect = el.getBoundingClientRect();
+        const tipRect = darkTooltip.getBoundingClientRect();
+        let left = rect.left;
+        let top = rect.top - tipRect.height - 8;
+
+        if (left + tipRect.width > window.innerWidth - 10) left = window.innerWidth - tipRect.width - 10;
+        if (left < 10) left = 10;
+        if (top < 10) top = rect.bottom + 8;
+
+        darkTooltip.style.left = left + 'px';
+        darkTooltip.style.top = top + 'px';
+    });
+
+    document.addEventListener('mouseout', function (e) {
+        const el = e.target.closest('.pro-dark-tooltip');
+        if (el && (!e.relatedTarget || !el.contains(e.relatedTarget))) {
+            darkTooltip.classList.add('hidden');
+        }
+    });
 });

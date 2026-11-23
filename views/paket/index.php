@@ -552,15 +552,30 @@ foreach ($paket as $p) {
                        placeholder="Contoh: Belanja Bahan-Isi Tabung Pemadam Kebakaran">
             </div>
 
-            <!-- Tags Paket (Opsional) -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
-                    Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Opsional, pisahkan dengan koma)</span>
-                </label>
-                <div class="relative">
-                    <ion-icon name="pricetags-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></ion-icon>
-                    <input type="text" name="tags" placeholder="Contoh: Disdik, APBD-P, Bontang, Urgent"
-                           class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
+            <!-- Tags & Kota/Kabupaten Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                        Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Opsional)</span>
+                    </label>
+                    <div class="relative">
+                        <ion-icon name="pricetags-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></ion-icon>
+                        <input type="text" name="tags" placeholder="Contoh: Disdik, APBD-P, SMA"
+                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Kota / Kabupaten</label>
+                    <select name="kab_kota" id="tambah_kab_kota"
+                            class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer">
+                        <option value="">-- Semua / Pilih Kota --</option>
+                        <?php if (!empty($kabupatenList)): ?>
+                            <?php foreach ($kabupatenList as $kab): ?>
+                                <option value="<?= htmlspecialchars($kab['nama']) ?>"><?= htmlspecialchars($kab['nama']) ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
                 </div>
             </div>
 
@@ -684,15 +699,30 @@ foreach ($paket as $p) {
                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
             </div>
 
-            <!-- Tags Paket (Opsional) -->
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
-                    Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Opsional, pisahkan dengan koma)</span>
-                </label>
-                <div class="relative">
-                    <ion-icon name="pricetags-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></ion-icon>
-                    <input type="text" name="tags" id="edit_tags" placeholder="Contoh: Disdik, APBD-P, Bontang, Urgent"
-                           class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
+            <!-- Tags & Kota/Kabupaten Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                        Tags Paket <span class="text-[10px] text-slate-400 font-normal">(Opsional)</span>
+                    </label>
+                    <div class="relative">
+                        <ion-icon name="pricetags-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></ion-icon>
+                        <input type="text" name="tags" id="edit_tags" placeholder="Contoh: Disdik, APBD-P, SMA"
+                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Kota / Kabupaten</label>
+                    <select name="kab_kota" id="edit_kab_kota"
+                            class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs focus:bg-white transition-all cursor-pointer">
+                        <option value="">-- Semua / Pilih Kota --</option>
+                        <?php if (!empty($kabupatenList)): ?>
+                            <?php foreach ($kabupatenList as $kab): ?>
+                                <option value="<?= htmlspecialchars($kab['nama']) ?>"><?= htmlspecialchars($kab['nama']) ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
                 </div>
             </div>
 
@@ -1303,10 +1333,10 @@ foreach ($paket as $p) {
                 </div>
                 <div class="min-w-0">
                     <div class="flex items-center gap-2">
-                        <span id="modalModuleTitle" class="text-xs font-bold text-slate-800">Detail Paket</span>
-                        <span id="modalModuleKode" class="font-mono font-bold text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded border border-slate-200">#KODE</span>
+                        <span id="modalModuleSubtitle" class="text-sm font-bold text-slate-800 truncate max-w-sm sm:max-w-xl">Nama Paket</span>
+                        <span id="modalModuleKode" class="font-mono font-bold text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded border border-slate-200 shrink-0">#KODE</span>
                     </div>
-                    <p id="modalModuleSubtitle" class="text-[11px] text-slate-400 truncate max-w-sm sm:max-w-md">Nama Paket</p>
+                    <p id="modalModuleTitle" class="text-[11px] font-medium text-slate-400">Detail Paket</p>
                 </div>
             </div>
 
@@ -2726,6 +2756,9 @@ function openEditPaketModal(p) {
     document.getElementById('edit_nama_paket').value = p.nama_paket || '';
     if (document.getElementById('edit_tags')) {
         document.getElementById('edit_tags').value = p.tags || '';
+    }
+    if (document.getElementById('edit_kab_kota')) {
+        document.getElementById('edit_kab_kota').value = p.kab_kota || '';
     }
     document.getElementById('edit_perusahaan_id').value = p.perusahaan_id || '';
     const namaPerusahaan = p.perusahaan_nama || p.perusahaan || '-';
