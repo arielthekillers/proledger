@@ -200,9 +200,7 @@ if (!empty($paket['tags'])) {
                     <td class="py-3 px-3 text-xs uppercase tracking-wider text-emerald-800 whitespace-nowrap">
                         Sisa Dana Bersih Paket
                     </td>
-                    <td class="py-3 px-3 text-xs text-emerald-700 font-medium">
-                        Acuan - Potongan (<?= $totalPersen ?>%)
-                    </td>
+                    <td class="py-3 px-3"></td>
                     <td class="py-3 px-3 text-right text-sm font-mono font-extrabold text-emerald-700 whitespace-nowrap">
                         Rp <?= number_format($danaBersih, 0, ',', '.') ?>
                     </td>
