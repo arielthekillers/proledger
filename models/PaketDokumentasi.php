@@ -18,7 +18,7 @@ class PaketDokumentasi {
         $stmt = $this->db->prepare("
             SELECT doc.*, a.name as uploader_nama 
             FROM paket_dokumentasi doc
-            LEFT JOIN admins a ON doc.uploaded_by = a.id
+            LEFT JOIN users a ON doc.uploaded_by = a.id
             WHERE doc.paket_id = ? 
             ORDER BY doc.created_at ASC, doc.id ASC
         ");
@@ -49,7 +49,7 @@ class PaketDokumentasi {
         $stmt = $this->db->prepare("
             SELECT doc.*, a.name as uploader_nama 
             FROM paket_dokumentasi doc
-            LEFT JOIN admins a ON doc.uploaded_by = a.id
+            LEFT JOIN users a ON doc.uploaded_by = a.id
             WHERE doc.distribusi_id = ? 
             ORDER BY doc.created_at ASC, doc.id ASC
         ");
@@ -64,7 +64,7 @@ class PaketDokumentasi {
         $stmt = $this->db->prepare("
             SELECT doc.*, a.name as uploader_nama 
             FROM paket_dokumentasi doc
-            LEFT JOIN admins a ON doc.uploaded_by = a.id
+            LEFT JOIN users a ON doc.uploaded_by = a.id
             WHERE doc.id = ? 
             LIMIT 1
         ");

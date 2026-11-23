@@ -18,7 +18,7 @@ class PaketDokumen {
         $stmt = $this->db->prepare("
             SELECT d.*, a.name as uploader_nama 
             FROM paket_dokumen d
-            LEFT JOIN admins a ON d.uploaded_by = a.id
+            LEFT JOIN users a ON d.uploaded_by = a.id
             WHERE d.paket_id = ? 
             ORDER BY d.created_at DESC, d.id DESC
         ");
@@ -33,7 +33,7 @@ class PaketDokumen {
         $stmt = $this->db->prepare("
             SELECT d.*, a.name as uploader_nama 
             FROM paket_dokumen d
-            LEFT JOIN admins a ON d.uploaded_by = a.id
+            LEFT JOIN users a ON d.uploaded_by = a.id
             WHERE d.id = ? 
             LIMIT 1
         ");

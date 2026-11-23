@@ -9,7 +9,7 @@ $pdo = Database::getInstance()->getConnection();
 $tables = [
     'master_provinsi',
     'master_kabupaten',
-    'admins',
+    'users',
     'skema_potongan',
     'lokasi_penerima',
     'perusahaan',

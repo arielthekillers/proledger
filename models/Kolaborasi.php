@@ -166,7 +166,7 @@ class Kolaborasi {
         $stmt = $this->db->prepare("
             SELECT k.*, a.name as owner_name, a.email as owner_email
             FROM kolaborasi k
-            LEFT JOIN admins a ON k.owner_id = a.id
+            LEFT JOIN users a ON k.owner_id = a.id
             WHERE k.id = ?
         ");
         $stmt->execute([$id]);
@@ -180,7 +180,7 @@ class Kolaborasi {
         $stmt = $this->db->prepare("
             SELECT k.*, a.name as owner_name
             FROM kolaborasi k
-            LEFT JOIN admins a ON k.owner_id = a.id
+            LEFT JOIN users a ON k.owner_id = a.id
             WHERE k.share_token = ? AND k.share_enabled = 1
         ");
         $stmt->execute([$token]);
@@ -210,7 +210,7 @@ class Kolaborasi {
                     WHERE kg2.kolaborasi_id = k.id) as total_paket
             FROM kolaborasi k
             INNER JOIN kolaborasi_anggota ka ON k.id = ka.kolaborasi_id AND ka.user_id = ?
-            LEFT JOIN admins a ON k.owner_id = a.id
+            LEFT JOIN users a ON k.owner_id = a.id
             WHERE ka.status IN ('joined', 'pending')
             ORDER BY FIELD(ka.status, 'pending', 'joined'), k.created_at DESC
         ");
@@ -231,7 +231,7 @@ class Kolaborasi {
      * Undang user via email
      */
     public function inviteByEmail(int $kolabId, string $email, int $invitedBy): array {
-        $stmtUser = $this->db->prepare("SELECT id, name, email, role, status FROM admins WHERE email = ? LIMIT 1");
+        $stmtUser = $this->db->prepare("SELECT id, name, email, role, status FROM users WHERE email = ? LIMIT 1");
         $stmtUser->execute([trim($email)]);
         $user = $stmtUser->fetch();
 
@@ -324,7 +324,7 @@ class Kolaborasi {
             SELECT ka.*, a.name, a.email,
                    (SELECT COUNT(*) FROM kolaborasi_groups kg WHERE kg.kolaborasi_id = ka.kolaborasi_id AND kg.user_id = ka.user_id) as linked_groups_count
             FROM kolaborasi_anggota ka
-            INNER JOIN admins a ON ka.user_id = a.id
+            INNER JOIN users a ON ka.user_id = a.id
             WHERE ka.kolaborasi_id = ?
             ORDER BY FIELD(ka.role, 'owner', 'member'), FIELD(ka.status, 'joined', 'pending', 'declined'), a.name ASC
         ");
@@ -364,7 +364,7 @@ class Kolaborasi {
             FROM kolaborasi_groups kg
             INNER JOIN paket_group pg ON kg.group_id = pg.id
             LEFT JOIN perusahaan p ON pg.perusahaan_id = p.id
-            LEFT JOIN admins a ON kg.user_id = a.id
+            LEFT JOIN users a ON kg.user_id = a.id
             WHERE kg.kolaborasi_id = ?
             ORDER BY p.nama ASC, pg.nama_group ASC
         ");
@@ -397,7 +397,7 @@ class Kolaborasi {
             INNER JOIN paket_group pg ON kg.group_id = pg.id
             INNER JOIN paket_kegiatan pk ON pk.group_id = pg.id
             LEFT JOIN perusahaan p ON pk.perusahaan_id = p.id
-            LEFT JOIN admins a ON kg.user_id = a.id
+            LEFT JOIN users a ON kg.user_id = a.id
             LEFT JOIN (
                 SELECT paket_id,
                        COUNT(*) as total_item_count,

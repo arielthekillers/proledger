@@ -15,7 +15,7 @@ class Admin {
      * Find admin by email
      */
     public function findByEmail($email) {
-        $stmt = $this->db->prepare("SELECT * FROM admins WHERE email = ?");
+        $stmt = $this->db->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
         return $stmt->fetch();
     }
@@ -24,7 +24,7 @@ class Admin {
      * Find admin by ID
      */
     public function findById($id) {
-        $stmt = $this->db->prepare("SELECT * FROM admins WHERE id = ?");
+        $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch();
     }
@@ -33,7 +33,7 @@ class Admin {
      * Check if login access exists for a reference
      */
     public function findByReference($role, $referenceId) {
-        $stmt = $this->db->prepare("SELECT * FROM admins WHERE role = ? AND reference_id = ?");
+        $stmt = $this->db->prepare("SELECT * FROM users WHERE role = ? AND reference_id = ?");
         $stmt->execute([$role, $referenceId]);
         return $stmt->fetch();
     }
@@ -45,7 +45,7 @@ class Admin {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         
         $stmt = $this->db->prepare("
-            INSERT INTO admins (role, reference_id, name, email, password, status) 
+            INSERT INTO users (role, reference_id, name, email, password, status) 
             VALUES (?, ?, ?, ?, ?, 'active')
         ");
         
@@ -65,7 +65,7 @@ class Admin {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         
         $stmt = $this->db->prepare("
-            INSERT INTO admins (name, email, phone, password, role, status)
+            INSERT INTO users (name, email, phone, password, role, status)
             VALUES (?, ?, ?, ?, ?, 'pending')
         ");
         
@@ -88,7 +88,7 @@ class Admin {
         $phone = $data['phone'] ?? null;
         
         $stmt = $this->db->prepare("
-            INSERT INTO admins (name, email, phone, password, role, status, reference_id)
+            INSERT INTO users (name, email, phone, password, role, status, reference_id)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
         
@@ -123,7 +123,7 @@ class Admin {
 
         $params[] = $id;
 
-        $sql = "UPDATE admins SET " . implode(", ", $fields) . " WHERE id = ?";
+        $sql = "UPDATE users SET " . implode(", ", $fields) . " WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute($params);
     }
@@ -132,7 +132,7 @@ class Admin {
      * Update status only (approve / reject / activate / deactivate)
      */
     public function updateStatus($id, $status) {
-        $stmt = $this->db->prepare("UPDATE admins SET status = ? WHERE id = ?");
+        $stmt = $this->db->prepare("UPDATE users SET status = ? WHERE id = ?");
         return $stmt->execute([$status, $id]);
     }
 
@@ -140,7 +140,7 @@ class Admin {
      * Update user profile (name, email, phone)
      */
     public function updateProfile($id, $name, $email, $phone = null) {
-        $stmt = $this->db->prepare("UPDATE admins SET name = ?, email = ?, phone = ? WHERE id = ?");
+        $stmt = $this->db->prepare("UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?");
         return $stmt->execute([$name, $email, $phone ?: null, (int)$id]);
     }
 
@@ -149,7 +149,7 @@ class Admin {
      */
     public function updatePassword($id, $newPassword) {
         $hash = password_hash($newPassword, PASSWORD_DEFAULT);
-        $stmt = $this->db->prepare("UPDATE admins SET password = ? WHERE id = ?");
+        $stmt = $this->db->prepare("UPDATE users SET password = ? WHERE id = ?");
         return $stmt->execute([$hash, $id]);
     }
 
@@ -157,7 +157,7 @@ class Admin {
      * Delete user
      */
     public function delete($id) {
-        $stmt = $this->db->prepare("DELETE FROM admins WHERE id = ?");
+        $stmt = $this->db->prepare("DELETE FROM users WHERE id = ?");
         return $stmt->execute([$id]);
     }
 
@@ -165,7 +165,7 @@ class Admin {
      * Get pending registrations count
      */
     public function getPendingCount() {
-        $stmt = $this->db->query("SELECT COUNT(*) FROM admins WHERE status = 'pending'");
+        $stmt = $this->db->query("SELECT COUNT(*) FROM users WHERE status = 'pending'");
         return (int)$stmt->fetchColumn();
     }
 
@@ -173,7 +173,7 @@ class Admin {
      * Get all users with optional filters
      */
     public function getAll($filter = []) {
-        $sql = "SELECT id, name, email, phone, role, status, reference_id, created_at, updated_at FROM admins WHERE 1=1";
+        $sql = "SELECT id, name, email, phone, role, status, reference_id, created_at, updated_at FROM users WHERE 1=1";
         $params = [];
 
         if (!empty($filter['status'])) {

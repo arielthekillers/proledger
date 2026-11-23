@@ -18,7 +18,7 @@ class Perusahaan {
         $sql = "SELECT p.*, COUNT(pk.id) as jumlah_paket, u.name as owner_name 
                 FROM perusahaan p 
                 LEFT JOIN paket_kegiatan pk ON p.id = pk.perusahaan_id 
-                LEFT JOIN admins u ON p.user_id = u.id";
+                LEFT JOIN users u ON p.user_id = u.id";
         
         $params = [];
         if ($userId !== null) {
@@ -44,7 +44,7 @@ class Perusahaan {
      * Get company by ID
      */
     public function getById($id) {
-        $stmt = $this->db->prepare("SELECT p.*, u.name as owner_name FROM perusahaan p LEFT JOIN admins u ON p.user_id = u.id WHERE p.id = ?");
+        $stmt = $this->db->prepare("SELECT p.*, u.name as owner_name FROM perusahaan p LEFT JOIN users u ON p.user_id = u.id WHERE p.id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch();
     }
