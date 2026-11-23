@@ -208,7 +208,7 @@ class PaketController {
             if ($redirectTo !== '' && strpos($redirectTo, '/') === 0 && strpos($redirectTo, '//') !== 0) {
                 redirect($redirectTo);
             } else {
-                redirect('/paket/detail/' . $kode);
+                redirect('/paket');
             }
             
         } catch (Exception $e) {
@@ -225,16 +225,9 @@ class PaketController {
     
     public function detail($idOrKode) {
         $paket = $this->getAccessiblePaket($idOrKode);
-
-        // Jika diakses menggunakan ID numerik, redirect ke kode 5-digit acak
-        if (is_numeric($idOrKode) && !empty($paket['kode_paket'])) {
-            $qs = !empty($_SERVER['QUERY_STRING']) ? ('?' . $_SERVER['QUERY_STRING']) : '';
-            redirect('/paket/detail/' . $paket['kode_paket'] . $qs);
-            return;
-        }
-
-        $data = $this->prepareDetailData($idOrKode);
-        $this->view('paket/detail', $data);
+        $kode = $paket['kode_paket'] ?: $paket['id'];
+        $tab = trim($_GET['tab'] ?? 'info');
+        redirect('/paket?open_modal=' . urlencode((string)$kode) . '&tab=' . urlencode($tab));
     }
 
     /**
