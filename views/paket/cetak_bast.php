@@ -86,7 +86,7 @@ if ($isBulk && !empty($groupedList)) {
                 box-shadow: none !important;
                 border: none !important;
                 margin: 0 !important;
-                padding: 10mm 15mm !important;
+                padding: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
                 page-break-after: always;
@@ -98,7 +98,7 @@ if ($isBulk && !empty($groupedList)) {
             }
             @page {
                 size: A4 portrait;
-                margin: 12mm 15mm 12mm 15mm;
+                margin: 6mm 15mm 12mm 15mm;
             }
         }
         body {
@@ -146,12 +146,12 @@ if ($isBulk && !empty($groupedList)) {
                 $curItems = $sheet['items'];
             ?>
             <!-- Main Sheet (A4 Proportion) -->
-            <div class="page-sheet max-w-4xl mx-auto bg-white p-10 md:p-14 shadow-lg border border-slate-200 rounded-sm text-body">
+            <div class="page-sheet max-w-4xl mx-auto bg-white pt-5 px-10 pb-10 md:pt-6 md:px-14 md:pb-12 shadow-lg border border-slate-200 rounded-sm text-body">
                 
                 <!-- 1. KOP SURAT PERUSAHAAN REKANAN -->
                 <?php if (!empty($kopUrl)): ?>
-                    <div class="mb-5 text-center">
-                        <img src="<?= $kopUrl ?>" alt="Kop Surat" class="max-h-28 mx-auto w-auto object-contain">
+                    <div class="mb-4 text-center">
+                        <img src="<?= $kopUrl ?>" alt="Kop Surat" class="max-h-32 mx-auto w-full object-contain">
                     </div>
                 <?php else: ?>
                     <div class="border-b-2 border-black pb-3 mb-6 text-center">
