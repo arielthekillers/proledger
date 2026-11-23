@@ -90,15 +90,28 @@ class GroupController {
             return;
         }
 
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = $_SESSION['admin_id'] ?? 0;
+        $activeCompId = $_SESSION['active_perusahaan_id'] ?? null;
+
         $paketList = $this->groupModel->getPaketList($id);
-        $stats = $this->groupModel->getStats($id);
+        $stats = PaketGroup::computeStatsFromList($paketList);
+
+        if ($role === 'admin') {
+            $perusahaanList = $this->perusahaanModel->getAll();
+        } else {
+            $perusahaanList = $this->perusahaanModel->getByUser($userId);
+        }
 
         $data = [
             'title' => 'Group: ' . $group['nama_group'],
             'active' => 'group',
             'group' => $group,
             'paketList' => $paketList,
-            'stats' => $stats
+            'stats' => $stats,
+            'perusahaanList' => $perusahaanList,
+            'activeCompId' => $activeCompId,
+            'role' => $role
         ];
 
         $this->view('group/detail', $data);

@@ -135,31 +135,7 @@ class PaketController {
     }
     
     public function create() {
-        $this->requireUser();
-
-        $activeCompany = getActivePerusahaan();
-        if (!$activeCompany) {
-            flash('error', 'Perusahaan masih kosong. Silakan buat perusahaan terlebih dahulu sebelum menambahkan paket.');
-            redirect('/perusahaan?action=create');
-            return;
-        }
-        
-        $groups = $this->groupModel->getAll($activeCompany['id']);
-        $skemas = $this->skemaModel->getAll($activeCompany['id']);
-        $kabupatenList = $this->lokasiModel->getAllKabupaten();
-        
-        $data = [
-            'title' => 'Tambah Paket Kegiatan',
-            'active' => 'paket',
-            'activeTab' => $_GET['tab'] ?? 'info',
-            'users' => [],
-            'activeCompany' => $activeCompany,
-            'groups' => $groups,
-            'skemas' => $skemas,
-            'kabupatenList' => $kabupatenList
-        ];
-        
-        $this->view('paket/create', $data);
+        redirect('/paket');
     }
     
     public function store() {
@@ -228,12 +204,22 @@ class PaketController {
             $kode = is_array($created) ? $created['kode_paket'] : $created;
             
             flash('success', 'Paket kegiatan (' . $kode . ') berhasil ditambahkan!');
-            redirect('/paket/detail/' . $kode);
+            $redirectTo = trim($_POST['redirect_to'] ?? '');
+            if ($redirectTo !== '' && strpos($redirectTo, '/') === 0 && strpos($redirectTo, '//') !== 0) {
+                redirect($redirectTo);
+            } else {
+                redirect('/paket/detail/' . $kode);
+            }
             
         } catch (Exception $e) {
             flash('error', 'Gagal menambahkan paket: ' . $e->getMessage());
             setOld($_POST);
-            redirect('/paket');
+            $redirectTo = trim($_POST['redirect_to'] ?? '');
+            if ($redirectTo !== '' && strpos($redirectTo, '/') === 0 && strpos($redirectTo, '//') !== 0) {
+                redirect($redirectTo);
+            } else {
+                redirect('/paket');
+            }
         }
     }
     

@@ -54,7 +54,7 @@ $kopsuratUrls = !empty($perusahaan['kopsurat']) ? Uploader::getAllUrls($perusaha
 </div>
 
 <!-- ========================================== -->
-<!-- 2. COMPANY PROFILE & IDENTITY CARD        -->
+<!-- 2. UNIFIED COMPANY PROFILE & BRANDING CARD -->
 <!-- ========================================== -->
 <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 mb-5">
     <div class="flex flex-col md:flex-row items-start gap-4">
@@ -84,19 +84,23 @@ $kopsuratUrls = !empty($perusahaan['kopsurat']) ? Uploader::getAllUrls($perusaha
         </div>
 
         <!-- Company Text & Info -->
-        <div class="flex-1 min-w-0">
+        <div class="flex-1 min-w-0 w-full">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
                 <h1 class="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight leading-tight">
                     <?= htmlspecialchars($perusahaan['nama']) ?>
                 </h1>
             </div>
 
-            <p class="text-xs text-slate-400 mb-3 flex items-center gap-1.5">
+            <p class="text-xs text-slate-400 mb-3 flex flex-wrap items-center gap-1.5">
                 <ion-icon name="calendar-outline"></ion-icon>
                 <span>Terdaftar di SimPaket sejak <?= date('d M Y', strtotime($perusahaan['created_at'])) ?></span>
                 <?php if (!empty($perusahaan['owner_name'])): ?>
                     <span class="text-slate-300">&bull;</span>
                     <span class="text-slate-500 font-medium">Pemilik: <?= htmlspecialchars($perusahaan['owner_name']) ?></span>
+                <?php endif; ?>
+                <?php if (!empty($perusahaan['nama_direktur'])): ?>
+                    <span class="text-slate-300">&bull;</span>
+                    <span class="text-slate-600 font-medium">Direktur: <?= htmlspecialchars($perusahaan['nama_direktur']) ?></span>
                 <?php endif; ?>
             </p>
 
@@ -175,338 +179,188 @@ $kopsuratUrls = !empty($perusahaan['kopsurat']) ? Uploader::getAllUrls($perusaha
             </div>
         </div>
     </div>
-</div>
 
-<!-- ========================================== -->
-<!-- 3. BRANDING & VISUAL IDENTITY ASSETS (CORE)-->
-<!-- ========================================== -->
-<div class="mb-4">
-    <div class="flex items-center justify-between mb-3">
-        <div>
-            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                <ion-icon name="color-palette-outline" class="text-blue-600"></ion-icon>
+    <!-- ========================================== -->
+    <!-- COMPACT BRANDING & VISUAL ASSETS SECTION   -->
+    <!-- ========================================== -->
+    <div class="mt-5 pt-4 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <ion-icon name="color-palette-outline" class="text-blue-600 text-sm"></ion-icon>
                 <span>Identitas Visual & Berkas Branding</span>
             </h2>
-            <p class="text-xs text-slate-400">
-                Aset branding resmi perusahaan. Setiap file otomatis dikompresi & disimpan dalam 3 resolusi: <span class="font-semibold text-slate-600">Large</span>, <span class="font-semibold text-slate-600">Medium</span>, dan <span class="font-semibold text-slate-600">Small</span>.
-            </p>
+            <span class="text-[11px] text-slate-400 hidden sm:inline">Logo, Avatar & Kop Surat</span>
         </div>
-    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        
-        <!-- ========================================== -->
-        <!-- CARD A: LOGO RESMI PERUSAHAAN             -->
-        <!-- ========================================== -->
-        <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 flex flex-col justify-between hover:border-slate-300 transition-all">
-            <div>
-                <!-- Card Header -->
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3.5">
-                    <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-base">
-                            <ion-icon name="ribbon-outline"></ion-icon>
-                        </div>
-                        <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wide">Logo Resmi</h3>
-                    </div>
-                    <?php if ($logoUrls): ?>
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <ion-icon name="checkmark-circle"></ion-icon>
-                            <span>Terunggah</span>
-                        </span>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <!-- ITEM A: LOGO RESMI -->
+            <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-slate-50 transition-colors">
+                <div class="w-14 h-14 rounded-lg border border-slate-200 bg-white flex items-center justify-center p-1.5 shrink-0 overflow-hidden relative group">
+                    <?php if ($logoUrls && !empty($logoUrls['medium'])): ?>
+                        <img src="<?= $logoUrls['medium'] ?>" alt="Logo"
+                             onclick="previewImageModal('<?= $logoUrls['large'] ?>', 'Logo Resmi - Large (1200px)')"
+                             class="max-h-full max-w-full object-contain cursor-pointer group-hover:scale-105 transition-transform"
+                             title="Klik untuk lihat HD">
                     <?php else: ?>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
-                            Belum Ada
-                        </span>
+                        <ion-icon name="ribbon-outline" class="text-xl text-slate-300"></ion-icon>
                     <?php endif; ?>
                 </div>
-
-                <!-- Preview Area -->
-                <div class="mb-4">
-                    <div class="h-44 w-full rounded-xl border border-slate-200/80 bg-slate-50/60 flex items-center justify-center p-4 relative overflow-hidden group">
-                        <?php if ($logoUrls && !empty($logoUrls['medium'])): ?>
-                            <img src="<?= $logoUrls['medium'] ?>" alt="Logo <?= htmlspecialchars($perusahaan['nama']) ?>" 
-                                 class="max-h-full max-w-full object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform duration-200">
-                            
-                            <!-- Overlay on hover for quick view -->
-                            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                <button type="button" 
-                                        onclick="previewImageModal('<?= $logoUrls['large'] ?>', 'Logo Resmi - Large (1200px)')"
-                                        class="p-2 bg-white text-slate-800 rounded-lg hover:bg-slate-100 transition-colors shadow-sm text-xs font-semibold flex items-center gap-1">
-                                    <ion-icon name="scan-outline" class="text-sm"></ion-icon>
-                                    <span>Lihat HD</span>
-                                </button>
-                            </div>
-                        <?php else: ?>
-                            <div class="text-center p-4">
-                                <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center text-2xl mx-auto mb-2">
-                                    <ion-icon name="image-outline"></ion-icon>
-                                </div>
-                                <p class="text-xs font-semibold text-slate-600 mb-0.5">Belum Ada Logo</p>
-                                <p class="text-[11px] text-slate-400">Disarankan PNG transparan atau WebP</p>
-                            </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1 mb-0.5">
+                        <span class="text-xs font-bold text-slate-800 truncate">Logo Resmi</span>
+                        <?php if ($logoUrls): ?>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Terunggah"></span>
                         <?php endif; ?>
                     </div>
-
-                    <!-- 3 Version Chips -->
-                    <?php if ($logoUrls): ?>
-                        <div class="mt-2.5 p-2 bg-slate-50 rounded-xl border border-slate-100">
-                            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">3 Versi Resolusi Tersedia:</span>
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <a href="<?= $logoUrls['small'] ?>" target="_blank" 
-                                   class="px-2 py-0.5 bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded text-[11px] font-semibold border border-slate-200 transition-colors flex items-center gap-1">
-                                    <ion-icon name="open-outline" class="text-[10px]"></ion-icon> Small (160px)
-                                </a>
-                                <a href="<?= $logoUrls['medium'] ?>" target="_blank" 
-                                   class="px-2 py-0.5 bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded text-[11px] font-semibold border border-slate-200 transition-colors flex items-center gap-1">
-                                    <ion-icon name="open-outline" class="text-[10px]"></ion-icon> Med (500px)
-                                </a>
-                                <a href="<?= $logoUrls['large'] ?>" target="_blank" 
-                                   class="px-2 py-0.5 bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded text-[11px] font-semibold border border-slate-200 transition-colors flex items-center gap-1">
-                                    <ion-icon name="open-outline" class="text-[10px]"></ion-icon> Large (1200px)
-                                </a>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Card Action Buttons -->
-            <div class="pt-3 border-t border-slate-100 flex items-center gap-2">
-                <button type="button" 
-                        data-upload-image 
-                        data-module="perusahaan" 
-                        data-field="logo" 
-                        data-id="<?= $perusahaan['id'] ?>" 
-                        data-title="Upload Logo Perusahaan"
-                        data-hint="Disarankan gambar beresolusi tinggi rasio fleksibel / transparan (PNG, JPG, WebP)"
-                        class="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.98]">
-                    <ion-icon name="cloud-upload-outline" class="text-sm"></ion-icon>
-                    <span><?= $logoUrls ? 'Ganti Logo' : 'Upload Logo' ?></span>
-                </button>
-
-                <?php if ($logoUrls): ?>
-                    <button type="button" 
-                            data-delete-image 
-                            data-module="perusahaan" 
-                            data-field="logo" 
-                            data-id="<?= $perusahaan['id'] ?>"
-                            data-label="Logo Perusahaan"
-                            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors text-base"
-                            title="Hapus Logo">
-                        <ion-icon name="trash-outline"></ion-icon>
-                    </button>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- CARD B: AVATAR / ICON PROFIL              -->
-        <!-- ========================================== -->
-        <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 flex flex-col justify-between hover:border-slate-300 transition-all">
-            <div>
-                <!-- Card Header -->
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3.5">
-                    <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-base">
-                            <ion-icon name="person-circle-outline"></ion-icon>
-                        </div>
-                        <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wide">Avatar / Icon</h3>
-                    </div>
-                    <?php if ($avatarUrls): ?>
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <ion-icon name="checkmark-circle"></ion-icon>
-                            <span>Terunggah</span>
-                        </span>
-                    <?php else: ?>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
-                            Belum Ada
-                        </span>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Preview Area -->
-                <div class="mb-4">
-                    <div class="h-44 w-full rounded-xl border border-slate-200/80 bg-slate-50/60 flex items-center justify-center p-4 relative overflow-hidden group">
-                        <?php if ($avatarUrls && !empty($avatarUrls['medium'])): ?>
-                            <img src="<?= $avatarUrls['medium'] ?>" alt="Avatar <?= htmlspecialchars($perusahaan['nama']) ?>" 
-                                 class="w-28 h-28 rounded-full object-cover shadow-md ring-4 ring-white border border-slate-200 group-hover:scale-105 transition-transform duration-200">
-                            
-                            <!-- Overlay on hover for quick view -->
-                            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                <button type="button" 
-                                        onclick="previewImageModal('<?= $avatarUrls['large'] ?>', 'Avatar Profil - Large (500x500)')"
-                                        class="p-2 bg-white text-slate-800 rounded-lg hover:bg-slate-100 transition-colors shadow-sm text-xs font-semibold flex items-center gap-1">
-                                    <ion-icon name="scan-outline" class="text-sm"></ion-icon>
-                                    <span>Lihat HD</span>
-                                </button>
-                            </div>
-                        <?php else: ?>
-                            <div class="text-center p-4">
-                                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-xl font-bold mx-auto mb-2 shadow-sm">
-                                    <?= strtoupper(substr($perusahaan['nama'], 0, 2)) ?>
-                                </div>
-                                <p class="text-xs font-semibold text-slate-600 mb-0.5">Avatar Standar</p>
-                                <p class="text-[11px] text-slate-400">Otomatis dicrop rasio 1:1</p>
-                            </div>
+                    <p class="text-[10px] text-slate-400 mb-2 truncate">
+                        <?= $logoUrls ? 'PNG / WebP (3 ukuran)' : 'Belum diunggah' ?>
+                    </p>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button"
+                                data-upload-image
+                                data-module="perusahaan"
+                                data-field="logo"
+                                data-id="<?= $perusahaan['id'] ?>"
+                                data-title="Upload Logo Perusahaan"
+                                data-hint="Disarankan gambar beresolusi tinggi rasio fleksibel / transparan (PNG, JPG, WebP)"
+                                class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer">
+                            <ion-icon name="cloud-upload-outline" class="text-xs"></ion-icon>
+                            <span><?= $logoUrls ? 'Ganti' : 'Upload' ?></span>
+                        </button>
+                        <?php if ($logoUrls): ?>
+                            <button type="button"
+                                    onclick="previewImageModal('<?= $logoUrls['large'] ?>', 'Logo Resmi - Large (1200px)')"
+                                    class="p-1 text-slate-500 hover:text-blue-600 hover:bg-white rounded-lg border border-slate-200 transition-colors text-xs cursor-pointer"
+                                    title="Lihat HD">
+                                <ion-icon name="scan-outline"></ion-icon>
+                            </button>
+                            <button type="button"
+                                    data-delete-image
+                                    data-module="perusahaan"
+                                    data-field="logo"
+                                    data-id="<?= $perusahaan['id'] ?>"
+                                    data-label="Logo Perusahaan"
+                                    class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 hover:border-rose-200 transition-colors text-xs cursor-pointer"
+                                    title="Hapus Logo">
+                                <ion-icon name="trash-outline"></ion-icon>
+                            </button>
                         <?php endif; ?>
                     </div>
-
-                    <!-- 3 Version Chips -->
-                    <?php if ($avatarUrls): ?>
-                        <div class="mt-2.5 p-2 bg-slate-50 rounded-xl border border-slate-100">
-                            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">3 Versi Resolusi Tersedia:</span>
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <a href="<?= $avatarUrls['small'] ?>" target="_blank" 
-                                   class="px-2 py-0.5 bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded text-[11px] font-semibold border border-slate-200 transition-colors flex items-center gap-1">
-                                    <ion-icon name="open-outline" class="text-[10px]"></ion-icon> Small (80x80)
-                                </a>
-                                <a href="<?= $avatarUrls['medium'] ?>" target="_blank" 
-                                   class="px-2 py-0.5 bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded text-[11px] font-semibold border border-slate-200 transition-colors flex items-center gap-1">
-                                    <ion-icon name="open-outline" class="text-[10px]"></ion-icon> Med (200x200)
-                                </a>
-                                <a href="<?= $avatarUrls['large'] ?>" target="_blank" 
-                                   class="px-2 py-0.5 bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded text-[11px] font-semibold border border-slate-200 transition-colors flex items-center gap-1">
-                                    <ion-icon name="open-outline" class="text-[10px]"></ion-icon> Large (500x500)
-                                </a>
-                            </div>
-                        </div>
-                    <?php endif; ?>
                 </div>
             </div>
 
-            <!-- Card Action Buttons -->
-            <div class="pt-3 border-t border-slate-100 flex items-center gap-2">
-                <button type="button" 
-                        data-upload-image 
-                        data-module="perusahaan" 
-                        data-field="avatar" 
-                        data-id="<?= $perusahaan['id'] ?>" 
-                        data-title="Upload Avatar Profil"
-                        data-hint="Foto profil / icon persegi, otomatis dicrop rasio 1:1 (Maks 10MB)"
-                        class="flex-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.98]">
-                    <ion-icon name="cloud-upload-outline" class="text-sm"></ion-icon>
-                    <span><?= $avatarUrls ? 'Ganti Avatar' : 'Upload Avatar' ?></span>
-                </button>
-
-                <?php if ($avatarUrls): ?>
-                    <button type="button" 
-                            data-delete-image 
-                            data-module="perusahaan" 
-                            data-field="avatar" 
-                            data-id="<?= $perusahaan['id'] ?>"
-                            data-label="Avatar Profil"
-                            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors text-base"
-                            title="Hapus Avatar">
-                        <ion-icon name="trash-outline"></ion-icon>
-                    </button>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- CARD C: KOP SURAT RESMI                   -->
-        <!-- ========================================== -->
-        <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 flex flex-col justify-between hover:border-slate-300 transition-all">
-            <div>
-                <!-- Card Header -->
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3.5">
-                    <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-base">
-                            <ion-icon name="document-text-outline"></ion-icon>
-                        </div>
-                        <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wide">Kop Surat Resmi</h3>
-                    </div>
-                    <?php if ($kopsuratUrls): ?>
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <ion-icon name="checkmark-circle"></ion-icon>
-                            <span>Terunggah</span>
-                        </span>
+            <!-- ITEM B: AVATAR / ICON -->
+            <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-slate-50 transition-colors">
+                <div class="w-14 h-14 rounded-lg border border-slate-200 bg-white flex items-center justify-center p-1.5 shrink-0 overflow-hidden relative group">
+                    <?php if ($avatarUrls && !empty($avatarUrls['medium'])): ?>
+                        <img src="<?= $avatarUrls['medium'] ?>" alt="Avatar"
+                             onclick="previewImageModal('<?= $avatarUrls['large'] ?>', 'Avatar Profil - Large (500x500)')"
+                             class="w-11 h-11 rounded-full object-cover cursor-pointer group-hover:scale-105 transition-transform"
+                             title="Klik untuk lihat HD">
                     <?php else: ?>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
-                            Belum Ada
-                        </span>
+                        <ion-icon name="person-circle-outline" class="text-xl text-slate-300"></ion-icon>
                     <?php endif; ?>
                 </div>
-
-                <!-- Preview Area -->
-                <div class="mb-4">
-                    <div class="h-44 w-full rounded-xl border border-slate-200/80 bg-slate-50/60 flex items-center justify-center p-3 relative overflow-hidden group">
-                        <?php if ($kopsuratUrls && !empty($kopsuratUrls['medium'])): ?>
-                            <img src="<?= $kopsuratUrls['medium'] ?>" alt="Kop Surat <?= htmlspecialchars($perusahaan['nama']) ?>" 
-                                 class="max-h-full max-w-full object-contain shadow-xs border border-slate-200 bg-white group-hover:scale-105 transition-transform duration-200">
-                            
-                            <!-- Overlay on hover for quick view -->
-                            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                <button type="button" 
-                                        onclick="previewImageModal('<?= $kopsuratUrls['large'] ?>', 'Kop Surat Resmi - Large (1800px)')"
-                                        class="p-2 bg-white text-slate-800 rounded-lg hover:bg-slate-100 transition-colors shadow-sm text-xs font-semibold flex items-center gap-1">
-                                    <ion-icon name="scan-outline" class="text-sm"></ion-icon>
-                                    <span>Lihat HD</span>
-                                </button>
-                            </div>
-                        <?php else: ?>
-                            <div class="text-center p-4">
-                                <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center text-2xl mx-auto mb-2">
-                                    <ion-icon name="document-attach-outline"></ion-icon>
-                                </div>
-                                <p class="text-xs font-semibold text-slate-600 mb-0.5">Belum Ada Kop Surat</p>
-                                <p class="text-[11px] text-slate-400">Header resmi persuratan & invoice (rasio lebar 3:1)</p>
-                            </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1 mb-0.5">
+                        <span class="text-xs font-bold text-slate-800 truncate">Avatar / Icon</span>
+                        <?php if ($avatarUrls): ?>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Terunggah"></span>
                         <?php endif; ?>
                     </div>
-
-                    <!-- 3 Version Chips -->
-                    <?php if ($kopsuratUrls): ?>
-                        <div class="mt-2.5 p-2 bg-slate-50 rounded-xl border border-slate-100">
-                            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">3 Versi Resolusi Tersedia:</span>
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <a href="<?= $kopsuratUrls['small'] ?>" target="_blank" 
-                                   class="px-2 py-0.5 bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded text-[11px] font-semibold border border-slate-200 transition-colors flex items-center gap-1">
-                                    <ion-icon name="open-outline" class="text-[10px]"></ion-icon> Small (350x120)
-                                </a>
-                                <a href="<?= $kopsuratUrls['medium'] ?>" target="_blank" 
-                                   class="px-2 py-0.5 bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded text-[11px] font-semibold border border-slate-200 transition-colors flex items-center gap-1">
-                                    <ion-icon name="open-outline" class="text-[10px]"></ion-icon> Med (900x300)
-                                </a>
-                                <a href="<?= $kopsuratUrls['large'] ?>" target="_blank" 
-                                   class="px-2 py-0.5 bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded text-[11px] font-semibold border border-slate-200 transition-colors flex items-center gap-1">
-                                    <ion-icon name="open-outline" class="text-[10px]"></ion-icon> Large (1800x600)
-                                </a>
-                            </div>
-                        </div>
-                    <?php endif; ?>
+                    <p class="text-[10px] text-slate-400 mb-2 truncate">
+                        <?= $avatarUrls ? 'Rasio 1:1 (3 ukuran)' : 'Belum diunggah' ?>
+                    </p>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button"
+                                data-upload-image
+                                data-module="perusahaan"
+                                data-field="avatar"
+                                data-id="<?= $perusahaan['id'] ?>"
+                                data-title="Upload Avatar Profil"
+                                data-hint="Foto profil / icon persegi, otomatis dicrop rasio 1:1 (Maks 10MB)"
+                                class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer">
+                            <ion-icon name="cloud-upload-outline" class="text-xs"></ion-icon>
+                            <span><?= $avatarUrls ? 'Ganti' : 'Upload' ?></span>
+                        </button>
+                        <?php if ($avatarUrls): ?>
+                            <button type="button"
+                                    onclick="previewImageModal('<?= $avatarUrls['large'] ?>', 'Avatar Profil - Large (500x500)')"
+                                    class="p-1 text-slate-500 hover:text-emerald-600 hover:bg-white rounded-lg border border-slate-200 transition-colors text-xs cursor-pointer"
+                                    title="Lihat HD">
+                                <ion-icon name="scan-outline"></ion-icon>
+                            </button>
+                            <button type="button"
+                                    data-delete-image
+                                    data-module="perusahaan"
+                                    data-field="avatar"
+                                    data-id="<?= $perusahaan['id'] ?>"
+                                    data-label="Avatar Profil"
+                                    class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 hover:border-rose-200 transition-colors text-xs cursor-pointer"
+                                    title="Hapus Avatar">
+                                <ion-icon name="trash-outline"></ion-icon>
+                            </button>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
 
-            <!-- Card Action Buttons -->
-            <div class="pt-3 border-t border-slate-100 flex items-center gap-2">
-                <button type="button" 
-                        data-upload-image 
-                        data-module="perusahaan" 
-                        data-field="kopsurat" 
-                        data-id="<?= $perusahaan['id'] ?>" 
-                        data-title="Upload Kop Surat Resmi"
-                        data-hint="Header resmi untuk persuratan, invoice, dan dokumen resmi (Lebar hingga 1800px)"
-                        class="flex-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.98]">
-                    <ion-icon name="cloud-upload-outline" class="text-sm"></ion-icon>
-                    <span><?= $kopsuratUrls ? 'Ganti Kop Surat' : 'Upload Kop Surat' ?></span>
-                </button>
-
-                <?php if ($kopsuratUrls): ?>
-                    <button type="button" 
-                            data-delete-image 
-                            data-module="perusahaan" 
-                            data-field="kopsurat" 
-                            data-id="<?= $perusahaan['id'] ?>"
-                            data-label="Kop Surat Resmi"
-                            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-slate-200 hover:border-rose-200 transition-colors text-base"
-                            title="Hapus Kop Surat">
-                        <ion-icon name="trash-outline"></ion-icon>
-                    </button>
-                <?php endif; ?>
+            <!-- ITEM C: KOP SURAT RESMI -->
+            <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-slate-50 transition-colors">
+                <div class="w-20 h-14 rounded-lg border border-slate-200 bg-white flex items-center justify-center p-1 shrink-0 overflow-hidden relative group">
+                    <?php if ($kopsuratUrls && !empty($kopsuratUrls['medium'])): ?>
+                        <img src="<?= $kopsuratUrls['medium'] ?>" alt="Kop Surat"
+                             onclick="previewImageModal('<?= $kopsuratUrls['large'] ?>', 'Kop Surat Resmi - Large (1800px)')"
+                             class="max-h-full max-w-full object-contain cursor-pointer group-hover:scale-105 transition-transform"
+                             title="Klik untuk lihat HD">
+                    <?php else: ?>
+                        <ion-icon name="document-text-outline" class="text-xl text-slate-300"></ion-icon>
+                    <?php endif; ?>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1 mb-0.5">
+                        <span class="text-xs font-bold text-slate-800 truncate">Kop Surat Resmi</span>
+                        <?php if ($kopsuratUrls): ?>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Terunggah"></span>
+                        <?php endif; ?>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mb-2 truncate">
+                        <?= $kopsuratUrls ? 'Header BAST & Surat' : 'Belum diunggah' ?>
+                    </p>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button"
+                                data-upload-image
+                                data-module="perusahaan"
+                                data-field="kopsurat"
+                                data-id="<?= $perusahaan['id'] ?>"
+                                data-title="Upload Kop Surat Resmi"
+                                data-hint="Header resmi untuk persuratan, invoice, dan dokumen resmi (Lebar hingga 1800px)"
+                                class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[11px] font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer">
+                            <ion-icon name="cloud-upload-outline" class="text-xs"></ion-icon>
+                            <span><?= $kopsuratUrls ? 'Ganti' : 'Upload' ?></span>
+                        </button>
+                        <?php if ($kopsuratUrls): ?>
+                            <button type="button"
+                                    onclick="previewImageModal('<?= $kopsuratUrls['large'] ?>', 'Kop Surat Resmi - Large (1800px)')"
+                                    class="p-1 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg border border-slate-200 transition-colors text-xs cursor-pointer"
+                                    title="Lihat HD">
+                                <ion-icon name="scan-outline"></ion-icon>
+                            </button>
+                            <button type="button"
+                                    data-delete-image
+                                    data-module="perusahaan"
+                                    data-field="kopsurat"
+                                    data-id="<?= $perusahaan['id'] ?>"
+                                    data-label="Kop Surat Resmi"
+                                    class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 hover:border-rose-200 transition-colors text-xs cursor-pointer"
+                                    title="Hapus Kop Surat">
+                                <ion-icon name="trash-outline"></ion-icon>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
         </div>
-
     </div>
 </div>
 
