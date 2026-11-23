@@ -60,7 +60,10 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="<?= APP_URL ?>/css/app.min.css?v=<?= APP_VERSION ?>">
+    <?php if (defined('APP_ENV') && APP_ENV === 'local'): ?>
+        <script src="https://cdn.tailwindcss.com"></script>
+    <?php endif; ?>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>

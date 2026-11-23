@@ -1,5 +1,5 @@
 -- ProLedger Production Database Dump
--- Generated on 2026-11-19 22:27:42
+-- Generated on 2026-11-23 16:18:10
 -- Target: MySQL / MariaDB (Coolify / Docker / VPS)
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -54,10 +54,10 @@ INSERT INTO `master_kabupaten` (`id`, `provinsi_id`, `kode`, `nama`, `tipe`, `cr
 ('10', '1', '64.74', 'Kota Bontang', 'Kota', '2026-11-18 19:12:45');
 
 -- --------------------------------------------------------
--- Table structure for `admins`
+-- Table structure for `users`
 -- --------------------------------------------------------
-DROP TABLE IF EXISTS `admins`;
-CREATE TABLE `admins` (
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
@@ -73,8 +73,8 @@ CREATE TABLE `admins` (
   KEY `idx_role_ref` (`role`,`reference_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table `admins`
-INSERT INTO `admins` (`id`, `name`, `email`, `phone`, `role`, `status`, `reference_id`, `password`, `created_at`, `updated_at`) VALUES
+-- Dumping data for table `users`
+INSERT INTO `users` (`id`, `name`, `email`, `phone`, `role`, `status`, `reference_id`, `password`, `created_at`, `updated_at`) VALUES
 ('1', 'Administrator', 'admin@sintesacorp.id', NULL, 'admin', 'active', NULL, '$2y$10$rv.jISfmbTCMEpRwL8BtA.rW1CImpYc5pi0hbVnxi5LGOAq5.YoY6', '2025-12-20 14:08:49', '2026-11-17 18:18:37'),
 ('4', 'Ahmad Darul Arqam', 'ahmaddarularqam@gmail.com', '081359774765', 'user', 'active', NULL, '$2y$10$o0n9SIp5K5IzuIk0GQG3LOB5VFB0WMDgHjExUzAmyjPG.8CQieOTC', '2026-11-17 18:26:37', '2026-11-17 23:47:25');
 
@@ -95,7 +95,7 @@ CREATE TABLE `skema_potongan` (
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_perusahaan` (`perusahaan_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `skema_potongan`
 INSERT INTO `skema_potongan` (`id`, `perusahaan_id`, `nama_skema`, `ada_pasal`, `persen_pasal`, `ada_admin`, `persen_admin`, `tipe_potongan`, `created_at`, `updated_at`) VALUES
@@ -170,6 +170,7 @@ CREATE TABLE `perusahaan` (
   `logo` varchar(255) DEFAULT NULL,
   `avatar` varchar(255) DEFAULT NULL,
   `kopsurat` varchar(255) DEFAULT NULL,
+  `ttd` varchar(255) DEFAULT NULL,
   `stempel_ttd` varchar(255) DEFAULT NULL,
   `website` varchar(255) DEFAULT NULL,
   `keterangan` text DEFAULT NULL,
@@ -177,17 +178,18 @@ CREATE TABLE `perusahaan` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_perusahaan_user` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table `perusahaan`
-INSERT INTO `perusahaan` (`id`, `user_id`, `nama`, `nama_direktur`, `jabatan_direktur`, `email`, `telepon`, `alamat`, `logo`, `avatar`, `kopsurat`, `stempel_ttd`, `website`, `keterangan`, `created_at`, `updated_at`) VALUES
-('1', '2', 'KOLEGA JAYA', NULL, 'Direktur', 'arielthekillers@gmail.com', '081359774765', 'Jl. Cut Nyak Dien', NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-20 13:14:21', '2026-11-17 18:37:44'),
-('4', '4', 'test', NULL, 'Direktur', 'test@test.com', '0813456789', 'test', 'perusahaan_logo_1794916084_7c55c3035492.png', 'perusahaan_avatar_1794919581_89743d12d225.jpg', 'perusahaan_kopsurat_1794916120_0b0536244e7f.png', NULL, NULL, NULL, '2026-11-17 19:09:59', '2026-11-17 20:46:21'),
-('5', NULL, 'CV. PIJAR TIMUR', NULL, 'Direktur', 'cvpijartimur@example.com', '08123456789', 'Alamat Perusahaan', NULL, NULL, NULL, NULL, NULL, NULL, '2026-11-17 20:54:09', '2026-11-17 20:54:09'),
-('6', NULL, 'CV. KARSA KREASI BERDIKARI', 'Muhammad Rifki', 'Direktur', 'cvkarsakreasiberdikari@example.com', '08123456789', 'Alamat Perusahaan', NULL, NULL, NULL, NULL, NULL, NULL, '2026-11-17 20:54:09', '2026-11-18 17:30:51'),
-('7', NULL, 'PT. PUTRA KALTIM BERSINERGI', NULL, 'Direktur', 'ptputrakaltimbersinergi@example.com', '08123456789', 'Alamat Perusahaan', NULL, NULL, NULL, NULL, NULL, NULL, '2026-11-17 20:54:09', '2026-11-17 20:54:09'),
-('8', NULL, 'CV. KAYA PACE', NULL, 'Direktur', 'cvkayapace@example.com', '08123456789', 'Alamat Perusahaan', NULL, NULL, NULL, NULL, NULL, NULL, '2026-11-17 20:54:09', '2026-11-17 20:54:09'),
-('9', NULL, 'CV. ARYA TIKVAH', NULL, 'Direktur', 'cvaryatikvah@example.com', '08123456789', 'Alamat Perusahaan', NULL, NULL, NULL, NULL, NULL, NULL, '2026-11-17 20:54:09', '2026-11-17 20:54:09');
+INSERT INTO `perusahaan` (`id`, `user_id`, `nama`, `nama_direktur`, `jabatan_direktur`, `email`, `telepon`, `alamat`, `logo`, `avatar`, `kopsurat`, `ttd`, `stempel_ttd`, `website`, `keterangan`, `created_at`, `updated_at`) VALUES
+('1', '2', 'KOLEGA JAYA', NULL, 'Direktur', 'arielthekillers@gmail.com', '081359774765', 'Jl. Cut Nyak Dien', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-20 13:14:21', '2026-11-17 18:37:44'),
+('4', '4', 'CV. Sintesa Corp', NULL, 'Direktur', 'test@test.com', '0813456789', 'Jl. Sultan Syahrir No.58, RT.18, Tj. Laut Indah, Kec. Bontang Sel., Kota Bontang, Kalimantan Timur 75322', 'perusahaan_logo_1794916084_7c55c3035492.png', 'perusahaan_avatar_1795423897_5613e5700a0a.jpg', 'perusahaan_kopsurat_1794916120_0b0536244e7f.png', NULL, NULL, 'https://sintesacorp.id', NULL, '2026-11-17 19:09:59', '2026-11-23 16:51:37'),
+('5', NULL, 'CV. PIJAR TIMUR', NULL, 'Direktur', 'cvpijartimur@example.com', '08123456789', 'Alamat Perusahaan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-11-17 20:54:09', '2026-11-17 20:54:09'),
+('6', NULL, 'CV. KARSA KREASI BERDIKARI', 'Muhammad Rifki', 'Direktur', 'cvkarsakreasiberdikari@example.com', '08123456789', 'Alamat Perusahaan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-11-17 20:54:09', '2026-11-18 17:30:51'),
+('7', NULL, 'PT. PUTRA KALTIM BERSINERGI', NULL, 'Direktur', 'ptputrakaltimbersinergi@example.com', '08123456789', 'Alamat Perusahaan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-11-17 20:54:09', '2026-11-17 20:54:09'),
+('8', NULL, 'CV. KAYA PACE', NULL, 'Direktur', 'cvkayapace@example.com', '08123456789', 'Alamat Perusahaan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-11-17 20:54:09', '2026-11-17 20:54:09'),
+('9', NULL, 'CV. ARYA TIKVAH', NULL, 'Direktur', 'cvaryatikvah@example.com', '08123456789', 'Alamat Perusahaan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-11-17 20:54:09', '2026-11-17 20:54:09'),
+('10', '4', 'Perusahaan 2', 'Anto', 'Direktur', 'test@perusahaan2.com', '081349774765', 'Jl. Sultan Syahrir', NULL, NULL, NULL, NULL, NULL, 'https://sintesacorp3.id', NULL, '2026-11-23 16:25:49', '2026-11-23 16:25:49');
 
 -- --------------------------------------------------------
 -- Table structure for `paket_group`
@@ -202,12 +204,14 @@ CREATE TABLE `paket_group` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
-  KEY `idx_perusahaan` (`perusahaan_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `idx_perusahaan` (`perusahaan_id`),
+  KEY `idx_pg_perusahaan` (`perusahaan_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `paket_group`
 INSERT INTO `paket_group` (`id`, `perusahaan_id`, `nama_group`, `kode_group`, `deskripsi`, `created_at`, `updated_at`) VALUES
-('1', NULL, 'Paket Dinas Pendidikan 2025', 'GRP-DIKNAS-2025', 'Pengadaan sarana dan prasarana sekolah tahun anggaran 2025', '2026-11-17 20:07:14', '2026-11-17 20:07:14');
+('1', NULL, 'Paket Dinas Pendidikan 2025', 'GRP-DIKNAS-2025', 'Pengadaan sarana dan prasarana sekolah tahun anggaran 2025', '2026-11-17 20:07:14', '2026-11-17 20:07:14'),
+('3', '10', 'test', NULL, 'dadsa', '2026-11-23 16:33:48', '2026-11-23 16:33:48');
 
 -- --------------------------------------------------------
 -- Table structure for `paket_kegiatan`
@@ -221,6 +225,8 @@ CREATE TABLE `paket_kegiatan` (
   `kab_kota` varchar(100) DEFAULT NULL,
   `perusahaan_id` int(11) DEFAULT NULL,
   `group_id` int(11) DEFAULT NULL,
+  `tahun_anggaran` int(4) DEFAULT NULL,
+  `tags` varchar(500) DEFAULT NULL,
   `skema_id` int(11) DEFAULT NULL,
   `perusahaan` varchar(255) DEFAULT NULL,
   `penanggung_jawab` varchar(100) DEFAULT NULL,
@@ -246,12 +252,19 @@ CREATE TABLE `paket_kegiatan` (
   KEY `idx_nama_paket` (`nama_paket`),
   KEY `idx_group_id` (`group_id`),
   KEY `idx_perusahaan_id` (`perusahaan_id`),
-  KEY `idx_skema_id` (`skema_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `idx_skema_id` (`skema_id`),
+  KEY `idx_pk_perusahaan` (`perusahaan_id`),
+  KEY `idx_pk_group` (`group_id`),
+  KEY `idx_pk_kode` (`kode_paket`),
+  KEY `idx_pk_status` (`status`),
+  KEY `idx_pk_tahun` (`tahun_anggaran`)
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `paket_kegiatan`
-INSERT INTO `paket_kegiatan` (`id`, `kode_paket`, `nama_paket`, `nomor_sp`, `kab_kota`, `perusahaan_id`, `group_id`, `skema_id`, `perusahaan`, `penanggung_jawab`, `pagu`, `pagu_nego`, `dpp`, `persen_pasal`, `pasal_13`, `persen_admin`, `admin_2`, `total_pasal`, `tipe_potongan`, `setor_awal`, `selisih`, `rab`, `status`, `progres_barang`, `created_at`, `updated_at`) VALUES
-('62', 'XW9J5', 'Belanja Modal Alat Pendukung Pencarian', 'EP-01M1ZS80DH32WZR9NZ8JCWCA44', NULL, '4', '1', '4', 'test', NULL, '15000000.00', NULL, '13513514.00', '13.00', '1756757.00', '2.00', '270270.00', '2027027.00', 'dpp', NULL, NULL, '0.00', 'Proses', 'Belanja', '2026-11-18 00:26:15', '2026-11-19 23:06:28');
+INSERT INTO `paket_kegiatan` (`id`, `kode_paket`, `nama_paket`, `nomor_sp`, `kab_kota`, `perusahaan_id`, `group_id`, `tahun_anggaran`, `tags`, `skema_id`, `perusahaan`, `penanggung_jawab`, `pagu`, `pagu_nego`, `dpp`, `persen_pasal`, `pasal_13`, `persen_admin`, `admin_2`, `total_pasal`, `tipe_potongan`, `setor_awal`, `selisih`, `rab`, `status`, `progres_barang`, `created_at`, `updated_at`) VALUES
+('62', 'XW9J5', 'Belanja Modal Alat Pendukung Pencarian', 'EP-01M1ZS80DH32WZR9NZ8JCWCA44', 'Kabupaten Kutai Timur', '4', '1', '2026', 'SMA', '4', 'CV. Sintesa Corp', NULL, '51244314.00', '51244314.00', '46166049.00', '13.00', '6661761.00', '2.00', '1024886.00', '7686647.00', 'kontrak', NULL, NULL, '0.00', 'Proses', 'Belanja', '2026-11-18 00:26:15', '2026-11-23 12:20:49'),
+('64', '55RQA', 'Test Paket Tipe Kontrak', NULL, 'Kota Bontang', '4', '1', '2026', NULL, NULL, 'CV. Sintesa Corp', NULL, '10000000.00', '10000000.00', '9009009.00', '10.00', '1000000.00', '5.00', '500000.00', '1500000.00', 'kontrak', NULL, NULL, '0.00', 'Proses', 'Belum', '2026-11-19 23:41:02', '2026-11-23 15:40:34'),
+('66', '7SG7N', 'ddsadasdasda', NULL, 'Kota Balikpapan', '10', '1', '2026', 'smp', NULL, 'Perusahaan 2', NULL, '22000000.00', '21980000.00', '19801802.00', '13.00', '2574234.00', '2.00', '396036.00', '2970270.00', 'dpp', NULL, NULL, '0.00', 'Proses', 'Belum', '2026-11-23 16:34:43', '2026-11-23 16:34:43');
 
 -- --------------------------------------------------------
 -- Table structure for `paket_items`
@@ -269,7 +282,8 @@ CREATE TABLE `paket_items` (
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
-  KEY `idx_paket_id` (`paket_id`)
+  KEY `idx_paket_id` (`paket_id`),
+  KEY `idx_pi_paket` (`paket_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `paket_items`
@@ -309,45 +323,19 @@ CREATE TABLE `paket_distribusi` (
   PRIMARY KEY (`id`),
   KEY `idx_distribusi_paket` (`paket_id`),
   KEY `idx_distribusi_item` (`item_id`),
-  KEY `idx_distribusi_lokasi` (`lokasi_id`)
+  KEY `idx_distribusi_lokasi` (`lokasi_id`),
+  KEY `idx_pd_paket` (`paket_id`),
+  KEY `idx_pd_item` (`item_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table `paket_distribusi`
 INSERT INTO `paket_distribusi` (`id`, `paket_id`, `item_id`, `lokasi_id`, `nama_tujuan`, `kategori`, `jumlah`, `status_barang`, `nama_barang`, `harga_satuan`, `ekspedisi`, `status_distribusi`, `tanggal_pesan`, `link_pembelian`, `nama_pic`, `no_kontak`, `alamat`, `kab_kota`, `tanggal_terima`, `no_resi`, `catatan`, `created_at`, `updated_at`) VALUES
-('1', '62', '1', NULL, 'SMAN 2 BONTANG', 'Sekolah', '4.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kota Bontang', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
-('3', '62', '3', NULL, 'SMAN 1 SANDARAN', 'Sekolah', '2.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
-('4', '62', '3', NULL, 'SMAN 1 LONG MESANGAT', 'Sekolah', '1.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
-('5', '62', '3', NULL, 'SMAN 1 MUARA ANCALONG', 'Sekolah', '1.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 16:05:23'),
-('6', '62', '3', NULL, 'SMAN 1 KARANGAN', 'Sekolah', '2.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-18 21:26:30'),
-('10', '62', '2', '2', 'SMKN 2 BONTANG', 'Sekolah', '2.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Nurwahidah, S.Pd, M.Pd', '081258348205', 'Jl. Cumi - Cumi No. 1 Kel. Tanjung Laut Indah Kec. Bontang Selatan', 'Kota Bontang', NULL, NULL, NULL, '2026-11-19 22:53:21', '2026-11-19 22:53:21'),
-('11', '62', '2', '1', 'SMKN 1 BONTANG', 'Sekolah', '2.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, 'Muhammad Sultan, S.Ag., M.Pd.I', '081347071619', 'Jl. Ciptomangunkusumo No. 2, Kel. Gn Elai Kec. Bontang Utara', 'Kota Bontang', NULL, NULL, NULL, '2026-11-19 22:53:38', '2026-11-19 22:53:38');
-
--- --------------------------------------------------------
--- Table structure for `paket_dokumen`
--- --------------------------------------------------------
-DROP TABLE IF EXISTS `paket_dokumen`;
-CREATE TABLE `paket_dokumen` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `paket_id` int(11) NOT NULL,
-  `jenis_dokumen` varchar(100) NOT NULL DEFAULT 'BAST',
-  `nama_dokumen` varchar(255) NOT NULL,
-  `nama_file_asli` varchar(255) NOT NULL,
-  `file_path` varchar(255) NOT NULL,
-  `file_size` int(11) NOT NULL DEFAULT 0,
-  `file_ext` varchar(20) NOT NULL DEFAULT '',
-  `mime_type` varchar(100) DEFAULT NULL,
-  `keterangan` text DEFAULT NULL,
-  `uploaded_by` int(11) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `idx_paket_id` (`paket_id`),
-  KEY `idx_jenis_dokumen` (`jenis_dokumen`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Dumping data for table `paket_dokumen`
-INSERT INTO `paket_dokumen` (`id`, `paket_id`, `jenis_dokumen`, `nama_dokumen`, `nama_file_asli`, `file_path`, `file_size`, `file_ext`, `mime_type`, `keterangan`, `uploaded_by`, `created_at`, `updated_at`) VALUES
-('1', '62', 'BAST', 'BAST SMAN 2 Bontang', 'BAST_SMAN2_Bontang_Terkonfirmasi.pdf', 'uploads/dokumen/sample_bast_sman2_bontang.pdf', '40', 'pdf', 'application/pdf', 'Berita Acara Serah Terima Tenda Lipat & Tenda Camping', '1', '2026-11-18 17:00:35', '2026-11-18 17:00:35');
+('1', '62', '1', NULL, 'SMAN 2 BONTANG', 'Sekolah', '4.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kota Bontang', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-20 02:20:33'),
+('4', '62', '3', NULL, 'SMAN 1 LONG MESANGAT', 'Sekolah', '1.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-20 02:20:33'),
+('5', '62', '3', NULL, 'SMAN 1 MUARA ANCALONG', 'Sekolah', '1.00', 'Belum Dipesan', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Kab. Kutim', NULL, NULL, NULL, '2026-11-18 16:05:23', '2026-11-20 02:20:33'),
+('6', '62', '3', NULL, 'SMAN 1 KARANGAN', 'Sekolah', '2.00', 'Sudah Dipesan', 'Axioo', '4000000.00', 'JNE', 'Tiba di Gudang', '2026-11-20', NULL, NULL, NULL, NULL, 'Kab. Kutim', '2026-11-20', '060300353623224', NULL, '2026-11-18 16:05:23', '2026-11-22 11:01:10'),
+('10', '62', '2', '2', 'SMKN 2 BONTANG', 'Sekolah', '2.00', 'Sudah Dipesan', 'test', '1000000.00', 'Sicepat', NULL, '2026-11-23', NULL, 'Nurwahidah, S.Pd, M.Pd', '081258348205', 'Jl. Cumi - Cumi No. 1 Kel. Tanjung Laut Indah Kec. Bontang Selatan', 'Kota Bontang', NULL, '43234354335345', NULL, '2026-11-19 22:53:21', '2026-11-23 12:18:41'),
+('11', '62', '2', '1', 'SMKN 1 BONTANG', 'Sekolah', '2.00', 'Sudah Dipesan', 'test', '500000.00', 'Sicepat', NULL, '2026-11-23', NULL, 'Muhammad Sultan, S.Ag., M.Pd.I', '081347071619', 'Jl. Ciptomangunkusumo No. 2, Kel. Gn Elai Kec. Bontang Utara', 'Kota Bontang', NULL, '43243423', NULL, '2026-11-19 22:53:38', '2026-11-23 13:07:04');
 
 -- --------------------------------------------------------
 -- Table structure for `paket_dokumentasi`
@@ -369,7 +357,106 @@ CREATE TABLE `paket_dokumentasi` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_paket_id` (`paket_id`),
-  KEY `idx_distribusi_id` (`distribusi_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `idx_distribusi_id` (`distribusi_id`),
+  KEY `idx_pdk_paket` (`paket_id`),
+  KEY `idx_pdk_dist` (`distribusi_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table `paket_dokumentasi`
+INSERT INTO `paket_dokumentasi` (`id`, `paket_id`, `distribusi_id`, `nama_file_asli`, `file_path`, `thumb_path`, `file_size`, `file_ext`, `mime_type`, `keterangan`, `uploaded_by`, `created_at`, `updated_at`) VALUES
+('1', '62', '6', 'profil.jpg', 'uploads/dokumentasi/large/e0a27a0f163b8fbd8cf8b94d2f27deed.jpg', 'uploads/dokumentasi/thumb/e0a27a0f163b8fbd8cf8b94d2f27deed.jpg', '402618', 'jpg', 'image/jpeg', NULL, '4', '2026-11-20 11:09:23', '2026-11-20 11:09:23'),
+('2', '62', '6', 'promo.jpg', 'uploads/dokumentasi/large/7d26ca076c9ecc0f184c252d7b09b281.jpg', 'uploads/dokumentasi/thumb/7d26ca076c9ecc0f184c252d7b09b281.jpg', '127533', 'jpg', 'image/jpeg', NULL, '4', '2026-11-20 11:10:36', '2026-11-20 11:10:36');
+
+-- --------------------------------------------------------
+-- Table structure for `paket_dokumen`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `paket_dokumen`;
+CREATE TABLE `paket_dokumen` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `paket_id` int(11) NOT NULL,
+  `jenis_dokumen` varchar(100) NOT NULL DEFAULT 'BAST',
+  `nama_dokumen` varchar(255) NOT NULL,
+  `nama_file_asli` varchar(255) NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `file_size` int(11) NOT NULL DEFAULT 0,
+  `file_ext` varchar(20) NOT NULL DEFAULT '',
+  `mime_type` varchar(100) DEFAULT NULL,
+  `keterangan` text DEFAULT NULL,
+  `uploaded_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_paket_id` (`paket_id`),
+  KEY `idx_jenis_dokumen` (`jenis_dokumen`),
+  KEY `idx_pdoc_paket` (`paket_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table `paket_dokumen`
+INSERT INTO `paket_dokumen` (`id`, `paket_id`, `jenis_dokumen`, `nama_dokumen`, `nama_file_asli`, `file_path`, `file_size`, `file_ext`, `mime_type`, `keterangan`, `uploaded_by`, `created_at`, `updated_at`) VALUES
+('2', '62', 'BAST', 'BAST - SMAN 1 KARANGAN', 'Preliminary ERP Masterplan.pdf', 'uploads/dokumen/Preliminary_ERP_Masterplan_1795142923_7e638b920fa8.pdf', '471128', 'pdf', 'application/pdf', 'Berita Acara Serah Terima ditandatangani oleh pihak SMAN 1 KARANGAN', '4', '2026-11-20 10:48:43', '2026-11-20 10:48:43');
+
+-- --------------------------------------------------------
+-- Table structure for `kolaborasi`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `kolaborasi`;
+CREATE TABLE `kolaborasi` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `owner_id` int(11) NOT NULL,
+  `nama` varchar(255) NOT NULL,
+  `instansi` varchar(255) DEFAULT NULL,
+  `tahun_anggaran` int(11) NOT NULL DEFAULT 2026,
+  `deskripsi` text DEFAULT NULL,
+  `invite_code` varchar(32) NOT NULL,
+  `share_token` varchar(64) NOT NULL,
+  `share_enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `invite_code` (`invite_code`),
+  UNIQUE KEY `share_token` (`share_token`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Dumping data for table `kolaborasi`
+INSERT INTO `kolaborasi` (`id`, `owner_id`, `nama`, `instansi`, `tahun_anggaran`, `deskripsi`, `invite_code`, `share_token`, `share_enabled`, `created_at`, `updated_at`) VALUES
+('1', '4', 'Cabdin 2', 'Disdik Prov Kaltim', '2026', NULL, 'KOLAB-YT9GZ', '1f90521c19df443e09c3ceccb28a178f', '1', '2026-11-23 15:33:40', '2026-11-23 15:33:40');
+
+-- --------------------------------------------------------
+-- Table structure for `kolaborasi_anggota`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `kolaborasi_anggota`;
+CREATE TABLE `kolaborasi_anggota` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `kolaborasi_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `role` enum('owner','member') NOT NULL DEFAULT 'member',
+  `status` enum('pending','joined','declined') NOT NULL DEFAULT 'pending',
+  `invited_by` int(11) DEFAULT NULL,
+  `joined_at` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_kolab_user` (`kolaborasi_id`,`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Dumping data for table `kolaborasi_anggota`
+INSERT INTO `kolaborasi_anggota` (`id`, `kolaborasi_id`, `user_id`, `role`, `status`, `invited_by`, `joined_at`, `created_at`) VALUES
+('1', '1', '4', 'owner', 'joined', '4', '2026-11-23 15:33:40', '2026-11-23 15:33:40');
+
+-- --------------------------------------------------------
+-- Table structure for `kolaborasi_groups`
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `kolaborasi_groups`;
+CREATE TABLE `kolaborasi_groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `kolaborasi_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_kolab_group` (`kolaborasi_id`,`group_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Dumping data for table `kolaborasi_groups`
+INSERT INTO `kolaborasi_groups` (`id`, `kolaborasi_id`, `group_id`, `user_id`, `created_at`) VALUES
+('1', '1', '1', '4', '2026-11-23 15:34:13');
 
 SET FOREIGN_KEY_CHECKS = 1;

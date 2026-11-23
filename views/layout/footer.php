@@ -156,6 +156,6 @@
     </script>
 
     <!-- Global ProLedger App & Modal System -->
-    <script src="<?= APP_URL ?>/js/app.js"></script>
+    <script src="<?= APP_URL ?>/js/app.js?v=<?= APP_VERSION ?>"></script>
 </body>
 </html>

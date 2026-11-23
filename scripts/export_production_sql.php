@@ -17,7 +17,11 @@ $tables = [
     'paket_kegiatan',
     'paket_items',
     'paket_distribusi',
-    'paket_dokumen'
+    'paket_dokumentasi',
+    'paket_dokumen',
+    'kolaborasi',
+    'kolaborasi_anggota',
+    'kolaborasi_groups'
 ];
 
 $output = "-- ProLedger Production Database Dump\n";

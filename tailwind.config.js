@@ -3,6 +3,7 @@ export default {
     content: [
         './views/**/*.php',
         './views/**/**/*.php',
+        './helpers/**/*.php',
         './public/js/**/*.js',
     ],
     theme: {

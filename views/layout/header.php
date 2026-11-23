@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Compiled Static Tailwind CSS -->
-    <link rel="stylesheet" href="<?= APP_URL ?>/css/app.min.css">
+    <link rel="stylesheet" href="<?= APP_URL ?>/css/app.min.css?v=<?= APP_VERSION ?>">
     
     <!-- Tailwind Play CDN (Development Fallback) -->
     <?php if (defined('APP_ENV') && APP_ENV === 'local'): ?>
