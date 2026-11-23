@@ -65,7 +65,7 @@ class UploadController {
         }
 
         // Jika ada record ID dan modul perusahaan, update database otomatis & hapus file lama
-        if ($module === 'perusahaan' && $recordId && in_array($field, ['logo', 'avatar', 'kopsurat'])) {
+        if ($module === 'perusahaan' && $recordId && in_array($field, ['logo', 'avatar', 'kopsurat', 'ttd'])) {
             $db = Database::getInstance()->getConnection();
             
             // Ambil gambar lama untuk dihapus
@@ -114,7 +114,7 @@ class UploadController {
         $userId = $_SESSION['admin_id'] ?? 0;
         $userRole = $_SESSION['admin_role'] ?? 'user';
 
-        if ($module === 'perusahaan' && $recordId && in_array($field, ['logo', 'avatar', 'kopsurat'])) {
+        if ($module === 'perusahaan' && $recordId && in_array($field, ['logo', 'avatar', 'kopsurat', 'ttd'])) {
             require_once MODEL_PATH . '/Perusahaan.php';
             $pModel = new Perusahaan();
             if (!$pModel->isOwnerOrAdmin($recordId, $userId, $userRole)) {

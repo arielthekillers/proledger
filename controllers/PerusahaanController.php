@@ -361,6 +361,7 @@ class PerusahaanController {
             if (!empty($comp['logo'])) Uploader::deleteImage($comp['logo'], 'perusahaan', 'logo');
             if (!empty($comp['avatar'])) Uploader::deleteImage($comp['avatar'], 'perusahaan', 'avatar');
             if (!empty($comp['kopsurat'])) Uploader::deleteImage($comp['kopsurat'], 'perusahaan', 'kopsurat');
+            if (!empty($comp['ttd'])) Uploader::deleteImage($comp['ttd'], 'perusahaan', 'ttd');
         }
 
         $this->perusahaanModel->delete($id);

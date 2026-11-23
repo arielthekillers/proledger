@@ -63,14 +63,22 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     <?php foreach ($perusahaan as $p): ?>
-                        <?php $isActive = (($activeCompanyId ?? null) == $p['id']); ?>
+                        <?php
+                        $isActive = (($activeCompanyId ?? null) == $p['id']);
+                        $pAvatarUrls = !empty($p['avatar']) ? Uploader::getAllUrls($p['avatar'], 'perusahaan', 'avatar') : null;
+                        ?>
                         <tr class="hover:bg-slate-50/60 transition-colors <?= $isActive ? 'bg-blue-50/20' : '' ?>">
                             <!-- Nama Perusahaan -->
                             <td class="py-2.5 px-4">
                                 <div class="flex items-center gap-2.5">
-                                    <div class="w-8 h-8 rounded-lg <?= $isActive ? 'bg-blue-600 text-white shadow-xs' : 'bg-blue-50 text-blue-600' ?> font-bold flex items-center justify-center shrink-0 text-xs">
-                                        <?= strtoupper(substr($p['nama'], 0, 1)) ?>
-                                    </div>
+                                    <?php if ($pAvatarUrls && !empty($pAvatarUrls['small'])): ?>
+                                        <img src="<?= htmlspecialchars($pAvatarUrls['small']) ?>" alt="<?= htmlspecialchars($p['nama']) ?>"
+                                             class="w-8 h-8 rounded-lg object-cover border border-slate-200 bg-white shrink-0">
+                                    <?php else: ?>
+                                        <div class="w-8 h-8 rounded-lg <?= $isActive ? 'bg-blue-600 text-white shadow-xs' : 'bg-blue-50 text-blue-600' ?> font-bold flex items-center justify-center shrink-0 text-xs">
+                                            <?= strtoupper(substr($p['nama'], 0, 1)) ?>
+                                        </div>
+                                    <?php endif; ?>
                                     <div class="truncate max-w-[200px]">
                                         <div class="font-bold text-slate-800 flex items-center gap-1.5">
                                             <a href="<?= APP_URL ?>/perusahaan/detail/<?= $p['id'] ?>" class="hover:text-blue-600 transition-colors truncate">

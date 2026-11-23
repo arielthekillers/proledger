@@ -28,6 +28,11 @@ class Uploader {
             'medium' => ['width' => 900,  'height' => 300,  'crop' => false],
             'small'  => ['width' => 350,  'height' => 120,  'crop' => false],
         ],
+        'ttd' => [
+            'large'  => ['width' => 1000, 'height' => 500,  'crop' => false],
+            'medium' => ['width' => 500,  'height' => 250,  'crop' => false],
+            'small'  => ['width' => 200,  'height' => 100,  'crop' => false],
+        ],
         'default' => [
             'large'  => ['width' => 1400, 'height' => 1400, 'crop' => false],
             'medium' => ['width' => 600,  'height' => 600,  'crop' => false],

@@ -308,10 +308,14 @@ if ($isBulk && !empty($groupedList)) {
                         <p class="font-bold mb-16 uppercase tracking-wider text-xs md:text-sm">PIHAK KEDUA</p>
                         
                         <!-- Stamp / TTD Digital jika ada -->
-                        <?php if (!empty($perusahaan['stempel_ttd'])): ?>
-                            <img src="<?= APP_URL . '/' . ltrim($perusahaan['stempel_ttd'], '/') ?>" 
-                                 alt="Stempel & TTD" 
-                                 class="absolute -top-4 left-1/2 transform -translate-x-1/2 max-h-24 opacity-90 pointer-events-none">
+                        <?php
+                        $ttdUrls = !empty($perusahaan['ttd']) ? Uploader::getAllUrls($perusahaan['ttd'], 'perusahaan', 'ttd') : null;
+                        $ttdSrc = $ttdUrls['medium'] ?? (!empty($perusahaan['stempel_ttd']) ? (APP_URL . '/' . ltrim($perusahaan['stempel_ttd'], '/')) : null);
+                        ?>
+                        <?php if ($ttdSrc): ?>
+                            <img src="<?= htmlspecialchars($ttdSrc) ?>" 
+                                 alt="Tanda Tangan" 
+                                 class="absolute top-6 left-1/2 transform -translate-x-1/2 max-h-16 object-contain pointer-events-none">
                         <?php endif; ?>
 
                         <p class="font-bold underline text-sm md:text-base">

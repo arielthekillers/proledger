@@ -13,6 +13,7 @@ $isActive = (($_SESSION['active_perusahaan_id'] ?? null) == $perusahaan['id']);
 $logoUrls = !empty($perusahaan['logo']) ? Uploader::getAllUrls($perusahaan['logo'], 'perusahaan', 'logo') : null;
 $avatarUrls = !empty($perusahaan['avatar']) ? Uploader::getAllUrls($perusahaan['avatar'], 'perusahaan', 'avatar') : null;
 $kopsuratUrls = !empty($perusahaan['kopsurat']) ? Uploader::getAllUrls($perusahaan['kopsurat'], 'perusahaan', 'kopsurat') : null;
+$ttdUrls = !empty($perusahaan['ttd']) ? Uploader::getAllUrls($perusahaan['ttd'], 'perusahaan', 'ttd') : null;
 ?>
 
 <!-- ========================================== -->
@@ -189,10 +190,10 @@ $kopsuratUrls = !empty($perusahaan['kopsurat']) ? Uploader::getAllUrls($perusaha
                 <ion-icon name="color-palette-outline" class="text-blue-600 text-sm"></ion-icon>
                 <span>Identitas Visual & Berkas Branding</span>
             </h2>
-            <span class="text-[11px] text-slate-400 hidden sm:inline">Logo, Avatar & Kop Surat</span>
+            <span class="text-[11px] text-slate-400 hidden sm:inline">Logo, Avatar, Kop Surat &amp; TTD</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             <!-- ITEM A: LOGO RESMI -->
             <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-slate-50 transition-colors">
                 <div class="w-14 h-14 rounded-lg border border-slate-200 bg-white flex items-center justify-center p-1.5 shrink-0 overflow-hidden relative group">
@@ -354,6 +355,62 @@ $kopsuratUrls = !empty($perusahaan['kopsurat']) ? Uploader::getAllUrls($perusaha
                                     data-label="Kop Surat Resmi"
                                     class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 hover:border-rose-200 transition-colors text-xs cursor-pointer"
                                     title="Hapus Kop Surat">
+                                <ion-icon name="trash-outline"></ion-icon>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ITEM D: TANDA TANGAN (PNG) -->
+            <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-slate-50 transition-colors">
+                <div class="w-16 h-14 rounded-lg border border-slate-200 bg-white flex items-center justify-center p-1 shrink-0 overflow-hidden relative group">
+                    <?php if ($ttdUrls && !empty($ttdUrls['medium'])): ?>
+                        <img src="<?= $ttdUrls['medium'] ?>" alt="TTD"
+                             onclick="previewImageModal('<?= $ttdUrls['large'] ?>', 'Tanda Tangan PNG')"
+                             class="max-h-full max-w-full object-contain cursor-pointer group-hover:scale-105 transition-transform"
+                             title="Klik untuk lihat HD">
+                    <?php else: ?>
+                        <ion-icon name="create-outline" class="text-xl text-slate-300"></ion-icon>
+                    <?php endif; ?>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-1 mb-0.5">
+                        <span class="text-xs font-bold text-slate-800 truncate">Tanda Tangan</span>
+                        <?php if ($ttdUrls): ?>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Terunggah"></span>
+                        <?php endif; ?>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mb-2 truncate">
+                        <?= $ttdUrls ? 'PNG Transparan (BAST)' : 'Belum diunggah' ?>
+                    </p>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button"
+                                data-upload-image
+                                data-module="perusahaan"
+                                data-field="ttd"
+                                data-id="<?= $perusahaan['id'] ?>"
+                                data-title="Upload Tanda Tangan (PNG)"
+                                data-hint="Disarankan format PNG transparan untuk disematkan otomatis pada dokumen BAST"
+                                class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[11px] font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer">
+                            <ion-icon name="cloud-upload-outline" class="text-xs"></ion-icon>
+                            <span><?= $ttdUrls ? 'Ganti' : 'Upload' ?></span>
+                        </button>
+                        <?php if ($ttdUrls): ?>
+                            <button type="button"
+                                    onclick="previewImageModal('<?= $ttdUrls['large'] ?>', 'Tanda Tangan PNG')"
+                                    class="p-1 text-slate-500 hover:text-amber-600 hover:bg-white rounded-lg border border-slate-200 transition-colors text-xs cursor-pointer"
+                                    title="Lihat HD">
+                                <ion-icon name="scan-outline"></ion-icon>
+                            </button>
+                            <button type="button"
+                                    data-delete-image
+                                    data-module="perusahaan"
+                                    data-field="ttd"
+                                    data-id="<?= $perusahaan['id'] ?>"
+                                    data-label="Tanda Tangan PNG"
+                                    class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 hover:border-rose-200 transition-colors text-xs cursor-pointer"
+                                    title="Hapus Tanda Tangan">
                                 <ion-icon name="trash-outline"></ion-icon>
                             </button>
                         <?php endif; ?>
