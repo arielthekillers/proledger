@@ -1,0 +1,400 @@
+<?php
+/**
+ * ProLedger - KolaborasiController
+ * Mengelola ruang kolaborasi antar perusahaan, undangan anggota, link group paket,
+ * serta dashboard monitoring bersama (tanpa data privat HPP/Profit).
+ */
+
+require_once MODEL_PATH . '/Kolaborasi.php';
+require_once MODEL_PATH . '/PaketGroup.php';
+require_once MODEL_PATH . '/Perusahaan.php';
+
+class KolaborasiController {
+    private $kolabModel;
+    private $groupModel;
+    private $perusahaanModel;
+
+    public function __construct() {
+        if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+            header('Location: ' . APP_URL . '/login');
+            exit;
+        }
+        if (($_SESSION['admin_role'] ?? 'user') === 'admin') {
+            header('Location: ' . APP_URL . '/user');
+            exit;
+        }
+
+        $this->kolabModel = new Kolaborasi();
+        $this->groupModel = new PaketGroup();
+        $this->perusahaanModel = new Perusahaan();
+    }
+
+    /**
+     * Daftar Ruang Kolaborasi & Undangan Masuk
+     */
+    public function index() {
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $kolabList = $this->kolabModel->getForUser($userId);
+
+        $pendingInvites = array_values(array_filter($kolabList, fn($k) => $k['my_status'] === 'pending'));
+        $joinedKolabs   = array_values(array_filter($kolabList, fn($k) => $k['my_status'] === 'joined'));
+
+        $this->view('kolaborasi/index', [
+            'title'          => 'Kolaborasi Paket Bersama',
+            'active'         => 'kolaborasi',
+            'pendingInvites' => $pendingInvites,
+            'joinedKolabs'   => $joinedKolabs,
+        ]);
+    }
+
+    /**
+     * Buat Ruang Kolaborasi Baru
+     */
+    public function store() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('/kolaborasi');
+            return;
+        }
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Token keamanan tidak valid.');
+            redirect('/kolaborasi');
+            return;
+        }
+
+        $nama = trim($_POST['nama'] ?? '');
+        if ($nama === '') {
+            flash('error', 'Nama kolaborasi wajib diisi.');
+            redirect('/kolaborasi');
+            return;
+        }
+
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $newId = $this->kolabModel->create([
+            'owner_id'       => $userId,
+            'nama'           => $nama,
+            'instansi'       => trim($_POST['instansi'] ?? ''),
+            'tahun_anggaran' => (int)($_POST['tahun_anggaran'] ?? date('Y')),
+            'deskripsi'      => trim($_POST['deskripsi'] ?? ''),
+        ]);
+
+        flash('success', 'Ruang kolaborasi <strong>' . htmlspecialchars($nama) . '</strong> berhasil dibuat! Undang rekan perusahaan atau bagikan kode undangan.');
+        redirect('/kolaborasi/detail/' . $newId);
+    }
+
+    /**
+     * Gabung Kolaborasi via Kode Undangan
+     */
+    public function join() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('/kolaborasi');
+            return;
+        }
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Token keamanan tidak valid.');
+            redirect('/kolaborasi');
+            return;
+        }
+
+        $code = trim($_POST['invite_code'] ?? '');
+        if ($code === '') {
+            flash('error', 'Kode undangan wajib diisi.');
+            redirect('/kolaborasi');
+            return;
+        }
+
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $res = $this->kolabModel->joinByCode($code, $userId);
+        if ($res['success']) {
+            flash('success', htmlspecialchars($res['message']));
+            redirect('/kolaborasi/detail/' . $res['kolab_id']);
+        } else {
+            flash('error', htmlspecialchars($res['message']));
+            redirect('/kolaborasi');
+        }
+    }
+
+    /**
+     * Terima atau Tolak Undangan Masuk
+     */
+    public function respond($id, $decision = 'accept') {
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $kolabId = (int)$id;
+        $membership = $this->kolabModel->getMembership($kolabId, $userId);
+        if (!$membership) {
+            flash('error', 'Undangan kolaborasi tidak ditemukan.');
+            redirect('/kolaborasi');
+            return;
+        }
+
+        $this->kolabModel->respondInvite($kolabId, $userId, $decision === 'accept' ? 'accept' : 'decline');
+        if ($decision === 'accept') {
+            flash('success', 'Anda telah bergabung! Silakan hubungkan Group Paket perusahaan Anda ke kolaborasi ini.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+        } else {
+            flash('info', 'Undangan kolaborasi ditolak.');
+            redirect('/kolaborasi');
+        }
+    }
+
+    /**
+     * Dashboard Monitoring Kolaborasi
+     */
+    public function detail($id) {
+        $kolabId = (int)$id;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+
+        $kolab = $this->kolabModel->getById($kolabId);
+        if (!$kolab) {
+            flash('error', 'Ruang kolaborasi tidak ditemukan.');
+            redirect('/kolaborasi');
+            return;
+        }
+
+        $membership = $this->kolabModel->getMembership($kolabId, $userId);
+        if (!$membership || $membership['status'] !== 'joined') {
+            flash('error', 'Anda tidak memiliki akses ke ruang kolaborasi ini.');
+            redirect('/kolaborasi');
+            return;
+        }
+
+        $isOwner = ($membership['role'] === 'owner' || (int)$kolab['owner_id'] === $userId);
+        $members = $this->kolabModel->getMembers($kolabId);
+        $linkedGroups = $this->kolabModel->getLinkedGroups($kolabId);
+        $dashboard = $this->kolabModel->getDashboardData($kolabId);
+
+        // Group milik user sendiri yang bisa di-share ke kolaborasi ini
+        $myCompanies = $this->perusahaanModel->getByUser($userId);
+        $myCompIds = array_map('intval', array_column($myCompanies, 'id'));
+        $allGroups = $this->groupModel->getAll();
+        $linkedIds = array_map('intval', array_column($linkedGroups, 'group_id'));
+
+        $myAvailableGroups = array_values(array_filter($allGroups, function ($g) use ($myCompIds, $linkedIds) {
+            $ownsGroup = empty($g['perusahaan_id']) || in_array((int)$g['perusahaan_id'], $myCompIds, true);
+            return $ownsGroup && !in_array((int)$g['id'], $linkedIds, true);
+        }));
+
+        $myLinkedGroups = array_values(array_filter($linkedGroups, fn($lg) => (int)$lg['user_id'] === $userId));
+
+        $this->view('kolaborasi/detail', [
+            'title'             => 'Kolaborasi: ' . $kolab['nama'],
+            'active'            => 'kolaborasi',
+            'kolab'             => $kolab,
+            'isOwner'           => $isOwner,
+            'userId'            => $userId,
+            'members'           => $members,
+            'linkedGroups'      => $linkedGroups,
+            'myAvailableGroups' => $myAvailableGroups,
+            'myLinkedGroups'    => $myLinkedGroups,
+            'pakets'            => $dashboard['pakets'],
+            'companyStats'      => $dashboard['companyStats'],
+            'summary'           => $dashboard['summary'],
+        ]);
+    }
+
+    /**
+     * Update Pengaturan Ruang Kolaborasi (Owner)
+     */
+    public function update($id) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('/kolaborasi');
+            return;
+        }
+        $kolabId = (int)$id;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $kolab = $this->kolabModel->getById($kolabId);
+        if (!$kolab || (int)$kolab['owner_id'] !== $userId) {
+            flash('error', 'Hanya koordinator yang dapat mengubah pengaturan kolaborasi.');
+            redirect('/kolaborasi');
+            return;
+        }
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Token keamanan tidak valid.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+            return;
+        }
+
+        $nama = trim($_POST['nama'] ?? '');
+        if ($nama === '') {
+            flash('error', 'Nama kolaborasi wajib diisi.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+            return;
+        }
+
+        $this->kolabModel->update($kolabId, [
+            'nama'           => $nama,
+            'instansi'       => trim($_POST['instansi'] ?? ''),
+            'tahun_anggaran' => (int)($_POST['tahun_anggaran'] ?? date('Y')),
+            'deskripsi'      => trim($_POST['deskripsi'] ?? ''),
+        ]);
+
+        flash('success', 'Pengaturan ruang kolaborasi diperbarui.');
+        redirect('/kolaborasi/detail/' . $kolabId);
+    }
+
+    /**
+     * Undang Anggota via Email (Owner)
+     */
+    public function invite($id) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('/kolaborasi');
+            return;
+        }
+        $kolabId = (int)$id;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $kolab = $this->kolabModel->getById($kolabId);
+        if (!$kolab || (int)$kolab['owner_id'] !== $userId) {
+            flash('error', 'Hanya koordinator yang dapat mengundang anggota.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+            return;
+        }
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Token keamanan tidak valid.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+            return;
+        }
+
+        $email = trim($_POST['email'] ?? '');
+        $res = $this->kolabModel->inviteByEmail($kolabId, $email, $userId);
+        flash($res['success'] ? 'success' : 'error', htmlspecialchars($res['message']));
+        redirect('/kolaborasi/detail/' . $kolabId);
+    }
+
+    /**
+     * Hubungkan Group Paket ke Kolaborasi
+     */
+    public function linkGroup($id) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('/kolaborasi');
+            return;
+        }
+        $kolabId = (int)$id;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $membership = $this->kolabModel->getMembership($kolabId, $userId);
+        if (!$membership || $membership['status'] !== 'joined') {
+            flash('error', 'Akses ditolak.');
+            redirect('/kolaborasi');
+            return;
+        }
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Token keamanan tidak valid.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+            return;
+        }
+
+        $groupId = (int)($_POST['group_id'] ?? 0);
+        $group = $this->groupModel->getById($groupId);
+        if (!$group) {
+            flash('error', 'Group paket tidak ditemukan.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+            return;
+        }
+
+        // Validasi kepemilikan group oleh user
+        $myCompanies = $this->perusahaanModel->getByUser($userId);
+        $myCompIds = array_map('intval', array_column($myCompanies, 'id'));
+        if (!empty($group['perusahaan_id']) && !in_array((int)$group['perusahaan_id'], $myCompIds, true)) {
+            flash('error', 'Anda hanya dapat menghubungkan Group Paket milik perusahaan Anda sendiri.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+            return;
+        }
+
+        $this->kolabModel->linkGroup($kolabId, $groupId, $userId);
+        flash('success', 'Group <strong>' . htmlspecialchars($group['nama_group']) . '</strong> berhasil dihubungkan ke kolaborasi.');
+        redirect('/kolaborasi/detail/' . $kolabId);
+    }
+
+    /**
+     * Lepas Group Paket dari Kolaborasi
+     */
+    public function unlinkGroup($id, $groupId) {
+        $kolabId = (int)$id;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $kolab = $this->kolabModel->getById($kolabId);
+        if (!$kolab) {
+            redirect('/kolaborasi');
+            return;
+        }
+
+        $isOwner = ((int)$kolab['owner_id'] === $userId);
+        $this->kolabModel->unlinkGroup($kolabId, (int)$groupId, $userId, $isOwner);
+        flash('success', 'Group paket dilepas dari ruang kolaborasi.');
+        redirect('/kolaborasi/detail/' . $kolabId);
+    }
+
+    /**
+     * Keluarkan Anggota (Owner)
+     */
+    public function removeMember($id, $targetUserId) {
+        $kolabId = (int)$id;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $kolab = $this->kolabModel->getById($kolabId);
+        if (!$kolab || (int)$kolab['owner_id'] !== $userId) {
+            flash('error', 'Akses ditolak.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+            return;
+        }
+
+        $this->kolabModel->removeMember($kolabId, (int)$targetUserId);
+        flash('success', 'Anggota dan group terkait telah dikeluarkan dari kolaborasi.');
+        redirect('/kolaborasi/detail/' . $kolabId);
+    }
+
+    /**
+     * Toggle / Regenerate Link Read-Only Publik
+     */
+    public function toggleShare($id) {
+        $kolabId = (int)$id;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $kolab = $this->kolabModel->getById($kolabId);
+        if (!$kolab || (int)$kolab['owner_id'] !== $userId) {
+            flash('error', 'Hanya koordinator yang dapat mengatur link monitoring.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+            return;
+        }
+
+        $newState = ((int)$kolab['share_enabled'] === 1) ? 0 : 1;
+        $this->kolabModel->toggleShare($kolabId, $newState);
+        flash('success', $newState ? 'Link monitoring publik diaktifkan.' : 'Link monitoring publik dinonaktifkan.');
+        redirect('/kolaborasi/detail/' . $kolabId);
+    }
+
+    public function regenerateShare($id) {
+        $kolabId = (int)$id;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $kolab = $this->kolabModel->getById($kolabId);
+        if (!$kolab || (int)$kolab['owner_id'] !== $userId) {
+            flash('error', 'Akses ditolak.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+            return;
+        }
+
+        $this->kolabModel->regenerateShareToken($kolabId);
+        flash('success', 'Token link monitoring diperbarui. Link lama tidak lagi berlaku.');
+        redirect('/kolaborasi/detail/' . $kolabId);
+    }
+
+    /**
+     * Hapus Ruang Kolaborasi (Owner)
+     */
+    public function delete($id) {
+        $kolabId = (int)$id;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $kolab = $this->kolabModel->getById($kolabId);
+        if (!$kolab || (int)$kolab['owner_id'] !== $userId) {
+            flash('error', 'Hanya koordinator yang dapat menghapus ruang kolaborasi.');
+            redirect('/kolaborasi');
+            return;
+        }
+
+        $this->kolabModel->delete($kolabId);
+        flash('success', 'Ruang kolaborasi <strong>' . htmlspecialchars($kolab['nama']) . '</strong> berhasil dihapus.');
+        redirect('/kolaborasi');
+    }
+
+    private function view($view, $data = []) {
+        extract($data);
+        require_once VIEW_PATH . '/layout/header.php';
+        require_once VIEW_PATH . '/' . $view . '.php';
+        require_once VIEW_PATH . '/layout/footer.php';
+    }
+}

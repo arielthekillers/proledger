@@ -64,9 +64,10 @@
         ];
     } else {
         $navItemDetails = [
-            'dashboard' => ['icon' => 'grid-outline', 'label' => 'Dashboard', 'url' => APP_URL . '/', 'roles' => ['user', 'perusahaan']],
-            'paket' => ['icon' => 'cube-outline', 'label' => 'Paket Kegiatan', 'url' => APP_URL . '/paket', 'roles' => ['user', 'perusahaan']],
-            'group' => ['icon' => 'folder-open-outline', 'label' => 'Group Paket', 'url' => APP_URL . '/group', 'roles' => ['user', 'perusahaan']],
+            'dashboard'  => ['icon' => 'grid-outline', 'label' => 'Dashboard', 'url' => APP_URL . '/', 'roles' => ['user', 'perusahaan']],
+            'paket'      => ['icon' => 'cube-outline', 'label' => 'Paket Kegiatan', 'url' => APP_URL . '/paket', 'roles' => ['user', 'perusahaan']],
+            'group'      => ['icon' => 'folder-open-outline', 'label' => 'Group Paket', 'url' => APP_URL . '/group', 'roles' => ['user', 'perusahaan']],
+            'kolaborasi' => ['icon' => 'people-outline', 'label' => 'Kolaborasi', 'url' => APP_URL . '/kolaborasi', 'roles' => ['user', 'perusahaan']],
             'perusahaan' => ['icon' => 'business-outline', 'label' => 'Perusahaan', 'url' => APP_URL . '/perusahaan', 'roles' => ['user', 'perusahaan']],
         ];
     }

@@ -64,8 +64,8 @@ if (empty($url[0])) {
     $params = array_slice($url, 2);
 }
 
-// Authentication Check
-if ($controllerName !== 'AuthController') {
+// Authentication Check (AuthController & public MonitoringController do not require login)
+if (!in_array($controllerName, ['AuthController', 'MonitoringController'], true)) {
     if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
         header('Location: ' . APP_URL . '/login');
         exit;
