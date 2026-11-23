@@ -183,10 +183,18 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
 <?php endif; ?>
 
 <!-- ========================================== -->
-<!-- 3. REKAP PER PERUSAHAAN                    -->
+<!-- 3. TABEL MONITORING SEMUA PAKET            -->
+<!-- ========================================== -->
+<?php
+$modalBaseUrl = APP_URL . '/kolaborasi/modalView/' . $kolab['id'];
+require __DIR__ . '/_paket_table.php';
+?>
+
+<!-- ========================================== -->
+<!-- 4. REKAP PER PERUSAHAAN                    -->
 <!-- ========================================== -->
 <?php if (!empty($companyStats)): ?>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mt-4">
         <?php foreach ($companyStats as $cs): ?>
             <button type="button" onclick="filterByCompany('<?= htmlspecialchars(strtolower($cs['nama']), ENT_QUOTES) ?>')"
                     class="text-left bg-white rounded-2xl shadow-xs border border-slate-200/80 p-3.5 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer">
@@ -214,14 +222,6 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
-
-<!-- ========================================== -->
-<!-- 4. TABEL MONITORING SEMUA PAKET            -->
-<!-- ========================================== -->
-<?php
-$modalBaseUrl = APP_URL . '/kolaborasi/modalView/' . $kolab['id'];
-require __DIR__ . '/_paket_table.php';
-?>
 
 <!-- ========================================== -->
 <!-- 5. MODAL: ANGGOTA & SHARE GROUP            -->

@@ -139,9 +139,15 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
             </div>
         </div>
 
+        <!-- Table + Read-Only Modals -->
+        <?php
+        $modalBaseUrl = APP_URL . '/monitoring/' . rawurlencode($kolab['share_token']) . '/modalView';
+        require __DIR__ . '/_paket_table.php';
+        ?>
+
         <!-- Per-Company Cards -->
         <?php if (!empty($companyStats)): ?>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mt-4">
                 <?php foreach ($companyStats as $cs): ?>
                     <button type="button" onclick="filterByCompany('<?= htmlspecialchars(strtolower($cs['nama']), ENT_QUOTES) ?>')"
                             class="text-left bg-white rounded-2xl shadow-xs border border-slate-200/80 p-3.5 hover:border-blue-300 transition-all cursor-pointer">
@@ -163,12 +169,6 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
-
-        <!-- Table + Read-Only Modals -->
-        <?php
-        $modalBaseUrl = APP_URL . '/monitoring/' . rawurlencode($kolab['share_token']) . '/modalView';
-        require __DIR__ . '/_paket_table.php';
-        ?>
     </main>
 
     <script>
