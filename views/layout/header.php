@@ -193,7 +193,7 @@
                                 <div class="text-[10px] text-slate-400 capitalize"><?= $_SESSION['admin_role'] ?? 'Admin' ?></div>
                             </div>
                             
-                            <a href="<?= ($role === 'admin') ? APP_URL . '/user' : APP_URL . '/' ?>" class="block px-3.5 py-2 text-slate-600 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2 transition-colors">
+                            <a href="<?= APP_URL ?>/profile" class="block px-3.5 py-2 text-slate-600 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2 transition-colors">
                                 <ion-icon name="person-outline" class="text-base"></ion-icon>
                                 Profile
                             </a>

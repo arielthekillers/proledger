@@ -137,6 +137,14 @@ class Admin {
     }
 
     /**
+     * Update user profile (name, email, phone)
+     */
+    public function updateProfile($id, $name, $email, $phone = null) {
+        $stmt = $this->db->prepare("UPDATE admins SET name = ?, email = ?, phone = ? WHERE id = ?");
+        return $stmt->execute([$name, $email, $phone ?: null, (int)$id]);
+    }
+
+    /**
      * Update password
      */
     public function updatePassword($id, $newPassword) {
