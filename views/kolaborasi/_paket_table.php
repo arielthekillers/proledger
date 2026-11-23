@@ -4,6 +4,18 @@
  * Tampilan identik dengan Daftar Paket (tanpa HPP, Profit, dan tombol input/edit/hapus).
  * Mengharapkan variabel: $pakets, $companyStats, $summary, $modalBaseUrl
  */
+$allTagsMap = [];
+foreach ($pakets as $pk) {
+    if (!empty($pk['tags'])) {
+        foreach (explode(',', $pk['tags']) as $tgRaw) {
+            $tgClean = trim($tgRaw);
+            if ($tgClean !== '') {
+                $allTagsMap[strtolower($tgClean)] = $tgClean;
+            }
+        }
+    }
+}
+asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
 ?>
 <!-- ========================================== -->
 <!-- TABEL MONITORING PAKET (IDENTIK PAKET)     -->
@@ -33,6 +45,14 @@
                 <option value="">Semua Perusahaan</option>
                 <?php foreach ($companyStats as $cs): ?>
                     <option value="<?= htmlspecialchars(strtolower($cs['nama'])) ?>"><?= htmlspecialchars($cs['nama']) ?></option>
+                <?php endforeach; ?>
+            </select>
+
+            <select id="filterKolabTag" onchange="filterKolabTable()"
+                    class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer">
+                <option value="">Semua Tag</option>
+                <?php foreach ($allTagsMap as $tgKey => $tgLabel): ?>
+                    <option value="<?= htmlspecialchars($tgKey) ?>">#<?= htmlspecialchars($tgLabel) ?></option>
                 <?php endforeach; ?>
             </select>
 
@@ -87,6 +107,7 @@
                         <tr class="hover:bg-slate-50/70 transition-colors kolab-paket-row"
                             data-search="<?= htmlspecialchars(strtolower(($p['nama_paket'] ?? '') . ' ' . ($p['kode_paket'] ?? '') . ' ' . ($p['tags'] ?? '') . ' ' . ($p['nama_group'] ?? '') . ' ' . ($p['perusahaan_nama'] ?? ''))) ?>"
                             data-company="<?= htmlspecialchars(strtolower($p['perusahaan_nama'])) ?>"
+                            data-tags="<?= !empty($tagsArr) ? '|' . htmlspecialchars(strtolower(implode('|', $tagsArr))) . '|' : '' ?>"
                             data-status="<?= htmlspecialchars($p['norm_status']) ?>"
                             data-kontrak="<?= $p['acuan'] ?>"
                             data-dpp="<?= $p['dpp'] ?>"
@@ -120,7 +141,12 @@
                                         <?= htmlspecialchars($p['nama_group']) ?>
                                     </span>
                                     <?php foreach ($tagsArr as $tg): ?>
-                                        <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 text-[10px]">#<?= htmlspecialchars($tg) ?></span>
+                                        <button type="button"
+                                                onclick="filterByTag('<?= htmlspecialchars(strtolower($tg), ENT_QUOTES) ?>')"
+                                                class="px-1.5 py-0.2 rounded bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-700 text-[10px] cursor-pointer transition-colors"
+                                                title="Filter berdasarkan tag #<?= htmlspecialchars($tg) ?>">
+                                            #<?= htmlspecialchars($tg) ?>
+                                        </button>
                                     <?php endforeach; ?>
                                 </div>
                             </td>
@@ -413,6 +439,13 @@ function filterByCompany(companyLower) {
     filterKolabTable();
 }
 
+function filterByTag(tagLower) {
+    const sel = document.getElementById('filterKolabTag');
+    if (!sel) return;
+    sel.value = (sel.value === tagLower) ? '' : tagLower;
+    filterKolabTable();
+}
+
 function formatRpKolab(num) {
     const n = Math.round(num || 0);
     return (n < 0 ? '-Rp ' : 'Rp ') + Math.abs(n).toLocaleString('id-ID');
@@ -421,6 +454,7 @@ function formatRpKolab(num) {
 function filterKolabTable() {
     const q = (document.getElementById('searchKolabPaket')?.value || '').toLowerCase().trim();
     const comp = document.getElementById('filterKolabCompany')?.value || '';
+    const tag = document.getElementById('filterKolabTag')?.value || '';
     const status = document.getElementById('filterKolabStatus')?.value || '';
 
     const rows = document.querySelectorAll('.kolab-paket-row');
@@ -429,6 +463,7 @@ function filterKolabTable() {
     rows.forEach(row => {
         const show = (!q || (row.dataset.search || '').includes(q))
                   && (!comp || (row.dataset.company || '') === comp)
+                  && (!tag || (row.dataset.tags || '').includes('|' + tag + '|'))
                   && (!status || (row.dataset.status || '') === status);
         row.style.display = show ? '' : 'none';
         if (show) {
@@ -458,9 +493,11 @@ function filterKolabTable() {
 function resetKolabFilter() {
     const s = document.getElementById('searchKolabPaket');
     const c = document.getElementById('filterKolabCompany');
+    const tg = document.getElementById('filterKolabTag');
     const st = document.getElementById('filterKolabStatus');
     if (s) s.value = '';
     if (c) c.value = '';
+    if (tg) tg.value = '';
     if (st) st.value = '';
     filterKolabTable();
 }
