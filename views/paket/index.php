@@ -190,10 +190,10 @@ foreach ($paket as $p) {
                     <th class="py-2.5 px-3 text-right" title="Total Belanja Toko / HPP (Klik untuk Kelola Pemesanan)">HPP</th>
                     <th class="py-2.5 px-3 text-right" title="Estimasi Profit Bersih Setelah Potongan & Belanja (Klik untuk Rincian Profit)">Profit</th>
                     <th class="py-2.5 px-2 text-center" title="Jumlah Macam Item Komponen & Total Unit (Klik untuk Kelola Item)">Komponen</th>
-                    <th class="py-2.5 px-2 text-center w-20" title="Progres Pemesanan Barang (Supplier/Toko)">Pemesanan</th>
-                    <th class="py-2.5 px-2 text-center w-20" title="Progres Pengiriman & Distribusi">Distribusi</th>
-                    <th class="py-2.5 px-2 text-center w-20" title="Progres Foto Dokumentasi Titik Penerima">Dokumentasi</th>
-                    <th class="py-2.5 px-2 text-center w-20" title="Progres Upload Berkas BAST Titik Penerima">BAST</th>
+                    <th class="py-2.5 px-2 text-center w-16" title="Progres Pemesanan Barang (Supplier/Toko)">Order</th>
+                    <th class="py-2.5 px-2 text-center w-16" title="Progres Pengiriman & Distribusi">Dist</th>
+                    <th class="py-2.5 px-2 text-center w-16" title="Progres Foto Dokumentasi Titik Penerima">Dok</th>
+                    <th class="py-2.5 px-2 text-center w-16" title="Progres Upload Berkas BAST Titik Penerima">BAST</th>
                     <th class="py-2.5 px-3 text-center">Pencairan</th>
                     <th class="py-2.5 px-3 text-right w-16">Aksi</th>
                 </tr>
