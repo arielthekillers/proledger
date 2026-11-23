@@ -5,6 +5,10 @@
  * Mendukung cetak tunggal per tujuan atau cetak gabungan (bulk multi-page)
  */
 
+if (!class_exists('Uploader')) {
+    require_once __DIR__ . '/../../helpers/Uploader.php';
+}
+
 // Helper convert tanggal ke format Indonesia: "Jumat, 6 November 2026"
 function tanggalIndonesia($tgl) {
     if (empty($tgl)) $tgl = date('Y-m-d');

@@ -5,6 +5,7 @@
  */
 
 require_once MODEL_PATH . '/Perusahaan.php';
+require_once __DIR__ . '/../helpers/Uploader.php';
 
 class PerusahaanController {
     
