@@ -60,7 +60,8 @@
         $pendingBadge = $navAdminModel->getPendingCount();
 
         $navItemDetails = [
-            'users' => ['icon' => 'people-circle-outline', 'label' => 'Kelola Pengguna', 'url' => APP_URL . '/user', 'roles' => ['admin'], 'badge' => $pendingBadge],
+            'users'  => ['icon' => 'people-circle-outline', 'label' => 'Kelola Pengguna', 'url' => APP_URL . '/user', 'roles' => ['admin'], 'badge' => $pendingBadge],
+            'tujuan' => ['icon' => 'location-outline', 'label' => 'Tujuan Distribusi', 'url' => APP_URL . '/tujuan', 'roles' => ['admin']],
         ];
     } else {
         $navItemDetails = [
