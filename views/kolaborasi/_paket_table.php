@@ -259,7 +259,7 @@
 <!-- MODAL READ-ONLY DETAIL PAKET (DYNAMIC)     -->
 <!-- ========================================== -->
 <div id="modalKolabReadonly" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
-    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-3xl w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[88vh] flex flex-col">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-5xl w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[88vh] flex flex-col">
         <div class="px-5 py-3.5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2.5 min-w-0">
                 <div id="krModalIconWrap" class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0">

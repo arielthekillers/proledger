@@ -624,7 +624,9 @@ class Kolaborasi {
         $items = $itemModel->getByPaketId($paketId);
         $itemSummary = $itemModel->getSummaryByPaketId($paketId);
         $rawDist = $distModel->getByPaketId($paketId);
+        $groupedDistribusi = $distModel->getGroupedByTujuan($paketId);
         $fotos = $fotoModel->getByPaketId($paketId);
+        $dokumentasiMap = $fotoModel->getGroupedByDistribusi($paketId);
         $dokumens = $dokModel->getByPaketId($paketId);
 
         // Sanitasi distribusi: hapus harga_satuan (harga beli toko) dan nama_toko/supplier
@@ -632,7 +634,8 @@ class Kolaborasi {
             return [
                 'id'               => (int)$d['id'],
                 'item_id'          => (int)$d['item_id'],
-                'nama_item'        => $d['nama_item'] ?? '-',
+                'nama_item'        => $d['nama_item'] ?? $d['nama_komponen'] ?? '-',
+                'nama_komponen'    => $d['nama_komponen'] ?? $d['nama_item'] ?? '-',
                 'satuan'           => $d['satuan'] ?? 'Unit',
                 'nama_tujuan'      => $d['nama_tujuan'] ?? '-',
                 'alamat_tujuan'    => $d['alamat_tujuan'] ?? '',
@@ -655,12 +658,14 @@ class Kolaborasi {
         $nilaiBersih = $acuan - $totalPasal;
 
         return [
-            'paket'      => $paket,
-            'items'      => $items,
-            'distribusi' => $distribusi,
-            'fotos'      => $fotos,
-            'dokumens'   => $dokumens,
-            'finansial'  => [
+            'paket'             => $paket,
+            'items'             => $items,
+            'distribusi'        => $distribusi,
+            'groupedDistribusi' => $groupedDistribusi,
+            'fotos'             => $fotos,
+            'dokumentasiMap'    => $dokumentasiMap,
+            'dokumens'          => $dokumens,
+            'finansial'         => [
                 'effective_pagu' => $effectivePagu,
                 'acuan'          => $acuan,
                 'dpp'            => $dpp,
