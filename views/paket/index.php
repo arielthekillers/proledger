@@ -383,7 +383,7 @@ foreach ($paket as $p) {
                                         onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'items', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')"
                                         class="group/item hover:bg-blue-50/80 px-2 py-1 -my-1 rounded-lg transition-all cursor-pointer inline-flex flex-col items-center"
                                         title="Klik untuk buka Popup Komponen Item Barang">
-                                    <span class="font-bold text-slate-800 group-hover/item:text-blue-700 text-xs leading-5">
+                                    <span class="font-normal text-slate-700 group-hover/item:text-blue-700 text-xs leading-5">
                                         <?= $jmlItem ?> Item
                                     </span>
                                     <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/80 mt-0.5">

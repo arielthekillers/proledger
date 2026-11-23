@@ -226,12 +226,7 @@ function renderCircularProgress($done, $total, $type = 'pemesanan') {
     $circumference = 2 * M_PI * $radius; // ~87.96
     $dashoffset = $circumference - ($pct / 100 * $circumference);
 
-    $tooltip = "{$label}: {$done}/{$total} selesai ({$pct}%)";
-    if ($total === 0) {
-        $tooltip = "{$label}: Belum ada alokasi item/tujuan (0/0)";
-    }
-
-    $html = '<div class="inline-flex items-center justify-center" title="' . htmlspecialchars($tooltip) . '">';
+    $html = '<div class="inline-flex items-center justify-center pro-progress-trigger" data-prog-label="' . htmlspecialchars($label) . '" data-prog-done="' . $done . '" data-prog-total="' . $total . '" data-prog-pct="' . $pct . '" data-prog-type="' . htmlspecialchars($type) . '">';
     $html .= '<div class="relative w-9 h-9 flex items-center justify-center shrink-0">';
     $html .= '<svg class="w-9 h-9 transform -rotate-90" viewBox="0 0 36 36">';
     $html .= '<circle cx="18" cy="18" r="' . $radius . '" stroke="currentColor" class="text-slate-100" stroke-width="3" fill="transparent"/>';

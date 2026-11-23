@@ -801,4 +801,67 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
         }
     });
+
+    // 11. Floating Dark Tooltip for Circular Progress Triggers
+    const progTooltip = document.createElement('div');
+    progTooltip.id = 'proProgressFloatingTooltip';
+    progTooltip.className = 'fixed z-[95] pointer-events-none hidden w-48 p-2.5 bg-slate-800 text-white rounded-xl shadow-xl text-[11px] leading-relaxed border border-slate-700/80 transition-opacity duration-150';
+    document.body.appendChild(progTooltip);
+
+    const typeAccentMap = {
+        pemesanan: { icon: 'bag-check-outline', color: 'text-amber-400', bar: 'bg-amber-400' },
+        distribusi: { icon: 'navigate-outline', color: 'text-indigo-400', bar: 'bg-indigo-400' },
+        dokumentasi: { icon: 'camera-outline', color: 'text-teal-400', bar: 'bg-teal-400' },
+        bast: { icon: 'ribbon-outline', color: 'text-purple-400', bar: 'bg-purple-400' }
+    };
+
+    document.addEventListener('mouseover', function (e) {
+        const trigger = e.target.closest('.pro-progress-trigger');
+        if (!trigger) return;
+
+        const label = trigger.getAttribute('data-prog-label') || 'Progres';
+        const done = parseInt(trigger.getAttribute('data-prog-done') || '0', 10);
+        const total = parseInt(trigger.getAttribute('data-prog-total') || '0', 10);
+        const pct = parseInt(trigger.getAttribute('data-prog-pct') || '0', 10);
+        const type = trigger.getAttribute('data-prog-type') || 'pemesanan';
+        const accent = typeAccentMap[type] || typeAccentMap.pemesanan;
+        const isDone = total > 0 && done >= total;
+
+        progTooltip.innerHTML = `
+            <div class="font-bold text-white border-b border-slate-700 pb-1 mb-1.5 flex items-center justify-between gap-1.5">
+                <span class="flex items-center gap-1.5">
+                    <ion-icon name="${accent.icon}" class="${accent.color} text-xs"></ion-icon>
+                    <span>${label}</span>
+                </span>
+                <span class="font-mono text-[10px] ${isDone ? 'text-emerald-400' : accent.color}">${total > 0 ? pct + '%' : '-'}</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-300 mb-1.5">
+                <span>Realisasi:</span>
+                <span class="font-mono font-bold ${isDone ? 'text-emerald-300' : 'text-white'}">${done} / ${total} titik</span>
+            </div>
+            <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                <div class="h-full ${isDone ? 'bg-emerald-400' : accent.bar} rounded-full" style="width: ${pct}%"></div>
+            </div>
+        `;
+
+        progTooltip.classList.remove('hidden');
+        const rect = trigger.getBoundingClientRect();
+        const tipRect = progTooltip.getBoundingClientRect();
+        let left = rect.left + (rect.width / 2) - (tipRect.width / 2);
+        let top = rect.top - tipRect.height - 8;
+
+        if (left < 8) left = 8;
+        if (left + tipRect.width > window.innerWidth - 8) left = window.innerWidth - tipRect.width - 8;
+        if (top < 8) top = rect.bottom + 8;
+
+        progTooltip.style.left = left + 'px';
+        progTooltip.style.top = top + 'px';
+    });
+
+    document.addEventListener('mouseout', function (e) {
+        const trigger = e.target.closest('.pro-progress-trigger');
+        if (trigger && (!e.relatedTarget || !trigger.contains(e.relatedTarget))) {
+            progTooltip.classList.add('hidden');
+        }
+    });
 });
