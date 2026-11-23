@@ -875,27 +875,34 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // 12. Animate Circular Progress Rings & Percentages on Load
+    // 12. Animate Circular Progress Rings & Percentages on Load (proportional duration)
     requestAnimationFrame(() => {
         setTimeout(() => {
-            document.querySelectorAll('.pro-progress-ring[data-target-offset]').forEach(circle => {
-                circle.style.strokeDashoffset = circle.getAttribute('data-target-offset');
-            });
-            document.querySelectorAll('.pro-progress-pct[data-target-pct]').forEach(el => {
-                const target = parseInt(el.getAttribute('data-target-pct') || '0', 10);
-                if (target <= 0) {
-                    el.textContent = '0%';
-                    return;
+            document.querySelectorAll('.pro-progress-trigger').forEach(trigger => {
+                const pct = parseInt(trigger.getAttribute('data-prog-pct') || '0', 10);
+                const duration = Math.max(350, Math.round(250 + (pct / 100) * 1100));
+
+                const circle = trigger.querySelector('.pro-progress-ring[data-target-offset]');
+                if (circle) {
+                    circle.style.transitionDuration = duration + 'ms';
+                    circle.style.strokeDashoffset = circle.getAttribute('data-target-offset');
                 }
-                const duration = 650;
-                const start = performance.now();
-                function step(now) {
-                    const progress = Math.min(1, (now - start) / duration);
-                    const eased = 1 - Math.pow(1 - progress, 3);
-                    el.textContent = Math.round(target * eased) + '%';
-                    if (progress < 1) requestAnimationFrame(step);
+
+                const pctEl = trigger.querySelector('.pro-progress-pct[data-target-pct]');
+                if (pctEl) {
+                    if (pct <= 0) {
+                        pctEl.textContent = '0%';
+                        return;
+                    }
+                    const start = performance.now();
+                    function step(now) {
+                        const progress = Math.min(1, (now - start) / duration);
+                        const eased = 1 - Math.pow(1 - progress, 3);
+                        pctEl.textContent = Math.round(pct * eased) + '%';
+                        if (progress < 1) requestAnimationFrame(step);
+                    }
+                    requestAnimationFrame(step);
                 }
-                requestAnimationFrame(step);
             });
         }, 60);
     });
