@@ -529,28 +529,28 @@ foreach ($paket as $p) {
                 ?>
                 <tfoot id="paketTableFooter" class="bg-slate-50/95 font-bold text-slate-800 border-t-2 border-slate-200 text-xs">
                     <tr>
-                        <td colspan="2" class="py-3 px-3">
+                        <td colspan="2" class="py-3 px-3 align-top">
                             <span class="text-slate-500 font-semibold uppercase text-[10px] tracking-wider">Overall Total</span>
                             <span class="ml-1.5 px-2 py-0.5 rounded-md bg-slate-200/80 text-slate-700 text-[10px] font-bold">
                                 <span id="totalPaketCount"><?= count($paket) ?></span> Paket
                             </span>
                         </td>
-                        <td class="py-3 px-3 text-right whitespace-nowrap font-mono text-slate-900" id="totalKontrakVal">
+                        <td class="py-3 px-3 align-top text-right whitespace-nowrap font-mono text-slate-900" id="totalKontrakVal">
                             <?= formatRupiah($sumKontrak) ?>
                         </td>
-                        <td class="py-3 px-3 text-right whitespace-nowrap font-mono text-slate-700" id="totalDppVal">
+                        <td class="py-3 px-3 align-top text-right whitespace-nowrap font-mono text-slate-700" id="totalDppVal">
                             <?= formatRupiah($sumDpp) ?>
                         </td>
-                        <td class="py-3 px-3 text-right whitespace-nowrap font-mono text-amber-700" id="totalPasalVal">
+                        <td class="py-3 px-3 align-top text-right whitespace-nowrap font-mono text-amber-700" id="totalPasalVal">
                             <?= formatRupiah($sumPasal) ?>
                         </td>
-                        <td class="py-3 px-3 text-right whitespace-nowrap font-mono text-emerald-700" id="totalBersihVal">
+                        <td class="py-3 px-3 align-top text-right whitespace-nowrap font-mono text-emerald-700" id="totalBersihVal">
                             <?= formatRupiah($sumBersih) ?>
                         </td>
-                        <td class="py-3 px-3 text-right whitespace-nowrap font-mono text-slate-700" id="totalHppVal">
+                        <td class="py-3 px-3 align-top text-right whitespace-nowrap font-mono text-slate-700" id="totalHppVal">
                             <?= formatRupiah($sumHpp) ?>
                         </td>
-                        <td class="py-3 px-3 text-right whitespace-nowrap">
+                        <td class="py-3 px-3 align-top text-right whitespace-nowrap">
                             <div class="font-mono font-extrabold <?= $isSumLoss ? 'text-rose-600' : 'text-emerald-700' ?>" id="totalProfitVal">
                                 <?= formatRupiah($sumProfit) ?>
                             </div>
@@ -558,11 +558,11 @@ foreach ($paket as $p) {
                                 <?= ($sumProfitPct > 0 ? '+' : '') . $sumProfitPct ?>%
                             </span>
                         </td>
-                        <td class="py-3 px-2 text-center whitespace-nowrap">
+                        <td class="py-3 px-2 align-top text-center whitespace-nowrap">
                             <div class="font-semibold text-slate-700" id="totalItemCount"><?= number_format($sumItems, 0, ',', '.') ?> Item</div>
-                            <div class="text-[10px] font-normal text-slate-500" id="totalUnitCount"><?= number_format($sumUnits, 0, ',', '.') ?> Unit</div>
+                            <div class="text-[10px] font-normal text-slate-500 mt-0.5" id="totalUnitCount"><?= number_format($sumUnits, 0, ',', '.') ?> Unit</div>
                         </td>
-                        <td colspan="6" class="py-3 px-3 text-right text-[11px] font-normal text-slate-400">
+                        <td colspan="6" class="py-3 px-3 align-top text-right text-[11px] font-normal text-slate-400">
                             -
                         </td>
                     </tr>
