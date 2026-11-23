@@ -120,22 +120,28 @@
                                         </span>
                                     <?php else: ?>
                                         <div class="flex items-center gap-1.5">
+                                            <?php
+                                            $photoUrls = array_map(fn($ph) => APP_URL . '/' . ltrim($ph['file_path'], '/'), $photos);
+                                            $photosJson = htmlspecialchars(json_encode($photoUrls), ENT_QUOTES, 'UTF-8');
+                                            $cap = htmlspecialchars(addslashes($dist['nama_tujuan'] . ' - ' . ($dist['nama_komponen'] ?: 'Barang')));
+                                            ?>
                                             <div class="flex items-center -space-x-1.5">
-                                                <?php foreach (array_slice($photos, 0, 3) as $p): ?>
+                                                <?php foreach (array_slice($photos, 0, 3) as $pIdx => $p): ?>
                                                     <?php 
                                                      $thumb = !empty($p['thumb_path']) ? (APP_URL . '/' . ltrim($p['thumb_path'], '/')) : (APP_URL . '/' . ltrim($p['file_path'], '/'));
-                                                    $full = APP_URL . '/' . ltrim($p['file_path'], '/');
                                                     ?>
                                                     <img src="<?= htmlspecialchars($thumb) ?>" 
                                                          alt="Foto" 
-                                                         onclick="openPhotoLightbox('<?= htmlspecialchars($full) ?>', '<?= htmlspecialchars(addslashes($dist['nama_tujuan'] . ' - ' . ($dist['nama_komponen'] ?: 'Barang'))) ?>')"
+                                                         onclick="openProPhotoViewer(<?= $photosJson ?>, <?= $pIdx ?>, '<?= $cap ?>')"
                                                          class="w-7 h-7 rounded-lg object-cover border-2 border-white shadow-2xs hover:scale-110 hover:z-10 transition-transform cursor-pointer"
                                                          title="Klik untuk memperbesar">
                                                 <?php endforeach; ?>
                                             </div>
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200/80">
+                                            <button type="button"
+                                                    onclick="openProPhotoViewer(<?= $photosJson ?>, 0, '<?= $cap ?>')"
+                                                    class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200/80 cursor-pointer">
                                                 <?= $photoCount ?> Foto
-                                            </span>
+                                            </button>
                                         </div>
                                     <?php endif; ?>
                                 </td>

@@ -2234,21 +2234,11 @@ function deleteFotoDokumenAjax(kode, fotoId) {
 }
 
 /**
- * Photo Lightbox Preview
+ * Photo Lightbox Preview (delegates to global openProPhotoViewer in footer.php)
  */
 function openPhotoPreview(url, caption) {
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({
-            imageUrl: url,
-            imageAlt: caption || 'Foto Dokumentasi',
-            title: caption || 'Foto Dokumentasi',
-            showCloseButton: true,
-            showConfirmButton: false,
-            width: 'auto',
-            customClass: {
-                popup: 'rounded-2xl overflow-hidden p-2'
-            }
-        });
+    if (typeof openProPhotoViewer === 'function') {
+        openProPhotoViewer(url, 0, caption);
     } else {
         window.open(url, '_blank');
     }
