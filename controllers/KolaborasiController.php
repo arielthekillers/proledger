@@ -281,10 +281,17 @@ class KolaborasiController {
             return;
         }
 
-        $groupId = (int)($_POST['group_id'] ?? 0);
-        $group = $this->groupModel->getById($groupId);
-        if (!$group) {
-            flash('error', 'Group paket tidak ditemukan.');
+        $rawIds = $_POST['group_ids'] ?? [];
+        if (!is_array($rawIds)) {
+            $rawIds = [$rawIds];
+        }
+        if (!empty($_POST['group_id'])) {
+            $rawIds[] = $_POST['group_id'];
+        }
+        $groupIds = array_values(array_unique(array_filter(array_map('intval', $rawIds), fn($v) => $v > 0)));
+
+        if (empty($groupIds)) {
+            flash('error', 'Pilih minimal satu Group Paket untuk dihubungkan.');
             redirect('/kolaborasi/detail/' . $kolabId);
             return;
         }
@@ -292,14 +299,25 @@ class KolaborasiController {
         // Validasi kepemilikan group oleh user
         $myCompanies = $this->perusahaanModel->getByUser($userId);
         $myCompIds = array_map('intval', array_column($myCompanies, 'id'));
-        if (!empty($group['perusahaan_id']) && !in_array((int)$group['perusahaan_id'], $myCompIds, true)) {
-            flash('error', 'Anda hanya dapat menghubungkan Group Paket milik perusahaan Anda sendiri.');
-            redirect('/kolaborasi/detail/' . $kolabId);
-            return;
+
+        $linkedNames = [];
+        foreach ($groupIds as $gid) {
+            $group = $this->groupModel->getById($gid);
+            if (!$group) continue;
+            if (!empty($group['perusahaan_id']) && !in_array((int)$group['perusahaan_id'], $myCompIds, true)) {
+                continue;
+            }
+            $this->kolabModel->linkGroup($kolabId, $gid, $userId);
+            $linkedNames[] = $group['nama_group'];
         }
 
-        $this->kolabModel->linkGroup($kolabId, $groupId, $userId);
-        flash('success', 'Group <strong>' . htmlspecialchars($group['nama_group']) . '</strong> berhasil dihubungkan ke kolaborasi.');
+        if (empty($linkedNames)) {
+            flash('error', 'Tidak ada Group Paket valid yang dapat dihubungkan.');
+        } elseif (count($linkedNames) === 1) {
+            flash('success', 'Group <strong>' . htmlspecialchars($linkedNames[0]) . '</strong> berhasil dihubungkan ke kolaborasi.');
+        } else {
+            flash('success', count($linkedNames) . ' Group Paket berhasil dihubungkan ke kolaborasi.');
+        }
         redirect('/kolaborasi/detail/' . $kolabId);
     }
 

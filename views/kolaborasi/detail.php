@@ -250,20 +250,56 @@ require __DIR__ . '/_paket_table.php';
                     <ion-icon name="folder-open-outline" class="text-blue-600"></ion-icon>
                     <span>Hubungkan Group Paket Perusahaan Saya</span>
                 </h4>
-                <?php if (!empty($myAvailableGroups)): ?>
-                    <form method="POST" action="<?= APP_URL ?>/kolaborasi/linkGroup/<?= $kolab['id'] ?>" class="flex flex-col sm:flex-row gap-2">
+                <?php if (!empty($myAvailableGroups)):
+                    $groupsByCompany = [];
+                    foreach ($myAvailableGroups as $ag) {
+                        $compLabel = $ag['perusahaan_nama'] ?: 'Umum / Semua Perusahaan';
+                        $groupsByCompany[$compLabel][] = $ag;
+                    }
+                    ksort($groupsByCompany, SORT_NATURAL | SORT_FLAG_CASE);
+                ?>
+                    <form method="POST" action="<?= APP_URL ?>/kolaborasi/linkGroup/<?= $kolab['id'] ?>" class="space-y-3">
                         <?= csrfField() ?>
-                        <select name="group_id" required class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500">
-                            <option value="">-- Pilih Group Paket --</option>
-                            <?php foreach ($myAvailableGroups as $ag): ?>
-                                <option value="<?= $ag['id'] ?>">
-                                    <?= htmlspecialchars($ag['nama_group']) ?> (<?= htmlspecialchars($ag['perusahaan_nama'] ?: 'Umum') ?> &bull; <?= (int)$ag['total_paket'] ?> Paket)
-                                </option>
+                        <div class="max-h-56 overflow-y-auto space-y-2.5 pr-1">
+                            <?php foreach ($groupsByCompany as $compLabel => $cGroups): ?>
+                                <div class="bg-white rounded-xl border border-slate-200/80 overflow-hidden">
+                                    <div class="px-3 py-1.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                                        <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                                            <ion-icon name="business-outline" class="text-blue-600"></ion-icon>
+                                            <?= htmlspecialchars($compLabel) ?>
+                                        </span>
+                                        <span class="text-[10px] text-slate-400"><?= count($cGroups) ?> Group</span>
+                                    </div>
+                                    <div class="divide-y divide-slate-100">
+                                        <?php foreach ($cGroups as $ag): ?>
+                                            <label class="flex items-center justify-between gap-3 px-3 py-2 hover:bg-blue-50/40 cursor-pointer transition-colors">
+                                                <div class="flex items-center gap-2.5 min-w-0">
+                                                    <input type="checkbox" name="group_ids[]" value="<?= $ag['id'] ?>"
+                                                           class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0">
+                                                    <div class="min-w-0">
+                                                        <div class="text-xs font-semibold text-slate-800 truncate">
+                                                            <?= htmlspecialchars($ag['nama_group']) ?>
+                                                        </div>
+                                                        <?php if (!empty($ag['kode_group'])): ?>
+                                                            <div class="text-[10px] font-mono text-slate-400"><?= htmlspecialchars($ag['kode_group']) ?></div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                                <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold shrink-0">
+                                                    <?= (int)$ag['total_paket'] ?> Paket
+                                                </span>
+                                            </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
                             <?php endforeach; ?>
-                        </select>
-                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shrink-0 cursor-pointer">
-                            + Share Group
-                        </button>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold cursor-pointer inline-flex items-center gap-1.5 shadow-xs">
+                                <ion-icon name="checkmark-circle-outline" class="text-sm"></ion-icon>
+                                <span>+ Share Group Terpilih</span>
+                            </button>
+                        </div>
                     </form>
                 <?php else: ?>
                     <p class="text-[11px] text-slate-500">Semua Group Paket milik Anda sudah terhubung atau belum ada Group Paket yang dibuat.</p>
