@@ -226,12 +226,12 @@ function renderCircularProgress($done, $total, $type = 'pemesanan') {
     $circumference = 2 * M_PI * $radius; // ~87.96
     $dashoffset = $circumference - ($pct / 100 * $circumference);
 
-    $tooltip = "{$label}: {$done} dari {$total} selesai ({$pct}%)";
+    $tooltip = "{$label}: {$done}/{$total} selesai ({$pct}%)";
     if ($total === 0) {
-        $tooltip = "{$label}: Belum ada alokasi item/tujuan";
+        $tooltip = "{$label}: Belum ada alokasi item/tujuan (0/0)";
     }
 
-    $html = '<div class="inline-flex items-center gap-1.5" title="' . htmlspecialchars($tooltip) . '">';
+    $html = '<div class="inline-flex items-center justify-center" title="' . htmlspecialchars($tooltip) . '">';
     $html .= '<div class="relative w-9 h-9 flex items-center justify-center shrink-0">';
     $html .= '<svg class="w-9 h-9 transform -rotate-90" viewBox="0 0 36 36">';
     $html .= '<circle cx="18" cy="18" r="' . $radius . '" stroke="currentColor" class="text-slate-100" stroke-width="3" fill="transparent"/>';
@@ -245,7 +245,6 @@ function renderCircularProgress($done, $total, $type = 'pemesanan') {
         $html .= '<span class="absolute text-[9px] font-bold font-mono ' . $textColor . '">' . ($total > 0 ? $pct . '%' : '-') . '</span>';
     }
     $html .= '</div>';
-    $html .= '<span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono border ' . $badgeClass . ' shadow-2xs">' . $done . '/' . $total . '</span>';
     $html .= '</div>';
 
     return $html;

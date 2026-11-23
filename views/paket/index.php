@@ -187,10 +187,11 @@ foreach ($paket as $p) {
                     <th class="py-2.5 px-3 text-right">DPP</th>
                     <th class="py-2.5 px-3 text-right" title="Klik angka untuk Pengaturan Potongan Pasal & Admin">Total Pasal</th>
                     <th class="py-2.5 px-3 text-right" title="Dana Bersih Setelah Potongan (Klik untuk Informasi & Finansial)">Nilai Bersih</th>
-                    <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Pemesanan Barang (Supplier/Toko)">Pemesanan</th>
-                    <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Pengiriman & Distribusi">Distribusi</th>
-                    <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Foto Dokumentasi Titik Penerima">Dokumentasi</th>
-                    <th class="py-2.5 px-2 text-center min-w-[95px]" title="Progres Upload Berkas BAST Titik Penerima">BAST</th>
+                    <th class="py-2.5 px-2 text-center" title="Jumlah Macam Item Komponen & Total Unit (Klik untuk Kelola Item)">Komponen</th>
+                    <th class="py-2.5 px-2 text-center w-20" title="Progres Pemesanan Barang (Supplier/Toko)">Pemesanan</th>
+                    <th class="py-2.5 px-2 text-center w-20" title="Progres Pengiriman & Distribusi">Distribusi</th>
+                    <th class="py-2.5 px-2 text-center w-20" title="Progres Foto Dokumentasi Titik Penerima">Dokumentasi</th>
+                    <th class="py-2.5 px-2 text-center w-20" title="Progres Upload Berkas BAST Titik Penerima">BAST</th>
                     <th class="py-2.5 px-3 text-center">Pencairan</th>
                     <th class="py-2.5 px-3 text-right w-16">Aksi</th>
                 </tr>
@@ -198,7 +199,7 @@ foreach ($paket as $p) {
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($paket)): ?>
                     <tr id="emptyTableRow">
-                        <td colspan="12" class="py-12 text-center text-slate-400">
+                        <td colspan="13" class="py-12 text-center text-slate-400">
                             <?php if (empty($activeCompany)): ?>
                                 <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-2xl text-amber-500">
                                     <ion-icon name="business-outline"></ion-icon>
@@ -372,12 +373,30 @@ foreach ($paket as $p) {
                                 </button>
                             </td>
 
+                            <!-- Jumlah Item Komponen (Klik untuk Buka Popup Item) -->
+                            <td class="py-2.5 px-2 text-center whitespace-nowrap">
+                                <?php 
+                                $jmlItem = (int)($p['total_item_count'] ?? 0);
+                                $jmlUnit = (float)($p['total_item_qty'] ?? 0);
+                                ?>
+                                <button type="button"
+                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'items', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')"
+                                        class="group/item hover:bg-blue-50/80 px-2 py-1 -my-1 rounded-lg transition-all cursor-pointer inline-flex flex-col items-center"
+                                        title="Klik untuk buka Popup Komponen Item Barang">
+                                    <span class="font-bold text-slate-800 group-hover/item:text-blue-700 text-xs leading-5">
+                                        <?= $jmlItem ?> Item
+                                    </span>
+                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/80 mt-0.5">
+                                        <?= number_format($jmlUnit, 0, ',', '.') ?> Unit
+                                    </span>
+                                </button>
+                            </td>
+
                             <!-- Progres Pemesanan (Lingkaran - Klik untuk Buka Popup) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
                                 <button type="button" 
                                         onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'pemesanan', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
-                                        class="hover:scale-105 transition-transform inline-block cursor-pointer" 
-                                        title="Klik untuk buka Popup Pemesanan">
+                                        class="hover:scale-105 transition-transform inline-block cursor-pointer">
                                     <?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?>
                                 </button>
                             </td>
@@ -386,8 +405,7 @@ foreach ($paket as $p) {
                             <td class="py-2 px-2 text-center whitespace-nowrap">
                                 <button type="button" 
                                         onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'distribusi', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
-                                        class="hover:scale-105 transition-transform inline-block cursor-pointer" 
-                                        title="Klik untuk buka Popup Distribusi">
+                                        class="hover:scale-105 transition-transform inline-block cursor-pointer">
                                     <?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?>
                                 </button>
                             </td>
@@ -396,8 +414,7 @@ foreach ($paket as $p) {
                             <td class="py-2 px-2 text-center whitespace-nowrap">
                                 <button type="button" 
                                         onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'dokumentasi', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
-                                        class="hover:scale-105 transition-transform inline-block cursor-pointer" 
-                                        title="Klik untuk buka Popup Dokumentasi">
+                                        class="hover:scale-105 transition-transform inline-block cursor-pointer">
                                     <?= renderCircularProgress($p['dok_done'] ?? 0, $p['total_dist'] ?? 0, 'dokumentasi') ?>
                                 </button>
                             </td>
@@ -406,8 +423,7 @@ foreach ($paket as $p) {
                             <td class="py-2 px-2 text-center whitespace-nowrap">
                                 <button type="button" 
                                         onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'dokumen', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
-                                        class="hover:scale-105 transition-transform inline-block cursor-pointer" 
-                                        title="Klik untuk buka Popup Berkas BAST">
+                                        class="hover:scale-105 transition-transform inline-block cursor-pointer">
                                     <?= renderCircularProgress($p['bast_done'] ?? 0, $p['total_bast'] ?? 0, 'bast') ?>
                                 </button>
                             </td>
