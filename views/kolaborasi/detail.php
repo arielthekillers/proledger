@@ -75,10 +75,10 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
 
     <div class="flex items-center gap-2 flex-wrap">
         <?php if (!empty($kolab['share_enabled'])): ?>
-            <button type="button" onclick="copyText('<?= htmlspecialchars($shareUrl) ?>', 'Link monitoring Dinas disalin!')"
+            <button type="button" onclick="copyText('<?= htmlspecialchars($shareUrl) ?>', 'Link monitoring disalin!')"
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold transition-colors cursor-pointer">
                 <ion-icon name="link-outline" class="text-sm"></ion-icon>
-                <span>Salin Link Dinas</span>
+                <span>Share Link</span>
             </button>
             <a href="<?= htmlspecialchars($shareUrl) ?>" target="_blank"
                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl text-xs font-semibold transition-colors"
@@ -528,7 +528,7 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
             <!-- Public Read-Only Link Controls -->
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-700">Link Monitoring Dinas (Read-Only)</span>
+                    <span class="text-xs font-bold text-slate-700">Link Monitoring (Read-Only)</span>
                     <a href="<?= APP_URL ?>/kolaborasi/toggleShare/<?= $kolab['id'] ?>"
                        class="px-2 py-0.5 rounded-full text-[10px] font-bold <?= $kolab['share_enabled'] ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' ?>">
                         <?= $kolab['share_enabled'] ? 'Aktif (Klik Nonaktifkan)' : 'Nonaktif (Klik Aktifkan)' ?>

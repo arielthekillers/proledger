@@ -14,7 +14,7 @@
             </span>
         </div>
         <p class="text-xs text-slate-400">
-            Pantau progres paket lintas perusahaan secara bersama-sama dan bagikan link monitoring read-only ke Dinas terkait.
+            Pantau progres paket lintas perusahaan secara bersama-sama dan bagikan link monitoring read-only.
         </p>
     </div>
 

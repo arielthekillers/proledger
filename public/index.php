@@ -57,6 +57,10 @@ if (empty($url[0])) {
 } elseif ($url[0] === 'logout') {
     $controllerName = 'AuthController';
     $action = 'logout';
+} elseif ($url[0] === 'monitoring') {
+    $controllerName = 'MonitoringController';
+    $action = 'index';
+    $params = array_slice($url, 1);
 } else {
     // Standard Pattern: /controller/action/param
     $controllerName = ucfirst($url[0]) . 'Controller';
