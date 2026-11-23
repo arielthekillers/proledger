@@ -45,7 +45,7 @@
             <?php if (empty($activeCompany)): ?>
                 <!-- Tambah Paket Dinonaktifkan karena Perusahaan Masih Kosong -->
                 <button type="button" 
-                        onclick="window.ProToast ? ProToast.warning('Perusahaan masih kosong. Silakan buat perusahaan terlebih dahulu.') : alert('Perusahaan masih kosong. Silakan buat perusahaan terlebih dahulu.'); window.location.href='<?= APP_URL ?>/perusahaan/create';"
+                        onclick="window.ProToast ? ProToast.warning('Perusahaan masih kosong. Silakan buat perusahaan terlebih dahulu.') : alert('Perusahaan masih kosong. Silakan buat perusahaan terlebih dahulu.'); window.location.href='<?= APP_URL ?>/perusahaan?action=create';"
                         class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 font-semibold rounded-xl text-xs border border-slate-200 transition-all"
                         title="Perusahaan masih kosong">
                     <ion-icon name="add-circle-outline" class="text-base"></ion-icon>
@@ -169,7 +169,7 @@
                                 </div>
                                 <h4 class="text-xs font-bold text-slate-700 mb-0.5">Perusahaan Masih Kosong</h4>
                                 <p class="text-[11px] text-slate-400 mb-3">Anda harus membuat profil perusahaan terlebih dahulu sebelum dapat menambahkan paket kegiatan.</p>
-                                <a href="<?= APP_URL ?>/perusahaan/create" 
+                                <a href="<?= APP_URL ?>/perusahaan?action=create" 
                                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all">
                                     <ion-icon name="add-circle-outline"></ion-icon>
                                     <span>Buat Perusahaan Sekarang</span>

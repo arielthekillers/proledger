@@ -43,7 +43,7 @@
                 <p class="text-xs text-blue-100">Daftarkan perusahaan Anda terlebih dahulu untuk mulai mengelola paket kegiatan dan group.</p>
             </div>
         </div>
-        <a href="<?= APP_URL ?>/perusahaan/create" class="px-4 py-2 bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-lg text-xs shadow transition-all whitespace-nowrap shrink-0">
+        <a href="<?= APP_URL ?>/perusahaan?action=create" class="px-4 py-2 bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-lg text-xs shadow transition-all whitespace-nowrap shrink-0">
             + Tambah Perusahaan
         </a>
     </div>

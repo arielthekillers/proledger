@@ -140,7 +140,7 @@ class PaketController {
         $activeCompany = getActivePerusahaan();
         if (!$activeCompany) {
             flash('error', 'Perusahaan masih kosong. Silakan buat perusahaan terlebih dahulu sebelum menambahkan paket.');
-            redirect('/perusahaan/create');
+            redirect('/perusahaan?action=create');
             return;
         }
         
@@ -180,7 +180,7 @@ class PaketController {
         $activeCompany = getActivePerusahaan();
         if (!$activeCompany) {
             flash('error', 'Perusahaan masih kosong. Silakan buat perusahaan terlebih dahulu sebelum menambahkan paket.');
-            redirect('/perusahaan/create');
+            redirect('/perusahaan?action=create');
             return;
         }
         

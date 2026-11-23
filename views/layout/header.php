@@ -164,7 +164,7 @@
                             <div class="h-px bg-slate-100 my-1"></div>
 
                             <!-- Tambah Perusahaan -->
-                            <a href="<?= APP_URL ?>/perusahaan/create" 
+                            <a href="<?= APP_URL ?>/perusahaan?action=create" 
                                class="flex items-center gap-2 px-3 py-2 text-blue-600 font-semibold hover:bg-blue-50 transition-colors">
                                 <ion-icon name="add-circle-outline" class="text-base"></ion-icon>
                                 <span>+ Tambah Perusahaan Baru</span>

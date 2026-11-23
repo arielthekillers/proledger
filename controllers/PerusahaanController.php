@@ -52,14 +52,10 @@ class PerusahaanController {
     }
     
     /**
-     * Form tambah perusahaan
+     * Redirect ke halaman perusahaan & buka popup tambah perusahaan
      */
     public function create() {
-        $data = [
-            'title' => 'Tambah Perusahaan',
-            'active' => 'perusahaan'
-        ];
-        $this->view('perusahaan/create', $data);
+        redirect('/perusahaan?action=create');
     }
     
     /**
@@ -74,7 +70,7 @@ class PerusahaanController {
         // Verify CSRF
         if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
             flash('error', 'Token keamanan CSRF tidak valid.');
-            redirect('/perusahaan/create');
+            redirect('/perusahaan?action=create');
             return;
         }
 
@@ -87,7 +83,7 @@ class PerusahaanController {
 
         if (empty($nama)) {
             flash('error', 'Nama perusahaan wajib diisi.');
-            redirect('/perusahaan/create');
+            redirect('/perusahaan?action=create');
             return;
         }
 
