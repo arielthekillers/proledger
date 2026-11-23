@@ -43,29 +43,21 @@ if (!empty($paket['tags'])) {
 </div>
 
 <div class="space-y-4">
-    <!-- 1. Ringkasan Informasi Paket (Di Atas Tabel) -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <!-- 1. Ringkasan Informasi Paket (5 Card Terurut di Atas Tabel) -->
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <!-- 1. Tahun Anggaran -->
         <div class="p-3 bg-white rounded-xl border border-slate-200/90 shadow-2xs">
             <div class="text-[10px] text-slate-400 uppercase font-semibold">Tahun Anggaran</div>
-            <div class="text-xs font-bold text-slate-800 mt-0.5 flex items-center gap-1.5">
-                <ion-icon name="calendar-outline" class="text-amber-500 text-sm"></ion-icon>
+            <div class="text-xs font-bold text-slate-800 mt-1 flex items-center gap-1.5">
+                <ion-icon name="calendar-outline" class="text-amber-500 text-sm shrink-0"></ion-icon>
                 <span>TA <?= htmlspecialchars($paket['tahun_anggaran'] ?? date('Y')) ?></span>
             </div>
         </div>
 
-        <div class="p-3 bg-white rounded-xl border border-slate-200/90 shadow-2xs">
-            <div class="text-[10px] text-slate-400 uppercase font-semibold">Kota / Wilayah</div>
-            <div class="text-xs font-bold text-slate-800 mt-0.5 flex items-center gap-1.5 truncate">
-                <ion-icon name="location-outline" class="text-blue-500 text-sm shrink-0"></ion-icon>
-                <span class="truncate" title="<?= htmlspecialchars($paket['kab_kota'] ?: 'Belum ditentukan') ?>">
-                    <?= htmlspecialchars(!empty($paket['kab_kota']) ? $paket['kab_kota'] : '-') ?>
-                </span>
-            </div>
-        </div>
-
+        <!-- 2. Group Paket -->
         <div class="p-3 bg-white rounded-xl border border-slate-200/90 shadow-2xs">
             <div class="text-[10px] text-slate-400 uppercase font-semibold">Group Paket</div>
-            <div class="text-xs font-bold text-slate-800 mt-0.5 flex items-center gap-1.5 truncate">
+            <div class="text-xs font-bold text-slate-800 mt-1 flex items-center gap-1.5 truncate">
                 <ion-icon name="folder-open-outline" class="text-indigo-500 text-sm shrink-0"></ion-icon>
                 <span class="truncate" title="<?= htmlspecialchars($paket['nama_group'] ?: 'Mandiri (Non-Group)') ?>">
                     <?= htmlspecialchars(!empty($paket['nama_group']) ? $paket['nama_group'] : 'Mandiri') ?>
@@ -73,15 +65,37 @@ if (!empty($paket['tags'])) {
             </div>
         </div>
 
+        <!-- 3. Kota / Wilayah -->
         <div class="p-3 bg-white rounded-xl border border-slate-200/90 shadow-2xs">
-            <div class="text-[10px] text-slate-400 uppercase font-semibold">Status & Tags</div>
-            <div class="mt-0.5 flex items-center gap-1.5 flex-wrap">
-                <span class="text-xs font-bold text-slate-800"><?= htmlspecialchars($paket['status'] ?? 'Proses') ?></span>
+            <div class="text-[10px] text-slate-400 uppercase font-semibold">Kota / Wilayah</div>
+            <div class="text-xs font-bold text-slate-800 mt-1 flex items-center gap-1.5 truncate">
+                <ion-icon name="location-outline" class="text-blue-500 text-sm shrink-0"></ion-icon>
+                <span class="truncate" title="<?= htmlspecialchars($paket['kab_kota'] ?: 'Belum ditentukan') ?>">
+                    <?= htmlspecialchars(!empty($paket['kab_kota']) ? $paket['kab_kota'] : '-') ?>
+                </span>
+            </div>
+        </div>
+
+        <!-- 4. Tags -->
+        <div class="p-3 bg-white rounded-xl border border-slate-200/90 shadow-2xs">
+            <div class="text-[10px] text-slate-400 uppercase font-semibold">Tags</div>
+            <div class="mt-1 flex items-center gap-1 flex-wrap">
                 <?php if (!empty($tagList)): ?>
-                    <?php foreach (array_slice($tagList, 0, 2) as $tg): ?>
-                        <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 text-[10px] font-medium border border-slate-200/80">#<?= htmlspecialchars($tg) ?></span>
+                    <?php foreach (array_slice($tagList, 0, 3) as $tg): ?>
+                        <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 text-[10px] font-semibold border border-slate-200/80">#<?= htmlspecialchars($tg) ?></span>
                     <?php endforeach; ?>
+                <?php else: ?>
+                    <span class="text-xs text-slate-400">-</span>
                 <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- 5. Status Pencairan -->
+        <div class="p-3 bg-white rounded-xl border border-slate-200/90 shadow-2xs col-span-2 sm:col-span-1">
+            <div class="text-[10px] text-slate-400 uppercase font-semibold">Status Pencairan</div>
+            <div class="text-xs font-bold text-slate-800 mt-1 flex items-center gap-1.5">
+                <ion-icon name="wallet-outline" class="text-emerald-600 text-sm shrink-0"></ion-icon>
+                <span><?= htmlspecialchars($paket['status'] ?? 'Proses') ?></span>
             </div>
         </div>
     </div>
