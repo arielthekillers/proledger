@@ -85,51 +85,51 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
     </header>
 
     <main class="max-w-7xl mx-auto px-4 md:px-6 py-6">
-        <!-- Hero Card -->
-        <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 mb-4">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                <div class="flex items-start gap-4 flex-1 min-w-0">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center text-2xl shadow-sm shrink-0">
+        <!-- Hero Card (Compact) -->
+        <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 px-4 py-3 mb-3.5">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center text-xl shadow-xs shrink-0">
                         <ion-icon name="analytics"></ion-icon>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap mb-1">
-                            <h1 class="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h1 class="text-base md:text-lg font-extrabold text-slate-900 tracking-tight leading-tight">
                                 <?= htmlspecialchars($kolab['nama']) ?>
                             </h1>
-                            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                            <span class="px-2 py-0.2 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
                                 TA <?= (int)$kolab['tahun_anggaran'] ?>
                             </span>
                         </div>
-                        <p class="text-xs text-slate-400 mb-2 flex items-center gap-2 flex-wrap">
+                        <p class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
                             <?php if (!empty($kolab['instansi'])): ?>
                                 <span class="text-slate-600 font-semibold"><?= htmlspecialchars($kolab['instansi']) ?></span>
                                 <span class="text-slate-300">&bull;</span>
                             <?php endif; ?>
-                            <span><?= $summary['total_perusahaan'] ?> Perusahaan Pelaksana</span>
+                            <span><?= $summary['total_perusahaan'] ?> Perusahaan</span>
                             <span class="text-slate-300">&bull;</span>
                             <span><?= $summary['total_paket'] ?> Paket</span>
                             <span class="text-slate-300">&bull;</span>
                             <span class="font-mono font-bold text-slate-700"><?= formatRupiah($summary['total_kontrak']) ?></span>
                         </p>
                         <?php if (!empty($kolab['deskripsi'])): ?>
-                            <p class="text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100 leading-relaxed">
-                                <?= nl2br(htmlspecialchars($kolab['deskripsi'])) ?>
+                            <p class="text-[11px] text-slate-500 mt-1 truncate" title="<?= htmlspecialchars($kolab['deskripsi']) ?>">
+                                <?= htmlspecialchars($kolab['deskripsi']) ?>
                             </p>
                         <?php endif; ?>
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end justify-between gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-100 lg:pl-6 shrink-0">
-                    <div class="flex items-center gap-3.5">
+                <div class="flex flex-wrap items-center gap-4 pt-2 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-100 lg:pl-5 shrink-0">
+                    <div class="flex items-center gap-3">
                         <?php $renderRing($summary['order_pct'], 'Order', '#f59e0b', 'text-amber-600'); ?>
-                        <?php $renderRing($summary['dist_pct'], 'Distribusi', '#6366f1', 'text-indigo-600'); ?>
-                        <?php $renderRing($summary['dok_pct'], 'Dokumen', '#10b981', 'text-emerald-600'); ?>
+                        <?php $renderRing($summary['dist_pct'], 'Dist', '#6366f1', 'text-indigo-600'); ?>
+                        <?php $renderRing($summary['dok_pct'], 'Dok', '#10b981', 'text-emerald-600'); ?>
                         <?php $renderRing($summary['bast_pct'], 'BAST', '#a855f7', 'text-purple-600'); ?>
                     </div>
-                    <div class="flex items-center gap-1.5 flex-wrap text-[11px]">
+                    <div class="flex items-center gap-1.5 text-[10px]">
                         <span class="px-2 py-0.5 rounded-full font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <?= $summary['paket_selesai'] ?> Cair/Selesai
+                            <?= $summary['paket_selesai'] ?> Cair
                         </span>
                         <span class="px-2 py-0.5 rounded-full font-semibold bg-rose-50 text-rose-700 border border-rose-200">
                             <?= $summary['paket_proses'] ?> Proses
