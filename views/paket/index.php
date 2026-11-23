@@ -231,7 +231,10 @@ foreach ($paket as $p) {
                         </td>
                     </tr>
                 <?php else: ?>
-                    <?php foreach ($paket as $p): 
+                    <?php 
+                    $sumKontrak = 0; $sumDpp = 0; $sumPasal = 0; $sumBersih = 0;
+                    $sumHpp = 0; $sumProfit = 0; $sumItems = 0; $sumUnits = 0;
+                    foreach ($paket as $p): 
                         $itemTotal = (float)($p['total_item_harga'] ?? 0);
                         $effectivePagu = ($itemTotal > 0) ? $itemTotal : (float)$p['pagu'];
                         $hasNego = (!empty($p['pagu_nego']) && (float)$p['pagu_nego'] > 0);
@@ -251,6 +254,17 @@ foreach ($paket as $p) {
                         $totalBelanja = (float)($p['total_belanja'] ?? 0);
                         $estimasiProfit = $nilaiBersih - $totalBelanja;
                         $profitPct = ($acuan > 0) ? round(($estimasiProfit / $acuan) * 100, 1) : 0;
+                        $jmlItem = (int)($p['total_item_count'] ?? 0);
+                        $jmlUnit = (float)($p['total_item_qty'] ?? 0);
+
+                        $sumKontrak += $acuan;
+                        $sumDpp += $dpp;
+                        $sumPasal += $totalPasal;
+                        $sumBersih += $nilaiBersih;
+                        $sumHpp += $totalBelanja;
+                        $sumProfit += $estimasiProfit;
+                        $sumItems += $jmlItem;
+                        $sumUnits += $jmlUnit;
 
                         $rawSt = strtolower($p['status'] ?? 'proses');
                         $normStatus = ($rawSt === 'cair') ? 'selesai' : $rawSt;
@@ -260,7 +274,15 @@ foreach ($paket as $p) {
                             data-tags="<?= htmlspecialchars(strtolower($p['tags'] ?? '')) ?>"
                             data-tahun="<?= htmlspecialchars((string)($p['tahun_anggaran'] ?? date('Y'))) ?>"
                             data-progres="<?= htmlspecialchars(strtolower($p['progres_barang'] ?? 'belum')) ?>"
-                            data-status="<?= htmlspecialchars($normStatus) ?>">
+                            data-status="<?= htmlspecialchars($normStatus) ?>"
+                            data-kontrak="<?= $acuan ?>"
+                            data-dpp="<?= $dpp ?>"
+                            data-pasal="<?= $totalPasal ?>"
+                            data-bersih="<?= $nilaiBersih ?>"
+                            data-hpp="<?= $totalBelanja ?>"
+                            data-profit="<?= $estimasiProfit ?>"
+                            data-items="<?= $jmlItem ?>"
+                            data-units="<?= $jmlUnit ?>">
                             
                             <!-- KODE (5-digit) -->
                             <td class="py-2.5 px-3 text-center">
@@ -500,6 +522,52 @@ foreach ($paket as $p) {
                     <?php endforeach; ?>
                 <?php endif; ?>
             </tbody>
+            <?php if (!empty($paket)): ?>
+                <?php 
+                $sumProfitPct = ($sumKontrak > 0) ? round(($sumProfit / $sumKontrak) * 100, 1) : 0;
+                $isSumLoss = ($sumProfit < 0);
+                ?>
+                <tfoot id="paketTableFooter" class="bg-slate-50/95 font-bold text-slate-800 border-t-2 border-slate-200 text-xs">
+                    <tr>
+                        <td colspan="2" class="py-3 px-3">
+                            <span class="text-slate-500 font-semibold uppercase text-[10px] tracking-wider">Overall Total</span>
+                            <span class="ml-1.5 px-2 py-0.5 rounded-md bg-slate-200/80 text-slate-700 text-[10px] font-bold">
+                                <span id="totalPaketCount"><?= count($paket) ?></span> Paket
+                            </span>
+                        </td>
+                        <td class="py-3 px-3 text-right whitespace-nowrap font-mono text-slate-900" id="totalKontrakVal">
+                            <?= formatRupiah($sumKontrak) ?>
+                        </td>
+                        <td class="py-3 px-3 text-right whitespace-nowrap font-mono text-slate-700" id="totalDppVal">
+                            <?= formatRupiah($sumDpp) ?>
+                        </td>
+                        <td class="py-3 px-3 text-right whitespace-nowrap font-mono text-amber-700" id="totalPasalVal">
+                            <?= formatRupiah($sumPasal) ?>
+                        </td>
+                        <td class="py-3 px-3 text-right whitespace-nowrap font-mono text-emerald-700" id="totalBersihVal">
+                            <?= formatRupiah($sumBersih) ?>
+                        </td>
+                        <td class="py-3 px-3 text-right whitespace-nowrap font-mono text-slate-700" id="totalHppVal">
+                            <?= formatRupiah($sumHpp) ?>
+                        </td>
+                        <td class="py-3 px-3 text-right whitespace-nowrap">
+                            <div class="font-mono font-extrabold <?= $isSumLoss ? 'text-rose-600' : 'text-emerald-700' ?>" id="totalProfitVal">
+                                <?= formatRupiah($sumProfit) ?>
+                            </div>
+                            <span id="totalProfitPct" class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold font-mono border mt-0.5 <?= $isSumLoss ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200/80' ?>">
+                                <?= ($sumProfitPct > 0 ? '+' : '') . $sumProfitPct ?>%
+                            </span>
+                        </td>
+                        <td class="py-3 px-2 text-center whitespace-nowrap">
+                            <div class="font-semibold text-slate-700" id="totalItemCount"><?= number_format($sumItems, 0, ',', '.') ?> Item</div>
+                            <div class="text-[10px] font-normal text-slate-500" id="totalUnitCount"><?= number_format($sumUnits, 0, ',', '.') ?> Unit</div>
+                        </td>
+                        <td colspan="6" class="py-3 px-3 text-right text-[11px] font-normal text-slate-400">
+                            -
+                        </td>
+                    </tr>
+                </tfoot>
+            <?php endif; ?>
         </table>
     </div>
 </div>
@@ -2799,6 +2867,9 @@ function filterPaketTable() {
     const rows = table.querySelectorAll('tbody tr:not(#emptyTableRow)');
 
     let visibleCount = 0;
+    let sumKontrak = 0, sumDpp = 0, sumPasal = 0, sumBersih = 0;
+    let sumHpp = 0, sumProfit = 0, sumItems = 0, sumUnits = 0;
+
     rows.forEach(row => {
         const text = row.innerText.toLowerCase();
         const rowGroup = row.getAttribute('data-group-name') || '';
@@ -2833,10 +2904,50 @@ function filterPaketTable() {
         if (matchSearch && matchGroup && matchTahun && matchTag && matchStatus) {
             row.style.display = '';
             visibleCount++;
+            sumKontrak += parseFloat(row.getAttribute('data-kontrak') || '0');
+            sumDpp     += parseFloat(row.getAttribute('data-dpp') || '0');
+            sumPasal   += parseFloat(row.getAttribute('data-pasal') || '0');
+            sumBersih  += parseFloat(row.getAttribute('data-bersih') || '0');
+            sumHpp     += parseFloat(row.getAttribute('data-hpp') || '0');
+            sumProfit  += parseFloat(row.getAttribute('data-profit') || '0');
+            sumItems   += parseInt(row.getAttribute('data-items') || '0', 10);
+            sumUnits   += parseFloat(row.getAttribute('data-units') || '0');
         } else {
             row.style.display = 'none';
         }
     });
+
+    const footer = document.getElementById('paketTableFooter');
+    if (footer) {
+        const fmtRp = (n) => {
+            const neg = n < 0;
+            const absVal = Math.round(Math.abs(n)).toLocaleString('id-ID');
+            return (neg ? '-Rp ' : 'Rp ') + absVal;
+        };
+        const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        setEl('totalPaketCount', visibleCount);
+        setEl('totalKontrakVal', fmtRp(sumKontrak));
+        setEl('totalDppVal', fmtRp(sumDpp));
+        setEl('totalPasalVal', fmtRp(sumPasal));
+        setEl('totalBersihVal', fmtRp(sumBersih));
+        setEl('totalHppVal', fmtRp(sumHpp));
+        setEl('totalProfitVal', fmtRp(sumProfit));
+        setEl('totalItemCount', sumItems.toLocaleString('id-ID') + ' Item');
+        setEl('totalUnitCount', Math.round(sumUnits).toLocaleString('id-ID') + ' Unit');
+
+        const profitEl = document.getElementById('totalProfitVal');
+        const pctEl = document.getElementById('totalProfitPct');
+        const pct = sumKontrak > 0 ? Math.round((sumProfit / sumKontrak) * 1000) / 10 : 0;
+        const isLoss = sumProfit < 0;
+        if (profitEl) {
+            profitEl.className = 'font-mono font-extrabold ' + (isLoss ? 'text-rose-600' : 'text-emerald-700');
+        }
+        if (pctEl) {
+            pctEl.textContent = (pct > 0 ? '+' : '') + pct + '%';
+            pctEl.className = 'inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold font-mono border mt-0.5 ' +
+                (isLoss ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200/80');
+        }
+    }
 }
 
 function filterByTag(tag) {
