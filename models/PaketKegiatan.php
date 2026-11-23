@@ -20,6 +20,7 @@ class PaketKegiatan {
                        COALESCE(pi_sum.total_item_harga, 0) as total_item_harga,
                        COALESCE(pi_sum.total_item_qty, 0) as total_item_qty,
                        COALESCE(pi_sum.total_item_count, 0) as total_item_count,
+                       COALESCE(pd_sum.total_belanja, 0) as total_belanja,
                        COALESCE(p_prog.total_dist, 0) as total_dist,
                        COALESCE(p_prog.pesan_done, 0) as pesan_done,
                        COALESCE(p_prog.dist_done, 0) as dist_done,
@@ -37,6 +38,12 @@ class PaketKegiatan {
                     FROM paket_items
                     GROUP BY paket_id
                 ) pi_sum ON pk.id = pi_sum.paket_id
+                LEFT JOIN (
+                    SELECT paket_id,
+                           COALESCE(SUM(CASE WHEN harga_satuan > 0 THEN harga_satuan * jumlah ELSE 0 END), 0) as total_belanja
+                    FROM paket_distribusi
+                    GROUP BY paket_id
+                ) pd_sum ON pk.id = pd_sum.paket_id
                 LEFT JOIN (
                     SELECT 
                         pd.paket_id,

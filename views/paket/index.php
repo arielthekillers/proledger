@@ -187,6 +187,8 @@ foreach ($paket as $p) {
                     <th class="py-2.5 px-3 text-right">DPP</th>
                     <th class="py-2.5 px-3 text-right" title="Klik angka untuk Pengaturan Potongan Pasal & Admin">Total Pasal</th>
                     <th class="py-2.5 px-3 text-right" title="Dana Bersih Setelah Potongan (Klik untuk Informasi & Finansial)">Nilai Bersih</th>
+                    <th class="py-2.5 px-3 text-right" title="Total Belanja Toko / HPP (Klik untuk Kelola Pemesanan)">Belanja</th>
+                    <th class="py-2.5 px-3 text-right" title="Estimasi Profit Bersih Setelah Potongan & Belanja (Klik untuk Rincian Profit)">Profit</th>
                     <th class="py-2.5 px-2 text-center" title="Jumlah Macam Item Komponen & Total Unit (Klik untuk Kelola Item)">Komponen</th>
                     <th class="py-2.5 px-2 text-center w-20" title="Progres Pemesanan Barang (Supplier/Toko)">Pemesanan</th>
                     <th class="py-2.5 px-2 text-center w-20" title="Progres Pengiriman & Distribusi">Distribusi</th>
@@ -199,7 +201,7 @@ foreach ($paket as $p) {
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($paket)): ?>
                     <tr id="emptyTableRow">
-                        <td colspan="13" class="py-12 text-center text-slate-400">
+                        <td colspan="15" class="py-12 text-center text-slate-400">
                             <?php if (empty($activeCompany)): ?>
                                 <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-2xl text-amber-500">
                                     <ion-icon name="business-outline"></ion-icon>
@@ -246,6 +248,9 @@ foreach ($paket as $p) {
                         $adminVal = calculateAdmin($basis, $persenAdmin);
                         $totalPasal = $pasalVal + $adminVal;
                         $nilaiBersih = $acuan - $totalPasal;
+                        $totalBelanja = (float)($p['total_belanja'] ?? 0);
+                        $estimasiProfit = $nilaiBersih - $totalBelanja;
+                        $profitPct = ($acuan > 0) ? round(($estimasiProfit / $acuan) * 100, 1) : 0;
 
                         $rawSt = strtolower($p['status'] ?? 'proses');
                         $normStatus = ($rawSt === 'cair') ? 'selesai' : $rawSt;
@@ -368,6 +373,41 @@ foreach ($paket as $p) {
                                         <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                                             <ion-icon name="wallet-outline" class="text-[10px]"></ion-icon>
                                             <span>Info & Finansial</span>
+                                        </span>
+                                    </div>
+                                </button>
+                            </td>
+
+                            <!-- Belanja / HPP (Klik untuk Buka Popup Pemesanan) -->
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                                <button type="button"
+                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'pemesanan', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')"
+                                        class="text-right group/belanja hover:bg-amber-50/80 px-2 py-1 -my-1 -mx-2 rounded-lg transition-all cursor-pointer inline-block"
+                                        title="Total Belanja Toko (HPP) • Klik untuk buka Pemesanan">
+                                    <div class="font-mono font-bold text-slate-700 group-hover/belanja:text-amber-700 text-xs leading-5">
+                                        <?= $totalBelanja > 0 ? formatRupiah($totalBelanja) : '-' ?>
+                                    </div>
+                                    <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
+                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-slate-100 text-slate-500 border border-slate-200/80">
+                                            HPP Toko
+                                        </span>
+                                    </div>
+                                </button>
+                            </td>
+
+                            <!-- Estimasi Profit (Klik untuk Buka Popup Profit) -->
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                                <?php $isProfitLoss = ($estimasiProfit < 0); ?>
+                                <button type="button"
+                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'profit', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')"
+                                        class="text-right group/profit hover:bg-emerald-50/80 px-2 py-1 -my-1 -mx-2 rounded-lg transition-all cursor-pointer inline-block"
+                                        title="Estimasi Profit Bersih (Nilai Bersih - Belanja) • Klik untuk buka Rincian Profit">
+                                    <div class="font-mono font-bold <?= $isProfitLoss ? 'text-rose-600' : 'text-emerald-700 group-hover/profit:text-emerald-800' ?> text-xs leading-5">
+                                        <?= formatRupiah($estimasiProfit) ?>
+                                    </div>
+                                    <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
+                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold font-mono border <?= $isProfitLoss ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200/80' ?>">
+                                            <?= ($profitPct > 0 ? '+' : '') . $profitPct ?>%
                                         </span>
                                     </div>
                                 </button>
