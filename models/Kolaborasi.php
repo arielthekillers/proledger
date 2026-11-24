@@ -427,7 +427,7 @@ class Kolaborasi {
               AND (
                   pk.perusahaan_id IS NULL
                   OR EXISTS (
-                      SELECT 1 FROM kolaborasi_members km
+                      SELECT 1 FROM kolaborasi_anggota km
                       WHERE km.kolaborasi_id = kg.kolaborasi_id
                         AND km.user_id = p.user_id
                         AND km.status = 'joined'
