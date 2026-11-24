@@ -17,7 +17,7 @@ $totalPersen = $persenPasal + $persenAdmin;
 
 $tipePotongan = $paket['tipe_potongan'] ?? 'dpp';
 $basisPotongan = ($tipePotongan === 'kontrak') ? $acuan : $dpp;
-$basisLabel = ($tipePotongan === 'kontrak') ? 'Nilai Kontrak' : 'DPP';
+$basisLabel = ($tipePotongan === 'kontrak') ? 'Pagu Negosiasi' : 'DPP';
 
 $pasalVal = !empty($paket['pasal_13']) ? (float)$paket['pasal_13'] : calculatePasal($basisPotongan, $persenPasal);
 $adminVal = isset($paket['admin_2']) ? (float)$paket['admin_2'] : calculateAdmin($basisPotongan, $persenAdmin);

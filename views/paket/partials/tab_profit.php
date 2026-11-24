@@ -9,7 +9,7 @@
     $persenPasal = isset($paket['persen_pasal']) && $paket['persen_pasal'] !== '' ? (float)$paket['persen_pasal'] : 13.0;
     $persenAdmin = isset($paket['persen_admin']) && $paket['persen_admin'] !== '' ? (float)$paket['persen_admin'] : 2.0;
     $totalPersen = $persenPasal + $persenAdmin;
-    $basisLabel  = (($paket['tipe_potongan'] ?? 'dpp') === 'kontrak') ? 'Nilai Kontrak' : 'DPP';
+    $basisLabel  = (($paket['tipe_potongan'] ?? 'dpp') === 'kontrak') ? 'Pagu Negosiasi' : 'DPP';
     ?>
 
     <!-- TABLE CARD -->

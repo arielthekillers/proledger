@@ -7,7 +7,7 @@ $acuan = $hasNego ? (float)$paket['pagu_nego'] : (float)$paket['pagu'];
 $dpp = !empty($paket['dpp']) ? (float)$paket['dpp'] : calculateDPP($acuan);
 $tipePotongan = $paket['tipe_potongan'] ?? 'dpp';
 $basisPotongan = ($tipePotongan === 'kontrak') ? $acuan : $dpp;
-$basisLabel = ($tipePotongan === 'kontrak') ? 'Nilai Kontrak' : 'DPP (Pagu/1.11)';
+$basisLabel = ($tipePotongan === 'kontrak') ? 'Pagu Negosiasi' : 'DPP (Pagu/1.11)';
 
 $persenPasal = isset($paket['persen_pasal']) && $paket['persen_pasal'] !== '' ? (float)$paket['persen_pasal'] : 13.0;
 $persenAdmin = isset($paket['persen_admin']) && $paket['persen_admin'] !== '' ? (float)$paket['persen_admin'] : 2.0;

@@ -933,7 +933,7 @@
                 <label class="flex items-start gap-2.5 cursor-pointer select-none">
                     <input type="checkbox" name="tipe_potongan" id="potongan_tipe_potongan" value="kontrak" onchange="updateIndexPotonganCalc()" class="w-4 h-4 rounded text-amber-600 focus:ring-0 mt-0.5 cursor-pointer">
                     <div>
-                        <span class="text-xs font-semibold text-slate-700 block">Hitung Potongan dari Nilai Kontrak</span>
+                        <span class="text-xs font-semibold text-slate-700 block">Hitung Potongan dari Pagu Negosiasi</span>
                         <span class="text-[11px] text-slate-400 block leading-snug">Jika tidak dicentang, potongan dihitung dari DPP (setelah PPN 11%).</span>
                     </div>
                 </label>
@@ -1264,7 +1264,7 @@
                 <label class="flex items-start gap-2.5 cursor-pointer select-none">
                     <input type="checkbox" id="quick_tipe_potongan" value="kontrak" onchange="updateQuickModalTotal()" class="w-4 h-4 rounded text-blue-600 focus:ring-0 mt-0.5 cursor-pointer">
                     <div>
-                        <span class="text-xs font-semibold text-slate-700 block">Hitung Potongan dari Nilai Kontrak</span>
+                        <span class="text-xs font-semibold text-slate-700 block">Hitung Potongan dari Pagu Negosiasi</span>
                         <span class="text-[11px] text-slate-400 block leading-snug">Jika tidak dicentang, potongan dihitung dari DPP (setelah PPN 11%).</span>
                     </div>
                 </label>

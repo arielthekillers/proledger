@@ -976,8 +976,8 @@
                 <label class="flex items-start gap-2 cursor-pointer select-none">
                     <input type="checkbox" name="tipe_potongan" id="potongan_tipe_potongan" value="kontrak" <?= (($paket['tipe_potongan'] ?? 'dpp') === 'kontrak') ? 'checked' : '' ?> onchange="updatePotonganCalc()" class="w-4 h-4 rounded text-amber-600 focus:ring-0 mt-0.5 cursor-pointer">
                     <div>
-                        <span class="text-xs font-bold text-slate-800 block">Potongan Diambil dari Nilai Kontrak</span>
-                        <span class="text-[10px] text-slate-500 block leading-tight">Tidak dicentang: potongan dihitung dari DPP (setelah kena pajak). Centang ini jika potongan dihitung dari Nilai Kontrak (sebelum pajak).</span>
+                        <span class="text-xs font-bold text-slate-800 block">Potongan Diambil dari Pagu Negosiasi</span>
+                        <span class="text-[10px] text-slate-500 block leading-tight">Tidak dicentang: potongan dihitung dari DPP (setelah kena pajak). Centang ini jika potongan dihitung dari Pagu Negosiasi (sebelum pajak).</span>
                     </div>
                 </label>
             </div>
@@ -1213,8 +1213,8 @@
                 <label class="flex items-start gap-2 cursor-pointer select-none">
                     <input type="checkbox" id="quick_tipe_potongan" value="kontrak" onchange="updateQuickModalTotal()" class="w-4 h-4 rounded text-blue-600 focus:ring-0 mt-0.5 cursor-pointer">
                     <div>
-                        <span class="text-xs font-bold text-slate-800 block">Potongan Diambil dari Nilai Kontrak</span>
-                        <span class="text-[11px] text-slate-500 block leading-tight">Tidak dicentang: potongan dihitung dari DPP (setelah kena pajak). Centang ini jika potongan dihitung dari Nilai Kontrak (sebelum pajak).</span>
+                        <span class="text-xs font-bold text-slate-800 block">Potongan Diambil dari Pagu Negosiasi</span>
+                        <span class="text-[11px] text-slate-500 block leading-tight">Tidak dicentang: potongan dihitung dari DPP (setelah kena pajak). Centang ini jika potongan dihitung dari Pagu Negosiasi (sebelum pajak).</span>
                     </div>
                 </label>
             </div>
