@@ -179,8 +179,9 @@ class PaketGroup {
 
     /**
      * Dapatkan semua group dengan agregasi statistik akurat dari paket di dalamnya
+     * @return array
      */
-    public function getAll($perusahaanId = null, $userId = null) {
+    public function getAll($perusahaanId = null, $userId = null): array {
         $sql = "
             SELECT pg.*, p.nama as perusahaan_nama
             FROM paket_group pg

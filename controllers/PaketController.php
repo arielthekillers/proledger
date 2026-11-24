@@ -94,6 +94,7 @@ class PaketController {
     
     public function index() {
         $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
         
         // Single Active Company
         $activeCompany = getActivePerusahaan();
