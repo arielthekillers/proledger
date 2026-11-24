@@ -589,17 +589,33 @@ window.clearDokSelectedQueue = function() {
     if (progressContainer) progressContainer.classList.add('hidden');
 };
 
-window.ensureHeic2Any = function() {
-    if (window.heic2any) return Promise.resolve(window.heic2any);
+window.ensureHeicConverter = function() {
+    if (window.HeicTo && typeof window.HeicTo.heicTo === 'function') {
+        return Promise.resolve({ type: 'heic-to', fn: window.HeicTo.heicTo });
+    }
+    if (typeof window.heicTo === 'function') {
+        return Promise.resolve({ type: 'heic-to', fn: window.heicTo });
+    }
     const loadScript = (src) => new Promise((resolve, reject) => {
         const s = document.createElement('script');
         s.src = src;
-        s.onload = () => window.heic2any ? resolve(window.heic2any) : reject(new Error('heic2any unavailable'));
+        s.onload = () => resolve(true);
         s.onerror = () => reject(new Error('Gagal memuat ' + src));
         document.head.appendChild(s);
     });
-    return loadScript('https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js')
-        .catch(() => loadScript('https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js'));
+    return loadScript('https://cdn.jsdelivr.net/npm/heic-to@1.6.7/dist/iife/heic-to.js')
+        .catch(() => loadScript('https://unpkg.com/heic-to@1.6.7/dist/iife/heic-to.js'))
+        .then(() => {
+            if (window.HeicTo && typeof window.HeicTo.heicTo === 'function') {
+                return { type: 'heic-to', fn: window.HeicTo.heicTo };
+            }
+            if (typeof window.heicTo === 'function') {
+                return { type: 'heic-to', fn: window.heicTo };
+            }
+            throw new Error('HeicTo global unavailable');
+        })
+        .catch(() => loadScript('https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js')
+            .then(() => ({ type: 'heic2any', fn: window.heic2any })));
 };
 
 window.compressImageToBlob = async function(file, maxWidth = 1600, quality = 0.82) {
@@ -607,13 +623,18 @@ window.compressImageToBlob = async function(file, maxWidth = 1600, quality = 0.8
     const isHeic = /\.(heic|heif)$/i.test(file.name) || /image\/(heic|heif)/i.test(file.type || '');
     if (isHeic) {
         try {
-            const converter = await window.ensureHeic2Any();
-            const converted = await converter({ blob: file, toType: 'image/jpeg', quality: 0.9 });
-            const blob = Array.isArray(converted) ? converted[0] : converted;
+            const conv = await window.ensureHeicConverter();
+            let blob;
+            if (conv.type === 'heic-to') {
+                blob = await conv.fn({ blob: file, type: 'image/jpeg', quality: 0.9 });
+            } else {
+                const res = await conv.fn({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+                blob = Array.isArray(res) ? res[0] : res;
+            }
             const jpgName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
             sourceFile = new File([blob], jpgName, { type: 'image/jpeg' });
         } catch (err) {
-            console.warn('HEIC convert failed, fallback to raw file:', err);
+            console.warn('HEIC client convert failed, fallback to server:', err);
         }
     }
 

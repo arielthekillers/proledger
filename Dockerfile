@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg-dev \
     libfreetype6-dev \
     libzip-dev \
+    libheif-examples \
     zip \
     unzip \
     && rm -rf /var/lib/apt/lists/*

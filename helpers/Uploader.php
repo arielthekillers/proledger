@@ -217,11 +217,41 @@ class Uploader {
 
         // 1. Validasi MIME Type & Ekstensi gambar
         $allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        $heicTypes = ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'];
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mime = finfo_file($finfo, $file['tmp_name']);
         finfo_close($finfo);
 
-        if (!in_array($mime, $allowedTypes)) {
+        $origExt = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
+        $isHeic = in_array($mime, $heicTypes) || (in_array($origExt, ['heic', 'heif']) && $mime === 'application/octet-stream');
+
+        $tempConvertedJpg = null;
+        $sourceTmpPath = $file['tmp_name'];
+
+        if ($isHeic) {
+            $tmpOut = sys_get_temp_dir() . '/heic_' . bin2hex(random_bytes(8)) . '.jpg';
+            $converted = false;
+            if (function_exists('exec')) {
+                $cmd = 'heif-convert -q 90 ' . escapeshellarg($file['tmp_name']) . ' ' . escapeshellarg($tmpOut) . ' 2>&1';
+                @exec($cmd, $outLines, $retCode);
+                if ($retCode === 0 && file_exists($tmpOut) && filesize($tmpOut) > 0) {
+                    $converted = true;
+                } else {
+                    // Fallback ImageMagick convert/magick jika tersedia
+                    $cmdIm = 'convert ' . escapeshellarg($file['tmp_name']) . ' -quality 90 ' . escapeshellarg($tmpOut) . ' 2>&1';
+                    @exec($cmdIm, $outIm, $retIm);
+                    if ($retIm === 0 && file_exists($tmpOut) && filesize($tmpOut) > 0) {
+                        $converted = true;
+                    }
+                }
+            }
+            if (!$converted) {
+                return ['success' => false, 'message' => 'Format HEIC/HEIF gagal dikonversi. Pastikan browser mengonversi atau server memiliki libheif-examples.'];
+            }
+            $tempConvertedJpg = $tmpOut;
+            $sourceTmpPath = $tmpOut;
+            $mime = 'image/jpeg';
+        } elseif (!in_array($mime, $allowedTypes)) {
             return ['success' => false, 'message' => 'Format file tidak didukung. Harap upload gambar JPG, PNG, atau WebP.'];
         }
 
@@ -239,7 +269,7 @@ class Uploader {
         if (!is_dir($thumbDir)) mkdir($thumbDir, 0755, true);
 
         // 3. Nama File Acak Murni
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $ext = $isHeic ? 'jpg' : strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         if ($ext === 'jpeg') $ext = 'jpg';
         $randomName = bin2hex(random_bytes(16)) . ".{$ext}";
 
@@ -247,7 +277,7 @@ class Uploader {
         $destThumb = "{$thumbDir}/{$randomName}";
 
         // 4. Kompresi & Resize menggunakan GD
-        $sourceImage = self::createImageFromSource($file['tmp_name'], $mime);
+        $sourceImage = self::createImageFromSource($sourceTmpPath, $mime);
         if ($sourceImage) {
             $srcW = imagesx($sourceImage);
             $srcH = imagesy($sourceImage);
@@ -265,10 +295,16 @@ class Uploader {
             imagedestroy($sourceImage);
         } else {
             // Fallback jika GD gagal baca file
-            if (!move_uploaded_file($file['tmp_name'], $destLarge)) {
+            if ($tempConvertedJpg) {
+                @rename($tempConvertedJpg, $destLarge);
+                $tempConvertedJpg = null;
+            } elseif (!move_uploaded_file($sourceTmpPath, $destLarge)) {
                 return ['success' => false, 'message' => 'Gagal memproses dan menyimpan file ke server.'];
             }
             @copy($destLarge, $destThumb);
+        }
+        if ($tempConvertedJpg && file_exists($tempConvertedJpg)) {
+            @unlink($tempConvertedJpg);
         }
 
         $finalSize = file_exists($destLarge) ? filesize($destLarge) : $file['size'];
