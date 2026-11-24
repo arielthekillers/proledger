@@ -6,9 +6,27 @@
 
 class Perusahaan {
     private $db;
+    private static $schemaChecked = false;
     
     public function __construct() {
         $this->db = Database::getInstance()->getConnection();
+        $this->ensureTtdScaleColumn();
+    }
+
+    /**
+     * Pastikan kolom ttd_scale tersedia pada tabel perusahaan
+     */
+    private function ensureTtdScaleColumn() {
+        if (self::$schemaChecked) return;
+        self::$schemaChecked = true;
+        try {
+            $col = $this->db->query("SHOW COLUMNS FROM perusahaan LIKE 'ttd_scale'")->fetch();
+            if (!$col) {
+                $this->db->exec("ALTER TABLE perusahaan ADD COLUMN ttd_scale INT(11) NOT NULL DEFAULT 100");
+            }
+        } catch (Throwable $e) {
+            // Abaikan jika permission terbatas
+        }
     }
     
     /**

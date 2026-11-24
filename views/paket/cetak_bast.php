@@ -188,7 +188,7 @@ if ($isBulk && !empty($groupedList)) {
                 <?php if (!$hasKopBg): ?>
                     <div class="border-b-2 border-black pb-3 mb-6 text-center">
                         <h1 class="font-bold text-lg md:text-xl uppercase tracking-wider text-black">
-                            <?= htmlspecialchars($perusahaan['nama'] ?? 'CV. KARSA KREASI BERDIKARI') ?>
+                            <?= htmlspecialchars($perusahaan['nama'] ?? '-') ?>
                         </h1>
                         <?php if (!empty($perusahaan['alamat'])): ?>
                             <p class="text-xs mt-0.5 text-black"><?= htmlspecialchars($perusahaan['alamat']) ?></p>
@@ -255,7 +255,7 @@ if ($isBulk && !empty($groupedList)) {
                             <td class="w-24 align-top py-0.5 font-normal">Nama</td>
                             <td class="w-4 align-top py-0.5 text-center">:</td>
                             <td class="align-top py-0.5 font-bold">
-                                <?= htmlspecialchars($perusahaan['nama_direktur'] ?: ($perusahaan['penanggung_jawab'] ?? 'Muhammad Rifki')) ?>
+                                <?= htmlspecialchars($perusahaan['nama_direktur'] ?: ($perusahaan['penanggung_jawab'] ?: '-')) ?>
                             </td>
                         </tr>
                         <tr>
@@ -301,7 +301,7 @@ if ($isBulk && !empty($groupedList)) {
                                     <tr>
                                         <td class="border border-black py-1.5 px-2 text-center align-top"><?= $no++ ?>.</td>
                                         <td class="border border-black py-1.5 px-3 font-semibold align-top"><?= htmlspecialchars($it['nama_komponen']) ?></td>
-                                        <td class="border border-black py-1.5 px-3 text-center align-top">-</td>
+                                        <td class="border border-black py-1.5 px-3 text-center align-top"><?= htmlspecialchars(!empty($it['nama_barang']) ? $it['nama_barang'] : '-') ?></td>
                                         <td class="border border-black py-1.5 px-3 text-center align-top font-bold whitespace-nowrap">
                                             <?= (float)$it['jumlah'] ?> <?= htmlspecialchars($it['satuan'] ?: 'Unit') ?>
                                         </td>
@@ -337,15 +337,18 @@ if ($isBulk && !empty($groupedList)) {
                         <?php
                         $ttdUrls = !empty($perusahaan['ttd']) ? Uploader::getAllUrls($perusahaan['ttd'], 'perusahaan', 'ttd') : null;
                         $ttdSrc = $ttdUrls['medium'] ?? (!empty($perusahaan['stempel_ttd']) ? (APP_URL . '/' . ltrim($perusahaan['stempel_ttd'], '/')) : null);
+                        $ttdScale = max(30, min(250, (int)($perusahaan['ttd_scale'] ?? 100)));
+                        $ttdHeightPx = round(56 * ($ttdScale / 100));
                         ?>
                         <?php if ($ttdSrc): ?>
                             <img src="<?= htmlspecialchars($ttdSrc) ?>" 
                                  alt="Tanda Tangan" 
-                                 class="absolute top-6 left-1/2 transform -translate-x-1/2 max-h-20 object-contain pointer-events-none">
+                                 style="height: <?= $ttdHeightPx ?>px; width: auto;"
+                                 class="mx-auto -mt-16 mb-2 object-contain pointer-events-none relative z-10">
                         <?php endif; ?>
 
                         <p class="font-bold underline text-sm md:text-base">
-                            <?= htmlspecialchars($perusahaan['nama_direktur'] ?: ($perusahaan['penanggung_jawab'] ?? 'Muhammad Rifki')) ?>
+                            <?= htmlspecialchars($perusahaan['nama_direktur'] ?: ($perusahaan['penanggung_jawab'] ?: '-')) ?>
                         </p>
                         <p class="text-xs text-slate-600">
                             <?= htmlspecialchars($perusahaan['jabatan_direktur'] ?: 'Direktur') ?>

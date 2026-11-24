@@ -382,7 +382,9 @@ $ttdUrls = !empty($perusahaan['ttd']) ? Uploader::getAllUrls($perusahaan['ttd'],
             </div>
 
             <!-- ITEM D: TANDA TANGAN (PNG) -->
-            <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-slate-50 transition-colors">
+            <?php $curTtdScale = max(30, min(250, (int)($perusahaan['ttd_scale'] ?? 100))); ?>
+            <div class="p-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-slate-50 transition-colors space-y-2.5">
+            <div class="flex items-center gap-3">
                 <div class="w-16 h-14 rounded-lg border border-slate-200 bg-white flex items-center justify-center p-1 shrink-0 overflow-hidden relative group">
                     <?php if ($ttdUrls && !empty($ttdUrls['medium'])): ?>
                         <img src="<?= $ttdUrls['medium'] ?>" alt="TTD"
@@ -436,6 +438,26 @@ $ttdUrls = !empty($perusahaan['ttd']) ? Uploader::getAllUrls($perusahaan['ttd'],
                     </div>
                 </div>
             </div>
+            <?php if ($ttdUrls && !empty($ttdUrls['medium'])): ?>
+                <div class="pt-2 border-t border-slate-200/70 space-y-2">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span class="font-semibold text-slate-600">Ukuran TTD di Surat BAST</span>
+                        <span id="ttdScaleLabel" class="font-mono font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200"><?= $curTtdScale ?>%</span>
+                    </div>
+                    <input type="range" id="ttdScaleSlider" min="30" max="250" step="5" value="<?= $curTtdScale ?>"
+                           oninput="previewTtdScale(this.value)"
+                           onchange="saveTtdScale(<?= (int)$perusahaan['id'] ?>, this.value)"
+                           class="w-full accent-amber-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg">
+                    <div class="bg-white rounded-lg border border-slate-200/80 p-2 text-center relative overflow-hidden">
+                        <div class="text-[9px] font-bold uppercase text-slate-400 mb-6">Preview di Surat</div>
+                        <img id="ttdScalePreviewImg" src="<?= $ttdUrls['medium'] ?>" alt="Preview TTD"
+                             style="height: <?= round(40 * ($curTtdScale / 100)) ?>px; width: auto;"
+                             class="mx-auto -mt-5 mb-0.5 object-contain pointer-events-none transition-all">
+                        <div class="text-[10px] font-bold underline text-slate-700"><?= htmlspecialchars($perusahaan['nama_direktur'] ?: ($perusahaan['penanggung_jawab'] ?? 'Direktur')) ?></div>
+                    </div>
+                </div>
+            <?php endif; ?>
+            </div>
         </div>
     </div>
 </div>
@@ -478,5 +500,33 @@ function previewImageModal(url, title) {
     document.getElementById('imagePreviewTitle').textContent = title || 'Preview Gambar';
     document.getElementById('imagePreviewDownload').href = url;
     window.ProModal.open('modalImagePreview');
+}
+
+function previewTtdScale(val) {
+    const lbl = document.getElementById('ttdScaleLabel');
+    if (lbl) lbl.textContent = val + '%';
+    const img = document.getElementById('ttdScalePreviewImg');
+    if (img) img.style.height = Math.round(40 * (parseInt(val, 10) / 100)) + 'px';
+}
+
+function saveTtdScale(perusahaanId, val) {
+    const fd = new FormData();
+    fd.append('ttd_scale', val);
+    fetch('<?= APP_URL ?>/perusahaan/updateTtdScale/' + perusahaanId, {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success && window.ProToast) {
+            window.ProToast.success(res.message || 'Ukuran TTD disimpan.');
+        } else if (!res.success && window.ProToast) {
+            window.ProToast.error(res.message || 'Gagal menyimpan ukuran TTD.');
+        }
+    })
+    .catch(() => {
+        if (window.ProToast) window.ProToast.error('Koneksi terputus.');
+    });
 }
 </script>

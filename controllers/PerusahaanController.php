@@ -377,6 +377,33 @@ class PerusahaanController {
         exit;
     }
 
+    /**
+     * AJAX/POST: Simpan persentase ukuran TTD di surat BAST
+     */
+    public function updateTtdScale($id) {
+        header('Content-Type: application/json');
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $userRole = $_SESSION['admin_role'] ?? 'user';
+
+        if (!$this->perusahaanModel->isOwnerOrAdmin((int)$id, $userId, $userRole)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Akses ditolak.']);
+            exit;
+        }
+
+        $scale = max(30, min(250, (int)($_POST['ttd_scale'] ?? 100)));
+        try {
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->prepare("UPDATE perusahaan SET ttd_scale = ?, updated_at = NOW() WHERE id = ?");
+            $stmt->execute([$scale, (int)$id]);
+            echo json_encode(['success' => true, 'ttd_scale' => $scale, 'message' => "Ukuran TTD disimpan ({$scale}%)."]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Gagal menyimpan ukuran TTD: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
     private function view($view, $data = []) {
         extract($data);
         require_once VIEW_PATH . '/layout/header.php';
