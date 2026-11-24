@@ -6,9 +6,27 @@
 
 class PaketDistribusi {
     private $db;
+    private static $schemaChecked = false;
     
     public function __construct() {
         $this->db = Database::getInstance()->getConnection();
+        $this->ensureOngkirColumn();
+    }
+
+    /**
+     * Pastikan kolom ongkos_kirim tersedia pada paket_distribusi
+     */
+    private function ensureOngkirColumn() {
+        if (self::$schemaChecked) return;
+        self::$schemaChecked = true;
+        try {
+            $col = $this->db->query("SHOW COLUMNS FROM paket_distribusi LIKE 'ongkos_kirim'")->fetch();
+            if (!$col) {
+                $this->db->exec("ALTER TABLE paket_distribusi ADD COLUMN ongkos_kirim DECIMAL(15,2) NULL DEFAULT NULL AFTER harga_satuan");
+            }
+        } catch (Throwable $e) {
+            // Abaikan jika permission terbatas
+        }
     }
     
     /**
@@ -149,6 +167,7 @@ class PaketDistribusi {
                     status_barang = 'Belum Dipesan',
                     nama_barang = NULL,
                     harga_satuan = NULL,
+                    ongkos_kirim = NULL,
                     ekspedisi = NULL,
                     no_resi = NULL,
                     link_pembelian = NULL,
@@ -161,6 +180,7 @@ class PaketDistribusi {
         } else {
             $namaBarang = !empty($data['nama_barang']) ? trim($data['nama_barang']) : null;
             $hargaSatuan = isset($data['harga_satuan']) && $data['harga_satuan'] !== '' ? (float)$data['harga_satuan'] : null;
+            $ongkosKirim = isset($data['ongkos_kirim']) && $data['ongkos_kirim'] !== '' ? (float)$data['ongkos_kirim'] : null;
             $ekspedisi = !empty($data['ekspedisi']) ? trim($data['ekspedisi']) : null;
             $noResi = !empty($data['no_resi']) ? trim($data['no_resi']) : null;
             $link = !empty($data['link_pembelian']) ? trim($data['link_pembelian']) : null;
@@ -171,6 +191,7 @@ class PaketDistribusi {
                     status_barang = 'Sudah Dipesan',
                     nama_barang = ?,
                     harga_satuan = ?,
+                    ongkos_kirim = ?,
                     ekspedisi = ?,
                     no_resi = ?,
                     link_pembelian = ?,
@@ -181,6 +202,7 @@ class PaketDistribusi {
             return $stmt->execute([
                 $namaBarang,
                 $hargaSatuan,
+                $ongkosKirim,
                 $ekspedisi,
                 $noResi,
                 $link,
@@ -229,6 +251,7 @@ class PaketDistribusi {
                 status_barang = ?,
                 nama_barang = ?,
                 harga_satuan = ?,
+                ongkos_kirim = ?,
                 ekspedisi = ?,
                 status_distribusi = ?,
                 tanggal_pesan = ?,
@@ -253,6 +276,7 @@ class PaketDistribusi {
             !empty($data['status_barang']) ? trim($data['status_barang']) : 'Belum Dipesan',
             !empty($data['nama_barang']) ? trim($data['nama_barang']) : null,
             isset($data['harga_satuan']) && $data['harga_satuan'] !== '' ? (float)$data['harga_satuan'] : null,
+            isset($data['ongkos_kirim']) && $data['ongkos_kirim'] !== '' ? (float)$data['ongkos_kirim'] : null,
             !empty($data['ekspedisi']) ? trim($data['ekspedisi']) : null,
             !empty($data['status_distribusi']) ? trim($data['status_distribusi']) : null,
             !empty($data['tanggal_pesan']) ? $data['tanggal_pesan'] : null,

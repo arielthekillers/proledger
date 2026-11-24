@@ -1578,10 +1578,17 @@
                                class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 transition-all font-mono">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Harga Beli Satuan (Rp)</label>
-                    <input type="text" name="harga_satuan" id="nativeStatusBarangHarga" placeholder="0"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 transition-all font-mono font-semibold">
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Harga Beli Satuan (Rp)</label>
+                        <input type="text" name="harga_satuan" id="nativeStatusBarangHarga" placeholder="0" oninput="formatRupiahInput(this)"
+                               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 transition-all font-mono font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ongkos Kirim (Rp)</label>
+                        <input type="text" name="ongkos_kirim" id="nativeStatusBarangOngkir" placeholder="0" oninput="formatRupiahInput(this)"
+                               class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 transition-all font-mono font-semibold">
+                    </div>
                 </div>
             </div>
 
@@ -1951,6 +1958,8 @@ function openNativeUpdateStatusBarangModal(dist) {
     document.getElementById('nativeStatusBarangEkspedisi').value = dist.ekspedisi || '';
     document.getElementById('nativeStatusBarangResi').value = dist.no_resi || '';
     document.getElementById('nativeStatusBarangHarga').value = dist.harga_satuan ? new Intl.NumberFormat('id-ID').format(dist.harga_satuan) : '';
+    const ongkirEl = document.getElementById('nativeStatusBarangOngkir');
+    if (ongkirEl) ongkirEl.value = dist.ongkos_kirim ? new Intl.NumberFormat('id-ID').format(dist.ongkos_kirim) : '';
 
     toggleNativeStatusBarangInputs();
     window.ProModal.open('modalNativeStatusBarang');

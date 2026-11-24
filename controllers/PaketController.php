@@ -393,9 +393,14 @@ class PaketController {
             $isOrdered = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
             $sDist = $dist['status_distribusi'] ?? '';
 
-            // Hitung total harga beli barang (HPP) jika harga satuan toko terisi
-            if ((float)($dist['harga_satuan'] ?? 0) > 0) {
-                $totalBeliBarang += ((float)$dist['harga_satuan'] * (float)$dist['jumlah']);
+            // Hitung total harga beli barang + ongkos kirim (HPP)
+            $dHargaSatuan = (float)($dist['harga_satuan'] ?? 0);
+            $dOngkir = (float)($dist['ongkos_kirim'] ?? 0);
+            if ($dHargaSatuan > 0) {
+                $totalBeliBarang += ($dHargaSatuan * (float)$dist['jumlah']);
+            }
+            if ($dOngkir > 0) {
+                $totalBeliBarang += $dOngkir;
             }
 
             if (!$isOrdered) {
@@ -430,9 +435,13 @@ class PaketController {
                 if ($dist['item_id'] == $itemId) {
                     $distsForItem[] = $dist;
                     $dHppSatuan = (float)($dist['harga_satuan'] ?? 0);
+                    $dOngkir = (float)($dist['ongkos_kirim'] ?? 0);
                     $dQty = (float)$dist['jumlah'];
                     if ($dHppSatuan > 0) {
                         $itemHpp += ($dQty * $dHppSatuan);
+                    }
+                    if ($dOngkir > 0) {
+                        $itemHpp += $dOngkir;
                     }
                 }
             }
@@ -1180,6 +1189,7 @@ class PaketController {
             'status_barang' => $statusBarang,
             'nama_barang' => trim($_POST['nama_barang'] ?? ''),
             'harga_satuan' => isset($_POST['harga_satuan']) && $_POST['harga_satuan'] !== '' ? parseRupiah($_POST['harga_satuan']) : null,
+            'ongkos_kirim' => isset($_POST['ongkos_kirim']) && $_POST['ongkos_kirim'] !== '' ? parseRupiah($_POST['ongkos_kirim']) : null,
             'ekspedisi' => trim($_POST['ekspedisi'] ?? ''),
             'no_resi' => trim($_POST['no_resi'] ?? ''),
             'link_pembelian' => trim($_POST['link_pembelian'] ?? '')

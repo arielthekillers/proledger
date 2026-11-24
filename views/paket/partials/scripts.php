@@ -658,6 +658,14 @@ function openModalUpdateStatusBarang(dist) {
         hargaInput.value = hargaVal ? parseInt(hargaVal, 10).toLocaleString('id-ID') : '';
     }
 
+    const ongkirVal = (dist.ongkos_kirim !== null && dist.ongkos_kirim !== undefined && dist.ongkos_kirim !== '') 
+        ? dist.ongkos_kirim 
+        : '';
+    const ongkirInput = document.getElementById('status_barang_ongkir');
+    if (ongkirInput) {
+        ongkirInput.value = ongkirVal ? parseInt(ongkirVal, 10).toLocaleString('id-ID') : '';
+    }
+
     document.getElementById('status_barang_ekspedisi').value = dist.ekspedisi || '';
     document.getElementById('status_barang_resi').value = dist.no_resi || '';
     document.getElementById('status_barang_link').value = dist.link_pembelian || '';

@@ -36,6 +36,7 @@
                         <th class="py-2.5 px-3 text-right min-w-[120px]">HARGA SATUAN</th>
                         <th class="py-2.5 px-3 min-w-[170px]">NAMA PESANAN (TOKO)</th>
                         <th class="py-2.5 px-3 text-right min-w-[120px]">HARGA BELI SATUAN</th>
+                        <th class="py-2.5 px-3 text-right min-w-[100px]">ONGKOS KIRIM</th>
                         <th class="py-2.5 px-3 text-right min-w-[130px]">TOTAL MODAL BELI</th>
                         <th class="py-2.5 px-3 min-w-[130px]">STATUS PESANAN</th>
                         <th class="py-2.5 px-2.5 text-right w-12">AKSI</th>
@@ -44,7 +45,7 @@
                 <tbody class="divide-y divide-slate-100">
                     <?php if (empty($distribusiList)): ?>
                         <tr>
-                            <td colspan="11" class="py-8 text-center text-slate-400">
+                            <td colspan="12" class="py-8 text-center text-slate-400">
                                 <div class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl text-slate-300">
                                     <ion-icon name="bag-handle-outline"></ion-icon>
                                 </div>
@@ -62,6 +63,7 @@
                         $no = 1; 
                         $totalPesananSudah = 0;
                         $totalNilaiKontrakDist = 0;
+                        $totalOngkirDist = 0;
                         foreach ($distribusiList as $dist): 
                             $isOrdered = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
                             if ($isOrdered) $totalPesananSudah++;
@@ -69,7 +71,9 @@
                             $itemHargaSatuan = (float)($dist['item_harga_satuan'] ?? 0);
                             $totalNilaiKontrakDist += ($qty * $itemHargaSatuan);
                             $hargaSatuan = (float)($dist['harga_satuan'] ?? 0);
-                            $subtotalBeli = $qty * $hargaSatuan;
+                            $ongkirVal = (float)($dist['ongkos_kirim'] ?? 0);
+                            $totalOngkirDist += $ongkirVal;
+                            $subtotalBeli = ($qty * $hargaSatuan) + $ongkirVal;
                         ?>
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <!-- No -->
@@ -141,6 +145,15 @@
                                     <?php endif; ?>
                                 </td>
 
+                                <!-- Ongkos Kirim -->
+                                <td class="py-2 px-3 text-right whitespace-nowrap font-mono text-xs">
+                                    <?php if ($ongkirVal > 0): ?>
+                                        <span class="font-semibold text-amber-700"><?= formatRupiah($ongkirVal) ?></span>
+                                    <?php else: ?>
+                                        <span class="text-slate-300 font-normal">-</span>
+                                    <?php endif; ?>
+                                </td>
+
                                 <!-- Total Modal Beli (HPP) -->
                                 <td class="py-2 px-3 text-right whitespace-nowrap font-mono text-xs font-bold">
                                     <?php if ($subtotalBeli > 0): ?>
@@ -206,6 +219,9 @@
                                 Total Modal Beli:
                             </td>
                             <td class="py-2.5 px-3 text-right font-mono text-xs font-semibold text-slate-400">-</td>
+                            <td class="py-2.5 px-3 text-right font-mono text-xs font-semibold text-amber-700 whitespace-nowrap">
+                                <?= $totalOngkirDist > 0 ? formatRupiah($totalOngkirDist) : '-' ?>
+                            </td>
                             <td class="py-2.5 px-3 text-right font-mono font-extrabold text-indigo-700 text-xs whitespace-nowrap">
                                 <?= formatRupiah($totalBeliBarang) ?>
                             </td>

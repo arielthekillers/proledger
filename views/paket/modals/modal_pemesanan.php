@@ -5,6 +5,7 @@
 $role = $_SESSION['admin_role'] ?? 'user';
 $pesanDone = 0;
 $totalBeli = 0;
+$totalOngkir = 0;
 $totalQty = 0;
 foreach ($distribusiList as $dist) {
     if (($dist['status_barang'] ?? '') === 'Sudah Dipesan') {
@@ -12,6 +13,11 @@ foreach ($distribusiList as $dist) {
     }
     if ((float)($dist['harga_satuan'] ?? 0) > 0) {
         $totalBeli += ((float)$dist['harga_satuan'] * (float)$dist['jumlah']);
+    }
+    $ongkirRow = (float)($dist['ongkos_kirim'] ?? 0);
+    if ($ongkirRow > 0) {
+        $totalOngkir += $ongkirRow;
+        $totalBeli += $ongkirRow;
     }
     $totalQty += (float)$dist['jumlah'];
 }
@@ -39,6 +45,7 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                     <th class="py-2.5 px-2 text-center w-16">QTY</th>
                     <th class="py-2.5 px-3 w-32">PESANAN TOKO</th>
                     <th class="py-2.5 px-3 text-right w-28">HARGA BELI</th>
+                    <th class="py-2.5 px-3 text-right w-24">ONGKIR</th>
                     <th class="py-2.5 px-3 text-right w-32">TOTAL BELI</th>
                     <th class="py-2.5 px-3 text-center w-44 rounded-tr-xl">STATUS PESANAN</th>
                 </tr>
@@ -46,7 +53,7 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($distribusiList)): ?>
                     <tr>
-                        <td colspan="8" class="py-8 text-center text-slate-400 text-xs">
+                        <td colspan="9" class="py-8 text-center text-slate-400 text-xs">
                             <div class="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl text-slate-300">
                                 <ion-icon name="bag-outline"></ion-icon>
                             </div>
@@ -59,7 +66,8 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                         <?php 
                         $isPesan = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
                         $hSatuan = (float)($dist['harga_satuan'] ?? 0);
-                        $subTotalBeli = $hSatuan * (float)$dist['jumlah'];
+                        $ongkirVal = (float)($dist['ongkos_kirim'] ?? 0);
+                        $subTotalBeli = ($hSatuan * (float)$dist['jumlah']) + $ongkirVal;
                         $namaKomp = $dist['nama_komponen'] ?? $dist['komponen'] ?? '-';
                         ?>
                         <tr class="hover:bg-slate-50/70 transition-colors">
@@ -109,6 +117,9 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                             <td class="py-2.5 px-3 text-right whitespace-nowrap text-xs font-mono text-slate-700">
                                 <?= $hSatuan > 0 ? 'Rp ' . number_format($hSatuan, 0, ',', '.') : '-' ?>
                             </td>
+                            <td class="py-2.5 px-3 text-right whitespace-nowrap text-xs font-mono text-amber-700">
+                                <?= $ongkirVal > 0 ? 'Rp ' . number_format($ongkirVal, 0, ',', '.') : '-' ?>
+                            </td>
                             <td class="py-2.5 px-3 text-right whitespace-nowrap text-xs font-mono font-bold text-slate-800">
                                 <?= $subTotalBeli > 0 ? 'Rp ' . number_format($subTotalBeli, 0, ',', '.') : '-' ?>
                             </td>
@@ -145,6 +156,9 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                     </td>
                     <td colspan="2" class="py-2.5 px-3 text-right text-xs text-slate-500 font-normal">
                         Total Belanja (HPP):
+                    </td>
+                    <td class="py-2.5 px-3 text-right text-xs font-mono font-semibold text-amber-700 whitespace-nowrap">
+                        <?= $totalOngkir > 0 ? 'Rp ' . number_format($totalOngkir, 0, ',', '.') : '-' ?>
                     </td>
                     <td class="py-2.5 px-3 text-right text-xs font-mono font-extrabold text-slate-900 whitespace-nowrap">
                         Rp <?= number_format($totalBeli, 0, ',', '.') ?>

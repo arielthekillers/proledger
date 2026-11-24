@@ -294,7 +294,7 @@ class PaketGroup {
             ) pi_sum ON pk.id = pi_sum.paket_id
             LEFT JOIN (
                 SELECT paket_id,
-                       COALESCE(SUM(CASE WHEN harga_satuan > 0 THEN harga_satuan * jumlah ELSE 0 END), 0) as total_belanja
+                       COALESCE(SUM((CASE WHEN harga_satuan > 0 THEN harga_satuan * jumlah ELSE 0 END) + COALESCE(ongkos_kirim, 0)), 0) as total_belanja
                 FROM paket_distribusi
                 GROUP BY paket_id
             ) pd_sum ON pk.id = pd_sum.paket_id

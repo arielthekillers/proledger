@@ -104,7 +104,8 @@
                             $itemHargaSatuan = (float)($dist['item_harga_satuan'] ?? 0);
                             $totalKontrakRow = $qty * $itemHargaSatuan;
                             $hargaBeliSatuan = (float)($dist['harga_satuan'] ?? 0);
-                            $hppRow = $qty * $hargaBeliSatuan;
+                            $ongkirRow = (float)($dist['ongkos_kirim'] ?? 0);
+                            $hppRow = ($qty * $hargaBeliSatuan) + $ongkirRow;
                             $untungRow = $totalKontrakRow - $hppRow;
 
                             $totalNilaiKontrakDist += $totalKontrakRow;
