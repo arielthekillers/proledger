@@ -42,7 +42,7 @@ define('DB_CHARSET', 'utf8mb4');
 
 // Application Configuration
 define('APP_NAME', getenv('APP_NAME') ?: ($_ENV['APP_NAME'] ?? ($_SERVER['APP_NAME'] ?? 'SimPaket')));
-define('APP_VERSION', '1.0.0');
+define('APP_VERSION', '1.0.1');
 define('APP_URL', getenv('APP_URL') ?: ($_ENV['APP_URL'] ?? ($_SERVER['APP_URL'] ?? 'http://localhost:8000')));
 define('APP_ENV', getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? ($_SERVER['APP_ENV'] ?? 'production')));
 

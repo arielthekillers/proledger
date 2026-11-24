@@ -899,6 +899,20 @@ window.escapeDokHtml = escapeDokHtml;
 </div>
 
 <script>
+(function() {
+    // Teleport sub-modals ke document.body agar backdrop fixed inset-0 penuh layar (tidak terpotong border modal parent)
+    ['modalDokumentasi', 'modalDokUmum'].forEach(id => {
+        const list = document.querySelectorAll('#' + id);
+        if (list.length > 1) {
+            for (let i = 0; i < list.length - 1; i++) list[i].remove();
+        }
+        const el = document.getElementById(id);
+        if (el && el.parentElement !== document.body) {
+            document.body.appendChild(el);
+        }
+    });
+})();
+
 window.openModalDokUmum = function() {
     const f = document.getElementById('formDokUmum');
     if (f) f.reset();

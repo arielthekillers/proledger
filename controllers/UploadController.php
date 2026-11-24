@@ -55,10 +55,9 @@ class UploadController {
             }
         }
 
-        // Khusus kopsurat: dukung upload PDF A4 agar cetak surat tajam
+        // Khusus kopsurat: wajib PDF A4 agar hasil cetak tajam
         $origExt = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
-        $isPdf = ($field === 'kopsurat') && ($origExt === 'pdf' || ($file['type'] ?? '') === 'application/pdf');
-        if ($isPdf) {
+        if ($field === 'kopsurat') {
             $result = Uploader::uploadFile($file, 'perusahaan/kopsurat', ['pdf'], 15, true);
             if ($result['success']) {
                 $result['filename'] = basename($result['file_path']);

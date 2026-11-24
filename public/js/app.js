@@ -308,9 +308,15 @@ window.ProUploader = {
         
         // Reset states
         const fileInput = document.getElementById('prouploader-file-input');
+        const acceptVal = this.currentOptions.accept || 'image/png, image/jpeg, image/webp, image/gif';
         if (fileInput) {
-            fileInput.setAttribute('accept', this.currentOptions.accept || 'image/png, image/jpeg, image/webp, image/gif');
+            fileInput.setAttribute('accept', acceptVal);
         }
+        const isPdfMode = acceptVal.toLowerCase().includes('pdf');
+        const dropTitle = document.querySelector('#prouploader-dropzone p.font-bold');
+        const dropSub = document.querySelector('#prouploader-dropzone p.text-slate-400');
+        if (dropTitle) dropTitle.textContent = isPdfMode ? 'Klik atau Seret File PDF ke Sini' : 'Klik atau Seret Gambar ke Sini';
+        if (dropSub) dropSub.textContent = isPdfMode ? 'PDF ukuran A4 hingga 15MB' : 'PNG, JPG, WebP hingga 10MB';
         this.showState('select');
         window.ProModal.open('pro-uploader-modal');
     },
@@ -449,7 +455,12 @@ window.ProUploader = {
         dropzone.addEventListener('drop', (e) => {
             const dt = e.dataTransfer;
             const file = dt.files[0];
-            if (file && file.type.startsWith('image/')) {
+            if (!file) return;
+            const acceptVal = (this.currentOptions && this.currentOptions.accept) ? this.currentOptions.accept.toLowerCase() : '';
+            const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+            if (acceptVal.includes('pdf')) {
+                if (isPdf) this.handleFileSelection(file);
+            } else if (file.type.startsWith('image/')) {
                 this.handleFileSelection(file);
             }
         });
