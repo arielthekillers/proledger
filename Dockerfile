@@ -54,7 +54,5 @@ RUN mkdir -p /var/www/html/public/uploads \
 # Expose port 80
 EXPOSE 80
 
-# Volume for uploaded documents and BAST files
-VOLUME ["/var/www/html/public/uploads"]
-
-CMD ["apache2-foreground"]
+# Ensure uploads directory permissions at startup (for Coolify Persistent Storage mounts) and start Apache
+CMD ["sh", "-c", "mkdir -p /var/www/html/public/uploads && chown -R www-data:www-data /var/www/html/public/uploads && chmod -R 775 /var/www/html/public/uploads && exec apache2-foreground"]
