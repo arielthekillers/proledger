@@ -165,12 +165,12 @@ class KolaborasiController {
         // Group milik user sendiri yang bisa di-share ke kolaborasi ini
         $myCompanies = $this->perusahaanModel->getByUser($userId);
         $myCompIds = array_map('intval', array_column($myCompanies, 'id'));
-        $allGroups = $this->groupModel->getAll();
+        $allGroups = $this->groupModel->getAll(null, $userId);
         $linkedIds = array_map('intval', array_column($linkedGroups, 'group_id'));
 
-        $myAvailableGroups = array_values(array_filter($allGroups, function ($g) use ($myCompIds, $linkedIds) {
-            $ownsGroup = empty($g['perusahaan_id']) || in_array((int)$g['perusahaan_id'], $myCompIds, true);
-            return $ownsGroup && !in_array((int)$g['id'], $linkedIds, true);
+        $myAvailableGroups = array_values(array_filter($allGroups, function ($g) use ($userId, $myCompIds, $linkedIds) {
+            return $this->groupModel->userCanAccess($g, $userId, $myCompIds, 'user')
+                && !in_array((int)$g['id'], $linkedIds, true);
         }));
 
         $myLinkedGroups = array_values(array_filter($linkedGroups, fn($lg) => (int)$lg['user_id'] === $userId));
@@ -303,8 +303,7 @@ class KolaborasiController {
         $linkedNames = [];
         foreach ($groupIds as $gid) {
             $group = $this->groupModel->getById($gid);
-            if (!$group) continue;
-            if (!empty($group['perusahaan_id']) && !in_array((int)$group['perusahaan_id'], $myCompIds, true)) {
+            if (!$group || !$this->groupModel->userCanAccess($group, $userId, $myCompIds, 'user')) {
                 continue;
             }
             $this->kolabModel->linkGroup($kolabId, $gid, $userId);

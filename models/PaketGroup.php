@@ -7,9 +7,46 @@
 
 class PaketGroup {
     private $db;
+    private static $schemaChecked = false;
 
     public function __construct() {
         $this->db = Database::getInstance()->getConnection();
+        $this->ensureUserIdColumn();
+    }
+
+    /**
+     * Pastikan kolom user_id tersedia pada paket_group & backfill data lama secara aman
+     */
+    private function ensureUserIdColumn() {
+        if (self::$schemaChecked) return;
+        self::$schemaChecked = true;
+        try {
+            $col = $this->db->query("SHOW COLUMNS FROM paket_group LIKE 'user_id'")->fetch();
+            if (!$col) {
+                $this->db->exec("ALTER TABLE paket_group ADD COLUMN user_id INT(11) NULL AFTER perusahaan_id, ADD INDEX idx_pg_user (user_id)");
+                $this->db->exec("UPDATE paket_group pg INNER JOIN perusahaan p ON pg.perusahaan_id = p.id SET pg.user_id = p.user_id WHERE pg.user_id IS NULL");
+                $this->db->exec("UPDATE paket_group pg INNER JOIN kolaborasi_groups kg ON kg.group_id = pg.id SET pg.user_id = kg.user_id WHERE pg.user_id IS NULL");
+                $this->db->exec("UPDATE paket_group pg INNER JOIN paket_kegiatan pk ON pk.group_id = pg.id INNER JOIN perusahaan p ON pk.perusahaan_id = p.id SET pg.user_id = p.user_id WHERE pg.user_id IS NULL");
+            }
+        } catch (Throwable $e) {
+            // Abaikan jika gagal migrasi otomatis (misal permission terbatas)
+        }
+    }
+
+    /**
+     * Cek apakah user berhak mengakses / memakai group tertentu
+     */
+    public function userCanAccess(array $group, int $userId, array $myCompIds, string $role = 'user'): bool {
+        if ($role === 'admin') {
+            return true;
+        }
+        if (!empty($group['user_id']) && (int)$group['user_id'] === $userId) {
+            return true;
+        }
+        if (!empty($group['perusahaan_id']) && in_array((int)$group['perusahaan_id'], $myCompIds, true)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -143,17 +180,34 @@ class PaketGroup {
     /**
      * Dapatkan semua group dengan agregasi statistik akurat dari paket di dalamnya
      */
-    public function getAll($perusahaanId = null) {
+    public function getAll($perusahaanId = null, $userId = null) {
         $sql = "
             SELECT pg.*, p.nama as perusahaan_nama
             FROM paket_group pg
             LEFT JOIN perusahaan p ON pg.perusahaan_id = p.id
         ";
 
+        $where = [];
         $params = [];
         if ($perusahaanId !== null) {
-            $sql .= " WHERE (pg.perusahaan_id = ? OR pg.perusahaan_id IS NULL)";
-            $params[] = $perusahaanId;
+            if ($userId !== null) {
+                $where[] = "((pg.perusahaan_id = ? AND (p.user_id = ? OR pg.user_id = ? OR p.user_id IS NULL)) OR (pg.perusahaan_id IS NULL AND pg.user_id = ?))";
+                $params[] = (int)$perusahaanId;
+                $params[] = (int)$userId;
+                $params[] = (int)$userId;
+                $params[] = (int)$userId;
+            } else {
+                $where[] = "pg.perusahaan_id = ?";
+                $params[] = (int)$perusahaanId;
+            }
+        } elseif ($userId !== null) {
+            $where[] = "(pg.user_id = ? OR p.user_id = ?)";
+            $params[] = (int)$userId;
+            $params[] = (int)$userId;
+        }
+
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(" AND ", $where);
         }
 
         $sql .= " ORDER BY pg.created_at DESC";
@@ -169,9 +223,15 @@ class PaketGroup {
         // Ambil semua paket anggota untuk group-group tersebut sekaligus
         $groupIds = array_column($groups, 'id');
         $placeholders = implode(',', array_fill(0, count($groupIds), '?'));
-        $paketSql = $this->buildPaketSelectSql("pk.group_id IN ($placeholders)");
+        $paketWhere = "pk.group_id IN ($placeholders)";
+        $paketParams = $groupIds;
+        if ($userId !== null) {
+            $paketWhere .= " AND (p.user_id = ? OR pk.perusahaan_id IS NULL)";
+            $paketParams[] = (int)$userId;
+        }
+        $paketSql = $this->buildPaketSelectSql($paketWhere);
         $pStmt = $this->db->prepare($paketSql);
-        $pStmt->execute($groupIds);
+        $pStmt->execute($paketParams);
         $allPakets = $pStmt->fetchAll();
 
         $paketsByGroup = [];
@@ -297,11 +357,12 @@ class PaketGroup {
      */
     public function create($data) {
         $stmt = $this->db->prepare("
-            INSERT INTO paket_group (perusahaan_id, nama_group, kode_group, deskripsi)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO paket_group (perusahaan_id, user_id, nama_group, kode_group, deskripsi)
+            VALUES (?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $data['perusahaan_id'] ?? null,
+            $data['user_id'] ?? ($_SESSION['admin_id'] ?? null),
             $data['nama_group'],
             $data['kode_group'] ?? null,
             $data['deskripsi'] ?? null

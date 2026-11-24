@@ -72,7 +72,9 @@ class DashboardController {
         }
 
         // 3. Group Paket untuk perusahaan aktif
-        $groups = !empty($activeCompanyId) ? $this->groupModel->getAll($activeCompanyId) : [];
+        $groups = !empty($activeCompanyId)
+            ? $this->groupModel->getAll($activeCompanyId, $role === 'admin' ? null : (int)$userId)
+            : $this->groupModel->getAll(null, $role === 'admin' ? null : (int)$userId);
 
         // 4. Kolaborasi milik/diikuti user
         $kolabList      = $this->kolabModel->getForUser($userId);

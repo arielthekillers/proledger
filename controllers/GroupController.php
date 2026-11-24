@@ -48,14 +48,9 @@ class GroupController {
         $activeCompId = $_SESSION['active_perusahaan_id'] ?? null;
 
         if ($activeCompId) {
-            $groups = $this->groupModel->getAll($activeCompId);
+            $groups = $this->groupModel->getAll($activeCompId, $role === 'admin' ? null : (int)$userId);
         } elseif ($role === 'user') {
-            $myComps = $this->perusahaanModel->getByUser($userId);
-            $myCompIds = array_column($myComps, 'id');
-            $allGroups = $this->groupModel->getAll();
-            $groups = array_filter($allGroups, function($g) use ($myCompIds) {
-                return empty($g['perusahaan_id']) || in_array($g['perusahaan_id'], $myCompIds);
-            });
+            $groups = $this->groupModel->getAll(null, (int)$userId);
         } else {
             $groups = $this->groupModel->getAll();
         }
@@ -91,10 +86,25 @@ class GroupController {
         }
 
         $role = $_SESSION['admin_role'] ?? 'user';
-        $userId = $_SESSION['admin_id'] ?? 0;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
         $activeCompId = $_SESSION['active_perusahaan_id'] ?? null;
 
+        if ($role !== 'admin') {
+            $myComps = $this->perusahaanModel->getByUser($userId);
+            $myCompIds = array_map('intval', array_column($myComps, 'id'));
+            if (!$this->groupModel->userCanAccess($group, $userId, $myCompIds, $role)) {
+                flash('error', 'Anda tidak memiliki akses ke group paket ini.');
+                redirect('/group');
+                return;
+            }
+        }
+
         $paketList = $this->groupModel->getPaketList($id);
+        if ($role !== 'admin' && empty($group['perusahaan_id'])) {
+            $paketList = array_values(array_filter($paketList, function($pk) use ($myCompIds) {
+                return empty($pk['perusahaan_id']) || in_array((int)$pk['perusahaan_id'], $myCompIds, true);
+            }));
+        }
         $stats = PaketGroup::computeStatsFromList($paketList);
 
         if ($role === 'admin') {
@@ -147,6 +157,7 @@ class GroupController {
 
         $newId = $this->groupModel->create([
             'perusahaan_id' => $perusahaanId,
+            'user_id' => (int)($_SESSION['admin_id'] ?? 0) ?: null,
             'nama_group' => $nama,
             'kode_group' => $kode ?: null,
             'deskripsi' => $deskripsi ?: null
@@ -182,6 +193,7 @@ class GroupController {
         try {
             $newId = $this->groupModel->create([
                 'perusahaan_id' => $perusahaanId,
+                'user_id' => (int)($_SESSION['admin_id'] ?? 0) ?: null,
                 'nama_group' => $nama,
                 'kode_group' => $kode ?: null,
                 'deskripsi' => $deskripsi ?: null
@@ -208,6 +220,16 @@ class GroupController {
      */
     public function update($id) {
         $this->requireAdminOrUser();
+
+        $group = $this->groupModel->getById($id);
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $myCompIds = $role === 'admin' ? [] : array_map('intval', array_column($this->perusahaanModel->getByUser($userId), 'id'));
+        if (!$group || !$this->groupModel->userCanAccess($group, $userId, $myCompIds, $role)) {
+            flash('error', 'Anda tidak memiliki akses untuk mengubah group ini.');
+            redirect('/group');
+            return;
+        }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect('/group');
@@ -253,7 +275,15 @@ class GroupController {
         $this->requireAdminOrUser();
 
         $group = $this->groupModel->getById($id);
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $myCompIds = $role === 'admin' ? [] : array_map('intval', array_column($this->perusahaanModel->getByUser($userId), 'id'));
         if ($group) {
+            if (!$this->groupModel->userCanAccess($group, $userId, $myCompIds, $role)) {
+                flash('error', 'Anda tidak memiliki akses untuk menghapus group ini.');
+                redirect('/group');
+                return;
+            }
             $this->groupModel->delete($id);
             flash('success', "Group <strong>" . htmlspecialchars($group['nama_group']) . "</strong> berhasil dihapus. Paket anggota kini berstatus independen.");
         } else {

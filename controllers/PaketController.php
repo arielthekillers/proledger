@@ -109,7 +109,7 @@ class PaketController {
         ];
         
         $paket = $activeCompId ? $this->paketModel->getAll($filters) : [];
-        $groups = $this->groupModel->getAll($activeCompId);
+        $groups = $this->groupModel->getAll($activeCompId, $role === 'admin' ? null : (int)$userId);
         $skemas = $this->skemaModel->getAll($activeCompId);
         $kabupatenList = $this->lokasiModel->getAllKabupaten();
         
@@ -273,7 +273,9 @@ class PaketController {
             $this->paketModel->syncPaguFromItems($paket['id']);
             $paket = $this->paketModel->getById($paket['id']);
         }
-        $groups = $this->groupModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null));
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $groups = $this->groupModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null), $role === 'admin' ? null : $userId);
         $skemas = $this->skemaModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null));
         
         // Distribusi Data
@@ -520,7 +522,9 @@ class PaketController {
             return;
         }
         
-        $groups = $this->groupModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null));
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $groups = $this->groupModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null), $role === 'admin' ? null : $userId);
         $skemas = $this->skemaModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null));
         $kabupatenList = $this->lokasiModel->getAllKabupaten();
         

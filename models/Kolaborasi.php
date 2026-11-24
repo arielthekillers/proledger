@@ -424,6 +424,15 @@ class Kolaborasi {
                 GROUP BY pd.paket_id
             ) p_prog ON pk.id = p_prog.paket_id
             WHERE kg.kolaborasi_id = ?
+              AND (
+                  pk.perusahaan_id IS NULL
+                  OR EXISTS (
+                      SELECT 1 FROM kolaborasi_members km
+                      WHERE km.kolaborasi_id = kg.kolaborasi_id
+                        AND km.user_id = p.user_id
+                        AND km.status = 'joined'
+                  )
+              )
             ORDER BY p.nama ASC, pk.created_at DESC
         ");
         $stmt->execute([$kolabId]);
