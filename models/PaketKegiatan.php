@@ -6,9 +6,27 @@
 
 class PaketKegiatan {
     private $db;
+    private static $schemaChecked = false;
     
     public function __construct() {
         $this->db = Database::getInstance()->getConnection();
+        $this->ensureDokSelesaiColumn();
+    }
+
+    /**
+     * Pastikan kolom is_dok_selesai tersedia pada paket_kegiatan
+     */
+    private function ensureDokSelesaiColumn() {
+        if (self::$schemaChecked) return;
+        self::$schemaChecked = true;
+        try {
+            $col = $this->db->query("SHOW COLUMNS FROM paket_kegiatan LIKE 'is_dok_selesai'")->fetch();
+            if (!$col) {
+                $this->db->exec("ALTER TABLE paket_kegiatan ADD COLUMN is_dok_selesai TINYINT(1) NOT NULL DEFAULT 0");
+            }
+        } catch (Throwable $e) {
+            // Abaikan jika permission terbatas
+        }
     }
     
     /**
@@ -24,7 +42,7 @@ class PaketKegiatan {
                        COALESCE(p_prog.total_dist, 0) as total_dist,
                        COALESCE(p_prog.pesan_done, 0) as pesan_done,
                        COALESCE(p_prog.dist_done, 0) as dist_done,
-                       COALESCE(p_prog.dok_done, 0) as dok_done,
+                       CASE WHEN COALESCE(pk.is_dok_selesai, 0) = 1 THEN COALESCE(p_prog.total_dist, 0) ELSE COALESCE(p_prog.dok_done, 0) END as dok_done,
                        COALESCE(p_prog.total_bast, 0) as total_bast,
                        COALESCE(p_prog.bast_done, 0) as bast_done,
                        p.nama as perusahaan_nama, p.email as perusahaan_email,
@@ -50,15 +68,7 @@ class PaketKegiatan {
                         COUNT(DISTINCT pd.id) as total_dist,
                         COUNT(DISTINCT CASE WHEN pd.status_barang = 'Sudah Dipesan' THEN pd.id END) as pesan_done,
                         COUNT(DISTINCT CASE WHEN pd.status_distribusi IN ('Tiba di Tujuan', 'Tiba di Gudang') THEN pd.id END) as dist_done,
-                        COUNT(DISTINCT CASE WHEN EXISTS (
-                            SELECT 1 FROM paket_dokumentasi pdk
-                            WHERE pdk.paket_id = pd.paket_id
-                              AND (
-                                  pdk.distribusi_id = pd.id
-                                  OR (pdk.distribusi_id IS NULL AND pdk.item_id = pd.item_id)
-                                  OR (pdk.distribusi_id IS NULL AND pdk.item_id IS NULL)
-                              )
-                        ) THEN pd.id END) as dok_done,
+                        COUNT(DISTINCT CASE WHEN pdk.distribusi_id IS NOT NULL THEN pdk.distribusi_id END) as dok_done,
                         COUNT(DISTINCT pd.nama_tujuan) as total_bast,
                         COUNT(DISTINCT CASE WHEN EXISTS (
                             SELECT 1 FROM paket_dokumen pdoc
@@ -66,6 +76,7 @@ class PaketKegiatan {
                             AND (pdoc.nama_dokumen LIKE CONCAT('%', pd.nama_tujuan, '%') OR pdoc.nama_file_asli LIKE CONCAT('%', pd.nama_tujuan, '%'))
                         ) THEN pd.nama_tujuan END) as bast_done
                     FROM paket_distribusi pd
+                    LEFT JOIN paket_dokumentasi pdk ON pd.id = pdk.distribusi_id
                     GROUP BY pd.paket_id
                 ) p_prog ON pk.id = p_prog.paket_id
                 LEFT JOIN perusahaan p ON pk.perusahaan_id = p.id

@@ -1440,7 +1440,8 @@ function handleDokFileSelect(files) {
 
     for (let i = 0; i < files.length; i++) {
         const f = files[i];
-        if (f.type.startsWith('image/')) {
+        const isHeic = /\.(heic|heif)$/i.test(f.name || '');
+        if ((f.type && f.type.startsWith('image/')) || isHeic) {
             dokSelectedFiles.push(f);
         } else {
             window.ProToast.warning('File ' + f.name + ' bukan gambar yang didukung.');
@@ -1532,13 +1533,15 @@ function clearDokSelectedQueue() {
 
 function ensureHeic2Any() {
     if (window.heic2any) return Promise.resolve(window.heic2any);
-    return new Promise((resolve, reject) => {
+    const loadScript = (src) => new Promise((resolve, reject) => {
         const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
-        s.onload = () => resolve(window.heic2any);
-        s.onerror = () => reject(new Error('Gagal memuat konverter HEIC'));
+        s.src = src;
+        s.onload = () => window.heic2any ? resolve(window.heic2any) : reject(new Error('heic2any unavailable'));
+        s.onerror = () => reject(new Error('Gagal memuat ' + src));
         document.head.appendChild(s);
     });
+    return loadScript('https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js')
+        .catch(() => loadScript('https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js'));
 }
 
 /**

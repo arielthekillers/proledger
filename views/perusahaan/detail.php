@@ -306,12 +306,22 @@ $ttdUrls = !empty($perusahaan['ttd']) ? Uploader::getAllUrls($perusahaan['ttd'],
                 </div>
             </div>
 
-            <!-- ITEM C: KOP SURAT RESMI -->
+            <!-- ITEM C: KOP SURAT RESMI (PDF A4) -->
+            <?php
+            $kopFile = $perusahaan['kopsurat'] ?? '';
+            $isKopPdf = !empty($kopFile) && preg_match('/\.pdf$/i', $kopFile);
+            $kopPdfHref = $isKopPdf ? (APP_URL . '/uploads/perusahaan/kopsurat/' . $kopFile) : null;
+            ?>
             <div class="flex items-center gap-3 p-3 rounded-xl border border-slate-200/80 bg-slate-50/60 hover:bg-slate-50 transition-colors">
                 <div class="w-20 h-14 rounded-lg border border-slate-200 bg-white flex items-center justify-center p-1 shrink-0 overflow-hidden relative group">
-                    <?php if ($kopsuratUrls && !empty($kopsuratUrls['medium'])): ?>
+                    <?php if ($isKopPdf): ?>
+                        <a href="<?= htmlspecialchars($kopPdfHref) ?>" target="_blank" class="flex flex-col items-center justify-center text-rose-600 hover:text-rose-700" title="Klik untuk buka PDF Kop Surat">
+                            <ion-icon name="document-text" class="text-2xl"></ion-icon>
+                            <span class="text-[9px] font-bold uppercase">PDF A4</span>
+                        </a>
+                    <?php elseif ($kopsuratUrls && !empty($kopsuratUrls['medium'])): ?>
                         <img src="<?= $kopsuratUrls['medium'] ?>" alt="Kop Surat"
-                             onclick="previewImageModal('<?= $kopsuratUrls['large'] ?>', 'Kop Surat Resmi - Large (1800px)')"
+                             onclick="previewImageModal('<?= $kopsuratUrls['large'] ?>', 'Kop Surat Resmi - Large')"
                              class="max-h-full max-w-full object-contain cursor-pointer group-hover:scale-105 transition-transform"
                              title="Klik untuk lihat HD">
                     <?php else: ?>
@@ -320,13 +330,13 @@ $ttdUrls = !empty($perusahaan['ttd']) ? Uploader::getAllUrls($perusahaan['ttd'],
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between gap-1 mb-0.5">
-                        <span class="text-xs font-bold text-slate-800 truncate">Kop Surat Resmi</span>
-                        <?php if ($kopsuratUrls): ?>
+                        <span class="text-xs font-bold text-slate-800 truncate">Kop Surat Resmi (PDF A4)</span>
+                        <?php if (!empty($kopFile)): ?>
                             <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Terunggah"></span>
                         <?php endif; ?>
                     </div>
                     <p class="text-[10px] text-slate-400 mb-2 truncate">
-                        <?= $kopsuratUrls ? 'Header BAST & Surat' : 'Belum diunggah' ?>
+                        <?= !empty($kopFile) ? ($isKopPdf ? 'PDF A4 Full Background' : 'Gambar (disarankan ganti ke PDF A4)') : 'Belum diunggah' ?>
                     </p>
                     <div class="flex items-center gap-1.5">
                         <button type="button"
@@ -334,19 +344,28 @@ $ttdUrls = !empty($perusahaan['ttd']) ? Uploader::getAllUrls($perusahaan['ttd'],
                                 data-module="perusahaan"
                                 data-field="kopsurat"
                                 data-id="<?= $perusahaan['id'] ?>"
-                                data-title="Upload Kop Surat Resmi"
-                                data-hint="Header resmi untuk persuratan, invoice, dan dokumen resmi (Lebar hingga 1800px)"
+                                data-accept="application/pdf,.pdf"
+                                data-title="Upload Kop Surat Resmi (PDF A4)"
+                                data-hint="Upload file PDF ukuran A4 agar hasil cetak BAST tajam & presisi"
                                 class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[11px] font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer">
                             <ion-icon name="cloud-upload-outline" class="text-xs"></ion-icon>
-                            <span><?= $kopsuratUrls ? 'Ganti' : 'Upload' ?></span>
+                            <span><?= !empty($kopFile) ? 'Ganti' : 'Upload' ?></span>
                         </button>
-                        <?php if ($kopsuratUrls): ?>
+                        <?php if ($isKopPdf): ?>
+                            <a href="<?= htmlspecialchars($kopPdfHref) ?>" target="_blank"
+                               class="p-1 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg border border-slate-200 transition-colors text-xs"
+                               title="Lihat PDF">
+                                <ion-icon name="open-outline"></ion-icon>
+                            </a>
+                        <?php elseif ($kopsuratUrls): ?>
                             <button type="button"
-                                    onclick="previewImageModal('<?= $kopsuratUrls['large'] ?>', 'Kop Surat Resmi - Large (1800px)')"
+                                    onclick="previewImageModal('<?= $kopsuratUrls['large'] ?>', 'Kop Surat Resmi')"
                                     class="p-1 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg border border-slate-200 transition-colors text-xs cursor-pointer"
                                     title="Lihat HD">
                                 <ion-icon name="scan-outline"></ion-icon>
                             </button>
+                        <?php endif; ?>
+                        <?php if (!empty($kopFile)): ?>
                             <button type="button"
                                     data-delete-image
                                     data-module="perusahaan"

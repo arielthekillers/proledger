@@ -307,6 +307,10 @@ window.ProUploader = {
         document.getElementById('prouploader-file-input').value = '';
         
         // Reset states
+        const fileInput = document.getElementById('prouploader-file-input');
+        if (fileInput) {
+            fileInput.setAttribute('accept', this.currentOptions.accept || 'image/png, image/jpeg, image/webp, image/gif');
+        }
         this.showState('select');
         window.ProModal.open('pro-uploader-modal');
     },
@@ -470,6 +474,15 @@ window.ProUploader = {
         // Size in MB
         const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
         document.getElementById('prouploader-file-name').textContent = file.name;
+
+        const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+        if (isPdf) {
+            const img = document.getElementById('prouploader-preview-img');
+            img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#fee2e2"/><text x="32" y="38" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="16" fill="#dc2626">PDF</text></svg>');
+            document.getElementById('prouploader-file-info').textContent = `${sizeMb} MB • Dokumen PDF`;
+            this.showState('preview');
+            return;
+        }
 
         // Preview with FileReader
         const reader = new FileReader();
@@ -753,7 +766,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 hint: uploadBtn.getAttribute('data-hint') || 'Format JPG, PNG, atau WebP (Maks 10MB)',
                 module: uploadBtn.getAttribute('data-module') || 'general',
                 field: uploadBtn.getAttribute('data-field') || 'image',
-                id: uploadBtn.getAttribute('data-id') || null
+                id: uploadBtn.getAttribute('data-id') || null,
+                accept: uploadBtn.getAttribute('data-accept') || ''
             });
         }
     });

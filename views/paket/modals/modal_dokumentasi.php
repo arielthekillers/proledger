@@ -14,16 +14,19 @@ foreach ($generalDocs as $gd) {
     }
 }
 $totalDist = count($distribusiList);
+$isDokSelesai = !empty($paket['is_dok_selesai']);
 $itemsWithDocs = 0;
 $totalQty = 0;
 foreach ($distribusiList as $dist) {
     $photos = $dokumentasiMap[$dist['id']] ?? [];
-    $repDocs = $itemDocMap[(int)($dist['item_id'] ?? 0)] ?? $globalDocs;
-    if (count($photos) > 0 || count($repDocs) > 0) $itemsWithDocs++;
+    if (count($photos) > 0) $itemsWithDocs++;
     $totalQty += (float)$dist['jumlah'];
 }
+if ($isDokSelesai) {
+    $itemsWithDocs = $totalDist;
+}
 $totalFotoAll = (int)($totalDokumentasiFoto ?? 0);
-$pctDok = ($totalDist > 0) ? round(($itemsWithDocs / $totalDist) * 100) : 0;
+$pctDok = $isDokSelesai ? 100 : (($totalDist > 0) ? round(($itemsWithDocs / $totalDist) * 100) : 0);
 $paketKode = $paket['kode_paket'] ?: $paket['id'];
 ?>
 
@@ -46,6 +49,22 @@ $paketKode = $paket['kode_paket'] ?: $paket['id'];
 
 <!-- 1. Langsung Tabel Dokumentasi (Full Width, No Horizontal Scroll) -->
 <div class="space-y-3">
+    <?php if ($role === 'admin' || $role === 'user'): ?>
+        <label class="flex items-center justify-between gap-3 p-3 rounded-xl border <?= $isDokSelesai ? 'bg-emerald-50/70 border-emerald-200' : 'bg-slate-50/70 border-slate-200' ?> cursor-pointer select-none transition-colors">
+            <div class="flex items-center gap-2.5">
+                <input type="checkbox" id="chkDokSelesai100" <?= $isDokSelesai ? 'checked' : '' ?>
+                       onchange="window.toggleDokSelesai(this)"
+                       class="w-4 h-4 rounded text-emerald-600 focus:ring-0 cursor-pointer shrink-0">
+                <div>
+                    <span class="text-xs font-bold <?= $isDokSelesai ? 'text-emerald-800' : 'text-slate-800' ?> block">Nyatakan Dokumentasi Selesai (100%)</span>
+                    <span class="text-[10px] <?= $isDokSelesai ? 'text-emerald-700' : 'text-slate-500' ?> block">Centang jika dokumentasi umum sudah mewakili seluruh item meskipun foto tiap lokasi belum diisi.</span>
+                </div>
+            </div>
+            <?php if ($isDokSelesai): ?>
+                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold shrink-0">100% Selesai</span>
+            <?php endif; ?>
+        </label>
+    <?php endif; ?>
     <?php if (!empty($generalDocs)): ?>
         <div class="bg-teal-50/50 rounded-xl border border-teal-200/80 p-3 space-y-2" id="generalDokStrip">
             <div class="flex items-center justify-between">
@@ -489,7 +508,8 @@ window.handleDokFileSelect = function(files) {
     if (!files || files.length === 0) return;
     for (let i = 0; i < files.length; i++) {
         const f = files[i];
-        if (f.type.startsWith('image/')) {
+        const isHeic = /\.(heic|heif)$/i.test(f.name || '');
+        if ((f.type && f.type.startsWith('image/')) || isHeic) {
             window.dokSelectedFiles.push(f);
         } else if (window.ProToast) {
             window.ProToast.warning('File ' + f.name + ' bukan gambar yang didukung.');
@@ -571,13 +591,15 @@ window.clearDokSelectedQueue = function() {
 
 window.ensureHeic2Any = function() {
     if (window.heic2any) return Promise.resolve(window.heic2any);
-    return new Promise((resolve, reject) => {
+    const loadScript = (src) => new Promise((resolve, reject) => {
         const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
-        s.onload = () => resolve(window.heic2any);
-        s.onerror = () => reject(new Error('Gagal memuat konverter HEIC'));
+        s.src = src;
+        s.onload = () => window.heic2any ? resolve(window.heic2any) : reject(new Error('heic2any unavailable'));
+        s.onerror = () => reject(new Error('Gagal memuat ' + src));
         document.head.appendChild(s);
     });
+    return loadScript('https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js')
+        .catch(() => loadScript('https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js'));
 };
 
 window.compressImageToBlob = async function(file, maxWidth = 1600, quality = 0.82) {
@@ -905,6 +927,34 @@ window.submitDokUmum = async function(e) {
     .catch(() => {
         if (btn) { btn.disabled = false; btn.textContent = 'Upload Foto'; }
         if (window.ProToast) window.ProToast.error('Gagal terhubung ke server.');
+    });
+};
+
+window.toggleDokSelesai = function(cb) {
+    const fd = new FormData();
+    fd.append('is_dok_selesai', cb && cb.checked ? '1' : '0');
+    fetch('<?= APP_URL ?>/paket/toggleDokSelesai/<?= $paketKode ?>', {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            if (window.ProToast) window.ProToast.success(data.message);
+            if (typeof refreshCurrentNativeModal === 'function') {
+                refreshCurrentNativeModal();
+            } else {
+                window.location.reload();
+            }
+        } else {
+            if (cb) cb.checked = !cb.checked;
+            if (window.ProToast) window.ProToast.error(data.message || 'Gagal memperbarui status.');
+        }
+    })
+    .catch(() => {
+        if (cb) cb.checked = !cb.checked;
+        if (window.ProToast) window.ProToast.error('Koneksi terputus.');
     });
 };
 

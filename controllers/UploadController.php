@@ -55,8 +55,23 @@ class UploadController {
             }
         }
 
-        // Lakukan upload dan kompresi 3 ukuran
-        $result = Uploader::uploadImage($file, $module, $field);
+        // Khusus kopsurat: dukung upload PDF A4 agar cetak surat tajam
+        $origExt = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
+        $isPdf = ($field === 'kopsurat') && ($origExt === 'pdf' || ($file['type'] ?? '') === 'application/pdf');
+        if ($isPdf) {
+            $result = Uploader::uploadFile($file, 'perusahaan/kopsurat', ['pdf'], 15, true);
+            if ($result['success']) {
+                $result['filename'] = basename($result['file_path']);
+                $result['urls'] = [
+                    'large'  => $result['url'],
+                    'medium' => $result['url'],
+                    'small'  => $result['url'],
+                ];
+            }
+        } else {
+            // Lakukan upload dan kompresi 3 ukuran
+            $result = Uploader::uploadImage($file, $module, $field);
+        }
 
         if (!$result['success']) {
             http_response_code(400);
@@ -74,7 +89,11 @@ class UploadController {
             $oldFilename = $stmtOld->fetchColumn();
 
             if (!empty($oldFilename)) {
-                Uploader::deleteImage($oldFilename, $module, $field);
+                if (preg_match('/\.pdf$/i', $oldFilename)) {
+                    Uploader::deleteFile("uploads/{$module}/{$field}/{$oldFilename}");
+                } else {
+                    Uploader::deleteImage($oldFilename, $module, $field);
+                }
             }
 
             // Simpan gambar baru ke database

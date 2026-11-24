@@ -36,10 +36,16 @@ $hariTgl = tanggalIndonesia($tglBast);
 
 require_once HELPER_PATH . '/Uploader.php';
 $kopUrl = null;
+$kopPdfUrl = null;
 if (!empty($perusahaan['kopsurat'])) {
-    $kopUrls = Uploader::getAllUrls($perusahaan['kopsurat'], 'perusahaan', 'kopsurat');
-    $kopUrl = $kopUrls['large'] ?? ($kopUrls['medium'] ?? ($kopUrls['small'] ?? null));
+    if (preg_match('/\.pdf$/i', $perusahaan['kopsurat'])) {
+        $kopPdfUrl = APP_URL . '/uploads/perusahaan/kopsurat/' . $perusahaan['kopsurat'];
+    } else {
+        $kopUrls = Uploader::getAllUrls($perusahaan['kopsurat'], 'perusahaan', 'kopsurat');
+        $kopUrl = $kopUrls['large'] ?? ($kopUrls['medium'] ?? ($kopUrls['small'] ?? null));
+    }
 }
+$hasKopBg = (!empty($kopUrl) || !empty($kopPdfUrl));
 
 // Menyiapkan daftar data BAST yang akan dicetak
 $bastSheets = [];
@@ -169,15 +175,17 @@ if ($isBulk && !empty($groupedList)) {
             ?>
             <!-- Main Sheet (A4 Proportion 210mm x 297mm) -->
             <div class="page-sheet mx-auto bg-white shadow-lg border border-slate-200 rounded-sm text-body"
-                 style="<?= !empty($kopUrl) ? 'padding: 44mm 18mm 20mm 18mm;' : 'padding: 15mm 18mm 20mm 18mm;' ?>">
+                 style="<?= $hasKopBg ? 'padding: 44mm 18mm 20mm 18mm;' : 'padding: 15mm 18mm 20mm 18mm;' ?>">
                 
                 <!-- 1. KOP SURAT A4 FULL BACKGROUND -->
-                <?php if (!empty($kopUrl)): ?>
+                <?php if (!empty($kopPdfUrl)): ?>
+                    <img src="" alt="Kop Surat A4" class="kop-bg-full kop-pdf-bg-img hidden">
+                <?php elseif (!empty($kopUrl)): ?>
                     <img src="<?= $kopUrl ?>" alt="Kop Surat A4" class="kop-bg-full">
                 <?php endif; ?>
 
                 <div class="relative z-10">
-                <?php if (empty($kopUrl)): ?>
+                <?php if (!$hasKopBg): ?>
                     <div class="border-b-2 border-black pb-3 mb-6 text-center">
                         <h1 class="font-bold text-lg md:text-xl uppercase tracking-wider text-black">
                             <?= htmlspecialchars($perusahaan['nama'] ?? 'CV. KARSA KREASI BERDIKARI') ?>
@@ -279,15 +287,14 @@ if ($isBulk && !empty($groupedList)) {
                             <tr class="bg-slate-100 text-center font-bold">
                                 <th class="border border-black py-1.5 px-2 w-10 text-center">NO.</th>
                                 <th class="border border-black py-1.5 px-3 text-left">ITEM BARANG</th>
-                                <th class="border border-black py-1.5 px-3 text-center w-20">MERK</th>
-                                <th class="border border-black py-1.5 px-3 text-left">SPESIFIKASI</th>
-                                <th class="border border-black py-1.5 px-3 text-center w-24">JUMLAH</th>
+                                <th class="border border-black py-1.5 px-3 text-center w-28">MERK</th>
+                                <th class="border border-black py-1.5 px-3 text-center w-28">JUMLAH</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($curItems)): ?>
                                 <tr>
-                                    <td colspan="5" class="border border-black py-3 text-center text-slate-500 italic">Tidak ada rincian barang.</td>
+                                    <td colspan="4" class="border border-black py-3 text-center text-slate-500 italic">Tidak ada rincian barang.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php $no = 1; foreach ($curItems as $it): ?>
@@ -295,7 +302,6 @@ if ($isBulk && !empty($groupedList)) {
                                         <td class="border border-black py-1.5 px-2 text-center align-top"><?= $no++ ?>.</td>
                                         <td class="border border-black py-1.5 px-3 font-semibold align-top"><?= htmlspecialchars($it['nama_komponen']) ?></td>
                                         <td class="border border-black py-1.5 px-3 text-center align-top">-</td>
-                                        <td class="border border-black py-1.5 px-3 align-top leading-relaxed"><?= nl2br(htmlspecialchars($it['spesifikasi'] ?: '-')) ?></td>
                                         <td class="border border-black py-1.5 px-3 text-center align-top font-bold whitespace-nowrap">
                                             <?= (float)$it['jumlah'] ?> <?= htmlspecialchars($it['satuan'] ?: 'Unit') ?>
                                         </td>
@@ -318,14 +324,14 @@ if ($isBulk && !empty($groupedList)) {
                 <div class="grid grid-cols-2 gap-8 text-center mt-8">
                     <!-- Pihak Pertama (Kosong untuk diisi manual pakai pena) -->
                     <div>
-                        <p class="font-bold mb-24 uppercase tracking-wider text-xs md:text-sm">PIHAK PERTAMA</p>
+                        <p class="font-bold mb-20 uppercase tracking-wider text-xs md:text-sm">PIHAK PERTAMA</p>
                         <p class="font-bold text-sm md:text-base h-6">&nbsp;</p>
                         <p class="text-xs text-slate-600 h-5">&nbsp;</p>
                     </div>
 
                     <!-- Pihak Kedua -->
                     <div class="relative">
-                        <p class="font-bold mb-24 uppercase tracking-wider text-xs md:text-sm">PIHAK KEDUA</p>
+                        <p class="font-bold mb-20 uppercase tracking-wider text-xs md:text-sm">PIHAK KEDUA</p>
                         
                         <!-- Stamp / TTD Digital jika ada -->
                         <?php
@@ -335,7 +341,7 @@ if ($isBulk && !empty($groupedList)) {
                         <?php if ($ttdSrc): ?>
                             <img src="<?= htmlspecialchars($ttdSrc) ?>" 
                                  alt="Tanda Tangan" 
-                                 class="absolute top-6 left-1/2 transform -translate-x-1/2 max-h-24 object-contain pointer-events-none">
+                                 class="absolute top-6 left-1/2 transform -translate-x-1/2 max-h-20 object-contain pointer-events-none">
                         <?php endif; ?>
 
                         <p class="font-bold underline text-sm md:text-base">
@@ -352,5 +358,29 @@ if ($isBulk && !empty($groupedList)) {
         <?php endforeach; ?>
     </div>
 
+    <?php if (!empty($kopPdfUrl)): ?>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        (async function() {
+            try {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                const pdf = await pdfjsLib.getDocument('<?= htmlspecialchars($kopPdfUrl, ENT_QUOTES, 'UTF-8') ?>').promise;
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({ scale: 3.5 });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                const dataUrl = canvas.toDataURL('image/png');
+                document.querySelectorAll('.kop-pdf-bg-img').forEach(img => {
+                    img.src = dataUrl;
+                    img.classList.remove('hidden');
+                });
+            } catch (e) {
+                console.error('Gagal merender PDF kop surat:', e);
+            }
+        })();
+    </script>
+    <?php endif; ?>
 </body>
 </html>

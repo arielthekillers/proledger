@@ -350,22 +350,16 @@ class PaketController {
             }
         }
 
-        // 4. Dokumentasi: Alokasi tujuan yang sudah memiliki minimal 1 foto (spesifik, komponen, atau umum paket)
-        $hasGlobalDok = false;
-        $itemDokMap = [];
-        foreach ($generalDokumentasi as $gd) {
-            if (empty($gd['item_id'])) {
-                $hasGlobalDok = true;
-            } else {
-                $itemDokMap[(int)$gd['item_id']][] = $gd;
-            }
-        }
-        $dokDone = 0;
-        foreach ($distribusiList as $dist) {
-            $dId = (int)$dist['id'];
-            $iId = (int)($dist['item_id'] ?? 0);
-            if (!empty($dokumentasiMap[$dId]) || !empty($itemDokMap[$iId]) || $hasGlobalDok) {
-                $dokDone++;
+        // 4. Dokumentasi: Alokasi tujuan yang memiliki foto spesifik, atau 100% jika ditandai selesai manual
+        if (!empty($paket['is_dok_selesai'])) {
+            $dokDone = $totalDist;
+        } else {
+            $dokDone = 0;
+            foreach ($distribusiList as $dist) {
+                $dId = (int)$dist['id'];
+                if (!empty($dokumentasiMap[$dId])) {
+                    $dokDone++;
+                }
             }
         }
 
@@ -1846,6 +1840,30 @@ class PaketController {
         }
 
         redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
+    }
+
+    /**
+     * AJAX/POST: Toggle checklist Dokumentasi Selesai 100% pada paket
+     */
+    public function toggleDokSelesai($idOrKode) {
+        header('Content-Type: application/json');
+        $paket = $this->getAccessiblePaket($idOrKode, true);
+
+        $val = !empty($_POST['is_dok_selesai']) ? 1 : 0;
+        try {
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->prepare("UPDATE paket_kegiatan SET is_dok_selesai = ?, updated_at = NOW() WHERE id = ?");
+            $stmt->execute([$val, (int)$paket['id']]);
+            echo json_encode([
+                'success' => true,
+                'is_dok_selesai' => $val,
+                'message' => $val ? 'Dokumentasi paket ditandai selesai (100%).' : 'Status selesai 100% dokumentasi dibatalkan.'
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Gagal memperbarui status: ' . $e->getMessage()]);
+        }
+        exit;
     }
 
     /**
