@@ -464,7 +464,7 @@ class Kolaborasi {
             $persenPasal = isset($r['persen_pasal']) && $r['persen_pasal'] !== '' ? (float)$r['persen_pasal'] : 13.0;
             $persenAdmin = isset($r['persen_admin']) && $r['persen_admin'] !== '' ? (float)$r['persen_admin'] : 2.0;
             $totalPasal = calculatePasal($basis, $persenPasal) + calculateAdmin($basis, $persenAdmin);
-            $nilaiBersih = $acuan - $totalPasal;
+            $nilaiBersih = $dpp - $totalPasal;
 
             $totalDist = (int)$r['total_dist'];
             $totalBast = (int)$r['total_bast'];
@@ -655,7 +655,7 @@ class Kolaborasi {
         $persenPasal = isset($paket['persen_pasal']) && $paket['persen_pasal'] !== '' ? (float)$paket['persen_pasal'] : 13.0;
         $persenAdmin = isset($paket['persen_admin']) && $paket['persen_admin'] !== '' ? (float)$paket['persen_admin'] : 2.0;
         $totalPasal = calculatePasal($basis, $persenPasal) + calculateAdmin($basis, $persenAdmin);
-        $nilaiBersih = $acuan - $totalPasal;
+        $nilaiBersih = $dpp - $totalPasal;
 
         return [
             'paket'             => $paket,

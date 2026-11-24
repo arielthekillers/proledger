@@ -16,7 +16,7 @@ $totalPersen = $persenPasal + $persenAdmin;
 $pasalVal = !empty($paket['pasal_13']) ? (float)$paket['pasal_13'] : calculatePasal($basisPotongan, $persenPasal);
 $adminVal = isset($paket['admin_2']) ? (float)$paket['admin_2'] : calculateAdmin($basisPotongan, $persenAdmin);
 $totalPasal = !empty($paket['total_pasal']) ? (float)$paket['total_pasal'] : ($pasalVal + $adminVal);
-$danaBersih = $acuan - $totalPasal;
+$danaBersih = $dpp - $totalPasal;
 
 $tagList = [];
 if (!empty($paket['tags'])) {

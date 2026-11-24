@@ -31,7 +31,7 @@ class PaketGroup {
         $pasalVal = calculatePasal($basis, $persenPasal);
         $adminVal = calculateAdmin($basis, $persenAdmin);
         $totalPasal = $pasalVal + $adminVal;
-        $nilaiBersih = $acuan - $totalPasal;
+        $nilaiBersih = $dpp - $totalPasal;
         $hpp = (float)($p['total_belanja'] ?? 0);
         $profit = $nilaiBersih - $hpp;
         $profitPct = ($acuan > 0) ? round(($profit / $acuan) * 100, 1) : 0;

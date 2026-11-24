@@ -211,7 +211,7 @@
                         $pasalVal = calculatePasal($basis, $persenPasal);
                         $adminVal = calculateAdmin($basis, $persenAdmin);
                         $totalPasal = $pasalVal + $adminVal;
-                        $nilaiBersih = $acuan - $totalPasal;
+                        $nilaiBersih = $dpp - $totalPasal;
                         $totalBelanja = (float)($p['total_belanja'] ?? 0);
                         $estimasiProfit = $nilaiBersih - $totalBelanja;
                         $profitPct = ($acuan > 0) ? round(($estimasiProfit / $acuan) * 100, 1) : 0;

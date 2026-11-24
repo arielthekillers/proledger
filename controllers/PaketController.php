@@ -449,7 +449,7 @@ class PaketController {
             $totalQtyAllItems += $itQty;
         }
 
-        $nilaiBersihProfit = $acuanPagu - $totalPasalVal - $totalBeliBarang;
+        $nilaiBersihProfit = $dppNilai - $totalPasalVal - $totalBeliBarang;
         $profitMarginPct = ($acuanPagu > 0) ? round(($nilaiBersihProfit / $acuanPagu) * 100, 2) : 0;
         $roiPct = ($totalBeliBarang > 0) ? round(($nilaiBersihProfit / $totalBeliBarang) * 100, 2) : 0;
 
@@ -492,6 +492,7 @@ class PaketController {
             'tabProgress' => $tabProgress,
             'statusDistBreakdown' => $statusDistBreakdown,
             'acuanPagu' => $acuanPagu,
+            'dppNilai' => $dppNilai,
             'totalPasalVal' => $totalPasalVal,
             'totalBeliBarang' => $totalBeliBarang,
             'estimasiProfit' => $nilaiBersihProfit,

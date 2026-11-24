@@ -134,9 +134,9 @@ foreach ($itemsWithProfit as $it) {
         <div class="bg-white p-3.5 rounded-xl border border-slate-200/90 shadow-2xs">
             <div class="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Dana Bersih Kontrak</div>
             <div class="text-sm font-extrabold text-slate-800 font-mono">
-                Rp <?= number_format($acuanPagu - $totalPasalVal, 0, ',', '.') ?>
+                Rp <?= number_format(($dppNilai ?? calculateDPP($acuanPagu)) - $totalPasalVal, 0, ',', '.') ?>
             </div>
-            <div class="text-[10px] text-slate-400 mt-0.5">Pagu Nego - Potongan Pajak</div>
+            <div class="text-[10px] text-slate-400 mt-0.5">DPP - Potongan Pasal</div>
         </div>
 
         <!-- Total HPP Belanja Toko -->
