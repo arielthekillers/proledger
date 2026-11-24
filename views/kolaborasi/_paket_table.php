@@ -83,8 +83,8 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
                     <th class="py-3 px-3 text-right">Total Pasal</th>
                     <th class="py-3 px-3 text-right">Nilai Bersih</th>
                     <th class="py-3 px-2 text-center">Komponen</th>
-                    <th class="py-3 px-2 text-center">Order</th>
                     <th class="py-3 px-2 text-center">Dist</th>
+                    <th class="py-3 px-2 text-center">Order</th>
                     <th class="py-3 px-2 text-center">Dok</th>
                     <th class="py-3 px-2 text-center">BAST</th>
                     <th class="py-3 px-3 text-center">Pencairan</th>
@@ -223,13 +223,13 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
 
                             <!-- PROGRES CIRCLES (TOOLTIP + KLIK POPUP READ-ONLY) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
-                                <button type="button" onclick="openKolabReadonlyModal('<?= $kodeRef ?>', 'pemesanan', '<?= $namaJs ?>')" class="hover:scale-105 transition-transform inline-block cursor-pointer">
-                                    <?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?>
+                                <button type="button" onclick="openKolabReadonlyModal('<?= $kodeRef ?>', 'distribusi', '<?= $namaJs ?>')" class="hover:scale-105 transition-transform inline-block cursor-pointer">
+                                    <?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?>
                                 </button>
                             </td>
                             <td class="py-2 px-2 text-center whitespace-nowrap">
-                                <button type="button" onclick="openKolabReadonlyModal('<?= $kodeRef ?>', 'distribusi', '<?= $namaJs ?>')" class="hover:scale-105 transition-transform inline-block cursor-pointer">
-                                    <?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?>
+                                <button type="button" onclick="openKolabReadonlyModal('<?= $kodeRef ?>', 'pemesanan', '<?= $namaJs ?>')" class="hover:scale-105 transition-transform inline-block cursor-pointer">
+                                    <?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?>
                                 </button>
                             </td>
                             <td class="py-2 px-2 text-center whitespace-nowrap">

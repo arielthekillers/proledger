@@ -319,6 +319,7 @@ class PaketController {
         
         $groupedDistribusi = $this->distribusiModel->getGroupedByTujuan($paket['id']);
         $dokumentasiMap = $this->dokumentasiModel->getGroupedByDistribusi($paket['id']);
+        $generalDokumentasi = $this->dokumentasiModel->getGeneralByPaketId($paket['id']);
         $totalDokumentasiFoto = $this->dokumentasiModel->countByPaketId($paket['id']);
 
         // Progress Metrics untuk Badge Tab (Format: Selesai / Total)
@@ -349,10 +350,21 @@ class PaketController {
             }
         }
 
-        // 4. Dokumentasi: Alokasi tujuan yang sudah memiliki minimal 1 foto dokumentasi
+        // 4. Dokumentasi: Alokasi tujuan yang sudah memiliki minimal 1 foto (spesifik, komponen, atau umum paket)
+        $hasGlobalDok = false;
+        $itemDokMap = [];
+        foreach ($generalDokumentasi as $gd) {
+            if (empty($gd['item_id'])) {
+                $hasGlobalDok = true;
+            } else {
+                $itemDokMap[(int)$gd['item_id']][] = $gd;
+            }
+        }
         $dokDone = 0;
         foreach ($distribusiList as $dist) {
-            if (!empty($dokumentasiMap[$dist['id']])) {
+            $dId = (int)$dist['id'];
+            $iId = (int)($dist['item_id'] ?? 0);
+            if (!empty($dokumentasiMap[$dId]) || !empty($itemDokMap[$iId]) || $hasGlobalDok) {
                 $dokDone++;
             }
         }
@@ -500,6 +512,7 @@ class PaketController {
             'distribusiSummary' => $distribusiSummary,
             'groupedDistribusi' => $groupedDistribusi,
             'dokumentasiMap' => $dokumentasiMap,
+            'generalDokumentasi' => $generalDokumentasi,
             'totalDokumentasiFoto' => $totalDokumentasiFoto,
             'tabProgress' => $tabProgress,
             'statusDistBreakdown' => $statusDistBreakdown,
@@ -1214,6 +1227,45 @@ class PaketController {
     }
 
     /**
+     * AJAX/POST: Simpan rincian multi-ongkir untuk 1 baris alokasi pemesanan
+     */
+    public function updateOngkir($idOrKode, $distribusiId) {
+        header('Content-Type: application/json');
+        $paket = $this->getAccessiblePaket($idOrKode, true);
+
+        $rawItems = [];
+        if (!empty($_POST['items_json'])) {
+            $decoded = json_decode($_POST['items_json'], true);
+            if (is_array($decoded)) {
+                $rawItems = $decoded;
+            }
+        } elseif (isset($_POST['labels']) && is_array($_POST['labels'])) {
+            $labels = $_POST['labels'];
+            $nominals = $_POST['nominals'] ?? [];
+            foreach ($labels as $i => $lbl) {
+                $rawItems[] = [
+                    'label' => $lbl,
+                    'nominal' => parseRupiah($nominals[$i] ?? '0')
+                ];
+            }
+        }
+
+        try {
+            $res = $this->distribusiModel->updateOngkirItems((int)$distribusiId, $rawItems);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Rincian ongkos kirim berhasil disimpan!',
+                'total_ongkir' => $res['total'],
+                'items' => $res['items']
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Gagal menyimpan ongkos kirim: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
+    /**
      * AJAX/POST: Update Status Distribusi (Tiba dirumah/kantor, Tiba di Gudang, Tiba di Tujuan)
      */
     public function updateStatusDistribusi($idOrKode, $distribusiId) {
@@ -1662,17 +1714,39 @@ class PaketController {
             return;
         }
 
-        $distribusiId = (int)($_POST['distribusi_id'] ?? 0);
-        $dist = $this->distribusiModel->getById($distribusiId);
-        if (!$dist || (int)$dist['paket_id'] !== (int)$paket['id']) {
-            if ($isAjax) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Data alokasi distribusi tidak ditemukan pada paket ini.']);
-                exit;
+        $isUmum = (!empty($_POST['is_umum']) && $_POST['is_umum'] == '1');
+        $distribusiId = null;
+        $itemId = null;
+
+        if ($isUmum) {
+            $rawItemId = (int)($_POST['item_id'] ?? 0);
+            if ($rawItemId > 0) {
+                $itemRow = $this->itemModel->getById($rawItemId);
+                if (!$itemRow || (int)$itemRow['paket_id'] !== (int)$paket['id']) {
+                    if ($isAjax) {
+                        header('Content-Type: application/json');
+                        echo json_encode(['success' => false, 'message' => 'Komponen barang tidak ditemukan pada paket ini.']);
+                        exit;
+                    }
+                    flash('error', 'Komponen barang tidak ditemukan.');
+                    redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
+                    return;
+                }
+                $itemId = $rawItemId;
             }
-            flash('error', 'Data alokasi distribusi tidak ditemukan.');
-            redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
-            return;
+        } else {
+            $distribusiId = (int)($_POST['distribusi_id'] ?? 0);
+            $dist = $this->distribusiModel->getById($distribusiId);
+            if (!$dist || (int)$dist['paket_id'] !== (int)$paket['id']) {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Data alokasi distribusi tidak ditemukan pada paket ini.']);
+                    exit;
+                }
+                flash('error', 'Data alokasi distribusi tidak ditemukan.');
+                redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
+                return;
+            }
         }
 
         if (!isset($_FILES['fotos']) || empty($_FILES['fotos']['name'])) {
@@ -1728,6 +1802,7 @@ class PaketController {
                 $docId = $this->dokumentasiModel->create([
                     'paket_id'       => $paket['id'],
                     'distribusi_id'  => $distribusiId,
+                    'item_id'        => $itemId,
                     'nama_file_asli' => $uploadResult['orig_name'],
                     'file_path'      => $uploadResult['file_path'],
                     'thumb_path'     => $uploadResult['thumb_path'],

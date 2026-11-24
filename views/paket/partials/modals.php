@@ -679,6 +679,55 @@
 </div>
 
 <!-- ========================================== -->
+<!-- MODAL KELOLA RINCIAN ONGKOS KIRIM          -->
+<!-- ========================================== -->
+<div id="modalKelolaOngkir" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden">
+        <div class="px-5 py-3.5 bg-amber-50/70 border-b border-amber-100 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center text-base shadow-xs shrink-0">
+                    <ion-icon name="cash-outline"></ion-icon>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="font-bold text-slate-800 text-sm">Rincian Ongkos Kirim</h3>
+                    <p class="text-[11px] text-slate-500 truncate" id="ongkir_modal_subtitle">-</p>
+                </div>
+            </div>
+            <button type="button" data-modal-close="modalKelolaOngkir" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
+                <ion-icon name="close-outline" class="text-xl"></ion-icon>
+            </button>
+        </div>
+
+        <form id="formKelolaOngkir" onsubmit="submitKelolaOngkir(event)" class="p-5 space-y-3.5">
+            <input type="hidden" id="ongkir_dist_id" value="">
+
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-700">Daftar Ongkos Kirim</span>
+                <button type="button" onclick="addOngkirRow()" class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-[11px] font-semibold cursor-pointer">
+                    <ion-icon name="add-outline" class="text-sm"></ion-icon>
+                    <span>Tambah Ongkir</span>
+                </button>
+            </div>
+
+            <div id="ongkir_rows_container" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-600">Total Ongkos Kirim (Masuk HPP)</span>
+                <span id="ongkir_modal_total" class="font-mono font-extrabold text-sm text-amber-700">Rp 0</span>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex justify-end gap-2">
+                <button type="button" data-modal-close="modalKelolaOngkir" class="px-3.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs cursor-pointer">Batal</button>
+                <button type="submit" id="btnSubmitKelolaOngkir" class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xs shadow-xs cursor-pointer flex items-center gap-1.5">
+                    <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
+                    <span>Simpan Ongkir</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================== -->
 <!-- MODAL UPDATE STATUS DISTRIBUSI             -->
 <!-- ========================================== -->
 <div id="modalUpdateStatusDistribusi" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
@@ -1291,7 +1340,7 @@
                      ondragleave="this.classList.remove('border-teal-500', 'bg-teal-50/50')"
                      ondrop="handleDokDrop(event)"
                      class="border-2 border-dashed border-slate-300 hover:border-teal-500 hover:bg-teal-50/30 rounded-xl p-4 text-center cursor-pointer transition-all">
-                    <input type="file" id="dokFileInput" multiple accept="image/jpeg,image/png,image/webp,image/jpg" class="hidden" onchange="handleDokFileSelect(this.files)">
+                    <input type="file" id="dokFileInput" multiple accept="image/jpeg,image/png,image/webp,image/jpg,.heic,.heif,image/heic,image/heif" class="hidden" onchange="handleDokFileSelect(this.files)">
                     <div class="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center text-teal-600 text-xl mx-auto mb-2 shadow-2xs">
                         <ion-icon name="images-outline"></ion-icon>
                     </div>

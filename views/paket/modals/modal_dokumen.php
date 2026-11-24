@@ -3,15 +3,22 @@
  * Modal View: Berkas Dokumen BAST
  */
 $uploadedBastByTujuan = [];
+$generalPaketBasts = [];
 foreach ($dokumenList as $doc) {
+    $matched = false;
     foreach ($groupedDistribusi as $tujuanKey => $grpVal) {
         if (stripos($doc['nama_dokumen'], $tujuanKey) !== false || stripos($doc['nama_file_asli'], $tujuanKey) !== false) {
             $uploadedBastByTujuan[$tujuanKey] = $doc;
+            $matched = true;
             break;
         }
     }
+    if (!$matched) {
+        $generalPaketBasts[] = $doc;
+    }
 }
 $role = $_SESSION['admin_role'] ?? 'user';
+$paketKode = $paket['kode_paket'] ?: $paket['id'];
 
 $totalTitik = count($groupedDistribusi ?? []);
 $totalQty = 0;
@@ -25,14 +32,54 @@ foreach (($groupedDistribusi ?? []) as $grp) {
 
 <!-- Header Action Teleport Source -->
 <div id="modalActionSource" class="hidden">
-    <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 inline-flex items-center gap-1 shadow-2xs">
-        <ion-icon name="ribbon-outline" class="text-amber-600"></ion-icon>
-        <span>Total: <?= $totalTitik ?> Titik (<?= $totalUploaded ?> BAST Diupload)</span>
-    </span>
+    <div class="flex items-center gap-2">
+        <?php if ($role === 'admin' || $role === 'user'): ?>
+            <button type="button"
+                    onclick="openNativeUploadBastModal('<?= $paketKode ?>', '')"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer">
+                <ion-icon name="cloud-upload-outline" class="text-sm"></ion-icon>
+                <span>Upload BAST Paket</span>
+            </button>
+        <?php endif; ?>
+        <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 hidden sm:inline-flex items-center gap-1 shadow-2xs">
+            <ion-icon name="ribbon-outline" class="text-amber-600"></ion-icon>
+            <span>Total: <?= $totalTitik ?> Titik (<?= $totalUploaded ?> BAST Diupload)</span>
+        </span>
+    </div>
 </div>
 
 <!-- 1. Langsung Tabel BAST (Full Width, No Horizontal Scroll) -->
 <div class="space-y-3">
+    <?php if (!empty($generalPaketBasts)): ?>
+        <div class="bg-amber-50/50 rounded-xl border border-amber-200/80 p-3 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <ion-icon name="documents-outline" class="text-sm text-amber-600"></ion-icon>
+                    <span>BAST Umum Paket (<?= count($generalPaketBasts) ?> Berkas)</span>
+                </span>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <?php foreach ($generalPaketBasts as $gb): ?>
+                    <div class="bg-white rounded-lg border border-amber-200/80 px-2.5 py-1.5 flex items-center gap-2 shadow-2xs">
+                        <a href="<?= APP_URL ?>/paket/downloadDokumen/<?= $paketKode ?>/<?= $gb['id'] ?>?view=1"
+                           target="_blank"
+                           class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-800 hover:text-amber-900">
+                            <ion-icon name="document-attach-outline" class="text-amber-600"></ion-icon>
+                            <span><?= htmlspecialchars($gb['nama_dokumen']) ?></span>
+                        </a>
+                        <?php if ($role === 'admin' || $role === 'user'): ?>
+                            <button type="button"
+                                    onclick="deleteDokumenAjax('<?= $paketKode ?>', '<?= $gb['id'] ?>', '<?= htmlspecialchars(addslashes($gb['nama_dokumen'])) ?>')"
+                                    class="p-0.5 text-slate-400 hover:text-rose-600 rounded cursor-pointer"
+                                    title="Hapus BAST Umum">
+                                <ion-icon name="trash-outline" class="text-xs"></ion-icon>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    <?php endif; ?>
     <div class="bg-white rounded-xl border border-slate-200/90 overflow-hidden shadow-2xs">
         <table class="w-full text-left text-xs table-fixed">
             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">

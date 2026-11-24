@@ -302,8 +302,8 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                     <th class="py-3 px-3 text-right">HPP</th>
                     <th class="py-3 px-3 text-right">Profit</th>
                     <th class="py-3 px-3 text-center">Komponen</th>
-                    <th class="py-3 px-2 text-center">Order</th>
                     <th class="py-3 px-2 text-center">Dist</th>
+                    <th class="py-3 px-2 text-center">Order</th>
                     <th class="py-3 px-2 text-center">Dok</th>
                     <th class="py-3 px-2 text-center">BAST</th>
                     <th class="py-3 px-3 text-center">Pencairan</th>
@@ -432,8 +432,8 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                             </td>
 
                             <!-- Progress Rings -->
-                            <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?></td>
                             <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?></td>
+                            <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?></td>
                             <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['dok_done'] ?? 0, $p['total_dist'] ?? 0, 'dokumentasi') ?></td>
                             <td class="py-2 px-2 text-center whitespace-nowrap"><?= renderCircularProgress($p['bast_done'] ?? 0, $p['total_bast'] ?? 0, 'bast') ?></td>
 

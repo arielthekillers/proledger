@@ -85,14 +85,16 @@ if ($isBulk && !empty($groupedList)) {
                 padding: 0 !important;
                 margin: 0 !important;
                 color: black !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             .page-sheet {
                 box-shadow: none !important;
                 border: none !important;
                 margin: 0 !important;
-                padding: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
+                width: 210mm !important;
+                min-height: 297mm !important;
+                max-width: 210mm !important;
                 page-break-after: always;
                 break-after: page;
             }
@@ -102,13 +104,29 @@ if ($isBulk && !empty($groupedList)) {
             }
             @page {
                 size: A4 portrait;
-                margin: 6mm 15mm 12mm 15mm;
+                margin: 0;
             }
         }
         body {
             font-family: 'Times New Roman', Times, serif;
             color: #111827;
             background-color: #f3f4f6;
+        }
+        .page-sheet {
+            width: 210mm;
+            min-height: 297mm;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .kop-bg-full {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            pointer-events: none;
         }
         .text-body {
             font-size: 11pt;
@@ -149,15 +167,17 @@ if ($isBulk && !empty($groupedList)) {
                 $curTujuan = $sheet['tujuan'];
                 $curItems = $sheet['items'];
             ?>
-            <!-- Main Sheet (A4 Proportion) -->
-            <div class="page-sheet max-w-4xl mx-auto bg-white pt-5 px-10 pb-10 md:pt-6 md:px-14 md:pb-12 shadow-lg border border-slate-200 rounded-sm text-body">
+            <!-- Main Sheet (A4 Proportion 210mm x 297mm) -->
+            <div class="page-sheet mx-auto bg-white shadow-lg border border-slate-200 rounded-sm text-body"
+                 style="<?= !empty($kopUrl) ? 'padding: 44mm 18mm 20mm 18mm;' : 'padding: 15mm 18mm 20mm 18mm;' ?>">
                 
-                <!-- 1. KOP SURAT PERUSAHAAN REKANAN -->
+                <!-- 1. KOP SURAT A4 FULL BACKGROUND -->
                 <?php if (!empty($kopUrl)): ?>
-                    <div class="mb-4 text-center">
-                        <img src="<?= $kopUrl ?>" alt="Kop Surat" class="max-h-32 mx-auto w-full object-contain">
-                    </div>
-                <?php else: ?>
+                    <img src="<?= $kopUrl ?>" alt="Kop Surat A4" class="kop-bg-full">
+                <?php endif; ?>
+
+                <div class="relative z-10">
+                <?php if (empty($kopUrl)): ?>
                     <div class="border-b-2 border-black pb-3 mb-6 text-center">
                         <h1 class="font-bold text-lg md:text-xl uppercase tracking-wider text-black">
                             <?= htmlspecialchars($perusahaan['nama'] ?? 'CV. KARSA KREASI BERDIKARI') ?>
@@ -193,12 +213,12 @@ if ($isBulk && !empty($groupedList)) {
                         <tr>
                             <td class="w-24 align-top py-0.5 font-normal">Nama</td>
                             <td class="w-4 align-top py-0.5 text-center">:</td>
-                            <td class="align-top py-0.5 font-bold"><?= htmlspecialchars($curTujuan['nama_pic'] ?: 'Kepala Sekolah') ?></td>
+                            <td class="align-top py-0.5 font-bold">&nbsp;</td>
                         </tr>
                         <tr>
                             <td class="align-top py-0.5 font-normal">Jabatan</td>
                             <td class="align-top py-0.5 text-center">:</td>
-                            <td class="align-top py-0.5"><?= htmlspecialchars($curTujuan['jabatan_pic'] ?: 'Kepala Sekolah') ?></td>
+                            <td class="align-top py-0.5">&nbsp;</td>
                         </tr>
                         <tr>
                             <td class="align-top py-0.5 font-normal">Instansi</td>
@@ -295,21 +315,17 @@ if ($isBulk && !empty($groupedList)) {
                 </p>
 
                 <!-- 9. TANDA TANGAN KEDUA PIHAK -->
-                <div class="grid grid-cols-2 gap-8 text-center mt-6">
-                    <!-- Pihak Pertama -->
+                <div class="grid grid-cols-2 gap-8 text-center mt-8">
+                    <!-- Pihak Pertama (Kosong untuk diisi manual pakai pena) -->
                     <div>
-                        <p class="font-bold mb-16 uppercase tracking-wider text-xs md:text-sm">PIHAK PERTAMA</p>
-                        <p class="font-bold underline text-sm md:text-base">
-                            <?= htmlspecialchars($curTujuan['nama_pic'] ?: 'Kepala Sekolah') ?>
-                        </p>
-                        <p class="text-xs text-slate-600">
-                            <?= htmlspecialchars($curTujuan['jabatan_pic'] ?: 'Kepala Sekolah') ?>
-                        </p>
+                        <p class="font-bold mb-24 uppercase tracking-wider text-xs md:text-sm">PIHAK PERTAMA</p>
+                        <p class="font-bold text-sm md:text-base h-6">&nbsp;</p>
+                        <p class="text-xs text-slate-600 h-5">&nbsp;</p>
                     </div>
 
                     <!-- Pihak Kedua -->
                     <div class="relative">
-                        <p class="font-bold mb-16 uppercase tracking-wider text-xs md:text-sm">PIHAK KEDUA</p>
+                        <p class="font-bold mb-24 uppercase tracking-wider text-xs md:text-sm">PIHAK KEDUA</p>
                         
                         <!-- Stamp / TTD Digital jika ada -->
                         <?php
@@ -319,7 +335,7 @@ if ($isBulk && !empty($groupedList)) {
                         <?php if ($ttdSrc): ?>
                             <img src="<?= htmlspecialchars($ttdSrc) ?>" 
                                  alt="Tanda Tangan" 
-                                 class="absolute top-6 left-1/2 transform -translate-x-1/2 max-h-16 object-contain pointer-events-none">
+                                 class="absolute top-6 left-1/2 transform -translate-x-1/2 max-h-24 object-contain pointer-events-none">
                         <?php endif; ?>
 
                         <p class="font-bold underline text-sm md:text-base">
@@ -331,6 +347,7 @@ if ($isBulk && !empty($groupedList)) {
                     </div>
                 </div>
 
+                </div><!-- /.relative.z-10 -->
             </div>
         <?php endforeach; ?>
     </div>

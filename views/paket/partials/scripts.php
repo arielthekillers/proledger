@@ -675,6 +675,103 @@ function openModalUpdateStatusBarang(dist) {
     window.ProModal.open('modalUpdateStatusBarang');
 }
 
+function openOngkirModal(dist) {
+    if (!dist) return;
+    document.getElementById('ongkir_dist_id').value = dist.id;
+    const sub = document.getElementById('ongkir_modal_subtitle');
+    if (sub) sub.textContent = (dist.nama_tujuan || '-') + ' (' + (dist.nama_komponen || '-') + ')';
+
+    const container = document.getElementById('ongkir_rows_container');
+    container.innerHTML = '';
+
+    let items = [];
+    if (dist.ongkir_items) {
+        try {
+            const parsed = JSON.parse(dist.ongkir_items);
+            if (Array.isArray(parsed)) items = parsed;
+        } catch (e) {}
+    }
+    if (items.length === 0 && parseFloat(dist.ongkos_kirim) > 0) {
+        items = [{ label: 'Ongkir 1', nominal: parseFloat(dist.ongkos_kirim) }];
+    }
+    if (items.length === 0) {
+        addOngkirRow('Ongkir 1', '');
+    } else {
+        items.forEach(it => addOngkirRow(it.label || '', it.nominal || ''));
+    }
+    recalcOngkirModalTotal();
+    window.ProModal.open('modalKelolaOngkir');
+}
+
+function addOngkirRow(label = '', nominal = '') {
+    const container = document.getElementById('ongkir_rows_container');
+    const idx = container.children.length + 1;
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-2 ongkir-row';
+    const formattedNom = nominal ? parseInt(nominal, 10).toLocaleString('id-ID') : '';
+    const safeLabel = String(label || ('Ongkir ' + idx)).replace(/"/g, '&quot;');
+    row.innerHTML = `
+        <input type="text" name="labels[]" value="${safeLabel}" placeholder="Keterangan (mis: Ongkir ${idx})"
+               class="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-amber-500 focus:bg-white">
+        <div class="relative w-36 shrink-0">
+            <span class="absolute left-2.5 top-1.5 text-[11px] font-bold text-slate-400">Rp</span>
+            <input type="text" name="nominals[]" value="${formattedNom}" placeholder="0"
+                   oninput="formatRupiahInput(this); recalcOngkirModalTotal();"
+                   class="w-full pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold text-right focus:outline-none focus:border-amber-500 focus:bg-white">
+        </div>
+        <button type="button" onclick="this.closest('.ongkir-row').remove(); recalcOngkirModalTotal();"
+                class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer shrink-0" title="Hapus">
+            <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+        </button>
+    `;
+    container.appendChild(row);
+    recalcOngkirModalTotal();
+}
+
+function recalcOngkirModalTotal() {
+    let total = 0;
+    document.querySelectorAll('#ongkir_rows_container input[name="nominals[]"]').forEach(inp => {
+        const num = parseInt(String(inp.value).replace(/[^0-9]/g, ''), 10) || 0;
+        total += num;
+    });
+    const el = document.getElementById('ongkir_modal_total');
+    if (el) el.textContent = 'Rp ' + total.toLocaleString('id-ID');
+}
+
+function submitKelolaOngkir(e) {
+    e.preventDefault();
+    const distId = document.getElementById('ongkir_dist_id').value;
+    const formData = new FormData(document.getElementById('formKelolaOngkir'));
+    const btn = document.getElementById('btnSubmitKelolaOngkir');
+    if (btn) { btn.disabled = true; btn.textContent = 'Menyimpan...'; }
+
+    fetch('<?= APP_URL ?>/paket/updateOngkir/<?= $paket['kode_paket'] ?: $paket['id'] ?>/' + distId, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Simpan Ongkir'; }
+        if (data.success) {
+            window.ProModal.close('modalKelolaOngkir');
+            if (window.ProToast?.success) window.ProToast.success(data.message);
+            if (window.history && window.history.replaceState) {
+                const targetUrl = new URL(window.location.href);
+                targetUrl.searchParams.set('tab', 'pemesanan');
+                targetUrl.hash = 'pemesanan';
+                window.history.replaceState(null, '', targetUrl.toString());
+            }
+            window.location.reload();
+        } else {
+            if (window.ProToast?.error) window.ProToast.error(data.message || 'Gagal menyimpan ongkir.');
+        }
+    })
+    .catch(() => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Simpan Ongkir'; }
+    });
+}
+
 function toggleStatusBarangInputs() {
     const optSudah = document.getElementById('opt_status_sudah_pesan');
     const section = document.getElementById('section_detail_pesanan');
@@ -719,6 +816,8 @@ function submitUpdateStatusBarang(e) {
                 targetUrl.hash = 'pemesanan';
                 window.history.replaceState(null, '', targetUrl.toString());
             }
+            window.location.reload();
+        }
             setTimeout(() => {
                 window.location.reload();
             }, 300);
@@ -1431,14 +1530,39 @@ function clearDokSelectedQueue() {
     if (progressContainer) progressContainer.classList.add('hidden');
 }
 
+function ensureHeic2Any() {
+    if (window.heic2any) return Promise.resolve(window.heic2any);
+    return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+        s.onload = () => resolve(window.heic2any);
+        s.onerror = () => reject(new Error('Gagal memuat konverter HEIC'));
+        document.head.appendChild(s);
+    });
+}
+
 /**
- * Client-Side Image Compression using HTML5 Canvas
+ * Client-Side Image Compression using HTML5 Canvas (+ auto-convert HEIC/HEIF ke JPG)
  * Mengompres gambar jika resolusi > maxWidth atau ukuran besar
  */
-function compressImageToBlob(file, maxWidth = 1600, quality = 0.82) {
+async function compressImageToBlob(file, maxWidth = 1600, quality = 0.82) {
+    let sourceFile = file;
+    const isHeic = /\.(heic|heif)$/i.test(file.name) || /image\/(heic|heif)/i.test(file.type || '');
+    if (isHeic) {
+        try {
+            const converter = await ensureHeic2Any();
+            const converted = await converter({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+            const blob = Array.isArray(converted) ? converted[0] : converted;
+            const jpgName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+            sourceFile = new File([blob], jpgName, { type: 'image/jpeg' });
+        } catch (err) {
+            console.warn('HEIC convert failed, fallback to raw file:', err);
+        }
+    }
+
     return new Promise((resolve) => {
-        if (!file.type.match(/image\/(jpeg|jpg|png|webp)/i)) {
-            return resolve(file); // fallback
+        if (!sourceFile.type.match(/image\/(jpeg|jpg|png|webp)/i)) {
+            return resolve(sourceFile); // fallback
         }
 
         const reader = new FileReader();
@@ -1465,22 +1589,22 @@ function compressImageToBlob(file, maxWidth = 1600, quality = 0.82) {
                 ctx.drawImage(img, 0, 0, w, h);
 
                 canvas.toBlob((blob) => {
-                    if (blob && blob.size < file.size) {
-                        const compFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                    if (blob && blob.size < sourceFile.size) {
+                        const compFile = new File([blob], sourceFile.name.replace(/\.[^/.]+$/, "") + ".jpg", {
                             type: 'image/jpeg',
                             lastModified: Date.now()
                         });
                         resolve(compFile);
                     } else {
-                        resolve(file);
+                        resolve(sourceFile);
                     }
                 }, 'image/jpeg', quality);
             };
-            img.onerror = () => resolve(file);
+            img.onerror = () => resolve(sourceFile);
             img.src = e.target.result;
         };
-        reader.onerror = () => resolve(file);
-        reader.readAsDataURL(file);
+        reader.onerror = () => resolve(sourceFile);
+        reader.readAsDataURL(sourceFile);
     });
 }
 
@@ -1518,7 +1642,7 @@ async function startUploadDokumentasi() {
 
     for (let i = 0; i < dokSelectedFiles.length; i++) {
         const comp = await compressImageToBlob(dokSelectedFiles[i], 1600, 0.82);
-        formData.append('fotos[]', comp, dokSelectedFiles[i].name);
+        formData.append('fotos[]', comp, comp.name || dokSelectedFiles[i].name);
     }
 
     if (progressStatus) progressStatus.textContent = 'Mengunggah ke server...';

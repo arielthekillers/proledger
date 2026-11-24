@@ -151,8 +151,8 @@
                     <th class="py-2.5 px-3 text-right" title="Total Belanja Toko / HPP (Klik untuk Kelola Pemesanan)">HPP</th>
                     <th class="py-2.5 px-3 text-right" title="Estimasi Profit Bersih Setelah Potongan & Belanja (Klik untuk Rincian Profit)">Profit</th>
                     <th class="py-2.5 px-2 text-center" title="Jumlah Macam Item Komponen & Total Unit (Klik untuk Kelola Item)">Komponen</th>
-                    <th class="py-2.5 px-2 text-center w-16" title="Progres Pemesanan Barang (Supplier/Toko)">Order</th>
                     <th class="py-2.5 px-2 text-center w-16" title="Progres Pengiriman & Distribusi">Dist</th>
+                    <th class="py-2.5 px-2 text-center w-16" title="Progres Pemesanan Barang (Supplier/Toko)">Order</th>
                     <th class="py-2.5 px-2 text-center w-16" title="Progres Foto Dokumentasi Titik Penerima">Dok</th>
                     <th class="py-2.5 px-2 text-center w-16" title="Progres Upload Berkas BAST Titik Penerima">BAST</th>
                     <th class="py-2.5 px-3 text-center">Pencairan</th>
@@ -415,21 +415,21 @@
                                 </button>
                             </td>
 
-                            <!-- Progres Pemesanan (Lingkaran - Klik untuk Buka Popup) -->
-                            <td class="py-2 px-2 text-center whitespace-nowrap">
-                                <button type="button" 
-                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'pemesanan', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
-                                        class="hover:scale-105 transition-transform inline-block cursor-pointer">
-                                    <?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?>
-                                </button>
-                            </td>
-
                             <!-- Progres Distribusi (Lingkaran - Klik untuk Buka Popup) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
                                 <button type="button" 
                                         onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'distribusi', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
                                         class="hover:scale-105 transition-transform inline-block cursor-pointer">
                                     <?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?>
+                                </button>
+                            </td>
+
+                            <!-- Progres Pemesanan (Lingkaran - Klik untuk Buka Popup) -->
+                            <td class="py-2 px-2 text-center whitespace-nowrap">
+                                <button type="button" 
+                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'pemesanan', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
+                                        class="hover:scale-105 transition-transform inline-block cursor-pointer">
+                                    <?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?>
                                 </button>
                             </td>
 
@@ -1307,13 +1307,13 @@
             <ion-icon name="list-outline" class="text-sm text-blue-500"></ion-icon>
             <span>Komponen Item Barang</span>
         </button>
-        <button type="button" onclick="triggerMenuTab('pemesanan')" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-amber-50 hover:text-amber-700 transition-colors cursor-pointer">
-            <ion-icon name="bag-check-outline" class="text-sm text-amber-500"></ion-icon>
-            <span>Progres Pemesanan Toko</span>
-        </button>
         <button type="button" onclick="triggerMenuTab('distribusi')" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-indigo-50 hover:text-indigo-600 transition-colors cursor-pointer">
             <ion-icon name="navigate-outline" class="text-sm text-indigo-500"></ion-icon>
             <span>Alokasi Distribusi Titik</span>
+        </button>
+        <button type="button" onclick="triggerMenuTab('pemesanan')" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-amber-50 hover:text-amber-700 transition-colors cursor-pointer">
+            <ion-icon name="bag-check-outline" class="text-sm text-amber-500"></ion-icon>
+            <span>Progres Pemesanan Toko</span>
         </button>
         <button type="button" onclick="triggerMenuTab('dokumentasi')" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-teal-50 hover:text-teal-600 transition-colors cursor-pointer">
             <ion-icon name="camera-outline" class="text-sm text-teal-500"></ion-icon>
@@ -1597,6 +1597,47 @@
                         class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold">Batal</button>
                 <button type="submit" id="btnSubmitNativeStatusBarang"
                         class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- NATIVE SUB-MODAL: KELOLA RINCIAN ONGKOS KIRIM                  -->
+<!-- ============================================================== -->
+<div id="modalNativeKelolaOngkir" class="app-modal fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden flex flex-col">
+        <div class="px-5 py-3.5 bg-amber-50/70 border-b border-amber-100 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center text-base shadow-xs shrink-0">
+                    <ion-icon name="cash-outline"></ion-icon>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="font-bold text-slate-800 text-xs">Rincian Ongkos Kirim</h3>
+                    <p class="text-[10px] text-slate-500 truncate" id="nativeOngkirSub">-</p>
+                </div>
+            </div>
+            <button type="button" onclick="window.ProModal.close('modalNativeKelolaOngkir')" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+        <form id="formNativeKelolaOngkir" onsubmit="submitNativeKelolaOngkir(event)" class="p-5 space-y-3.5">
+            <input type="hidden" id="nativeOngkirDistId" value="">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-700">Daftar Ongkos Kirim</span>
+                <button type="button" onclick="addNativeOngkirRow()" class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-[11px] font-semibold cursor-pointer">
+                    <ion-icon name="add-outline" class="text-sm"></ion-icon>
+                    <span>Tambah Ongkir</span>
+                </button>
+            </div>
+            <div id="nativeOngkirRowsContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-600">Total Ongkir (Masuk HPP)</span>
+                <span id="nativeOngkirTotal" class="font-mono font-extrabold text-sm text-amber-700">Rp 0</span>
+            </div>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button type="button" onclick="window.ProModal.close('modalNativeKelolaOngkir')" class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold cursor-pointer">Batal</button>
+                <button type="submit" id="btnSubmitNativeOngkir" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer">Simpan Ongkir</button>
             </div>
         </form>
     </div>
@@ -1892,11 +1933,11 @@ window.openNativeTambahDistribusiModal = function(kode) {
 function openNativeUploadBastModal(kode, namaTujuan) {
     const form = document.getElementById('formNativeUploadBast');
     if (form) {
-        form.action = '<?= APP_URL ?>/paket/storeDokumen/' + kode;
-        document.getElementById('nativeUploadBastRedirect').value = '<?= APP_URL ?>/paket?open_modal=' + kode + '&tab=dokumen';
-        document.getElementById('nativeUploadBastNama').value = namaTujuan ? ('BAST - ' + namaTujuan) : '';
+        form.action = '<?= APP_URL ?>/paket/storeDokumen/' + encodeURIComponent(kode);
+        document.getElementById('nativeUploadBastRedirect').value = '/paket?open_modal=' + encodeURIComponent(kode) + '&tab=dokumen';
+        document.getElementById('nativeUploadBastNama').value = namaTujuan ? ('BAST - ' + namaTujuan) : 'BAST Umum Paket';
         const titleEl = document.getElementById('nativeUploadBastTitle');
-        if (titleEl) titleEl.textContent = namaTujuan ? ('Upload BAST: ' + namaTujuan) : 'Upload Berkas BAST';
+        if (titleEl) titleEl.textContent = namaTujuan ? ('Upload BAST: ' + namaTujuan) : 'Upload BAST Umum Paket';
     }
     window.ProModal.open('modalNativeUploadBast');
 }
@@ -1909,7 +1950,7 @@ function openNativeTambahItemModal(kode) {
     const form = document.getElementById('formNativeItem');
     if (form) {
         form.action = '<?= APP_URL ?>/paket/storeItem/' + encodeURIComponent(targetKode);
-        document.getElementById('nativeItemRedirect').value = '<?= APP_URL ?>/paket?open_modal=' + encodeURIComponent(targetKode) + '&tab=items';
+        document.getElementById('nativeItemRedirect').value = '/paket?open_modal=' + encodeURIComponent(targetKode) + '&tab=items';
         document.getElementById('nativeItemModalTitle').textContent = 'Tambah Komponen Barang';
         document.getElementById('nativeItemSubmitBtn').textContent = 'Simpan Komponen';
         document.getElementById('nativeItemKomponen').value = '';
@@ -1927,7 +1968,7 @@ function openNativeEditItemModal(it) {
     const targetKode = currentOpenKode || it.kode_paket || it.paket_id;
     if (form) {
         form.action = '<?= APP_URL ?>/paket/updateItem/' + encodeURIComponent(targetKode) + '/' + encodeURIComponent(it.id);
-        document.getElementById('nativeItemRedirect').value = '<?= APP_URL ?>/paket?open_modal=' + encodeURIComponent(targetKode) + '&tab=items';
+        document.getElementById('nativeItemRedirect').value = '/paket?open_modal=' + encodeURIComponent(targetKode) + '&tab=items';
         document.getElementById('nativeItemModalTitle').textContent = 'Edit Komponen Barang';
         document.getElementById('nativeItemSubmitBtn').textContent = 'Perbarui Komponen';
         document.getElementById('nativeItemKomponen').value = it.komponen || it.nama_barang || '';
@@ -1963,6 +2004,101 @@ function openNativeUpdateStatusBarangModal(dist) {
 
     toggleNativeStatusBarangInputs();
     window.ProModal.open('modalNativeStatusBarang');
+}
+
+function openNativeOngkirModal(dist) {
+    if (!dist) return;
+    document.getElementById('nativeOngkirDistId').value = dist.id;
+    const sub = document.getElementById('nativeOngkirSub');
+    if (sub) sub.textContent = (dist.nama_tujuan || '-') + ' (' + (dist.nama_komponen || dist.komponen || '-') + ')';
+
+    const container = document.getElementById('nativeOngkirRowsContainer');
+    container.innerHTML = '';
+    let items = [];
+    if (dist.ongkir_items) {
+        try {
+            const parsed = JSON.parse(dist.ongkir_items);
+            if (Array.isArray(parsed)) items = parsed;
+        } catch (e) {}
+    }
+    if (items.length === 0 && parseFloat(dist.ongkos_kirim) > 0) {
+        items = [{ label: 'Ongkir 1', nominal: parseFloat(dist.ongkos_kirim) }];
+    }
+    if (items.length === 0) {
+        addNativeOngkirRow('Ongkir 1', '');
+    } else {
+        items.forEach(it => addNativeOngkirRow(it.label || '', it.nominal || ''));
+    }
+    recalcNativeOngkirTotal();
+    window.ProModal.open('modalNativeKelolaOngkir');
+}
+
+function addNativeOngkirRow(label = '', nominal = '') {
+    const container = document.getElementById('nativeOngkirRowsContainer');
+    const idx = container.children.length + 1;
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-2 native-ongkir-row';
+    const formattedNom = nominal ? parseInt(nominal, 10).toLocaleString('id-ID') : '';
+    const safeLabel = String(label || ('Ongkir ' + idx)).replace(/"/g, '&quot;');
+    row.innerHTML = `
+        <input type="text" name="labels[]" value="${safeLabel}" placeholder="Keterangan (mis: Ongkir ${idx})"
+               class="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-amber-500 focus:bg-white">
+        <div class="relative w-36 shrink-0">
+            <span class="absolute left-2.5 top-1.5 text-[11px] font-bold text-slate-400">Rp</span>
+            <input type="text" name="nominals[]" value="${formattedNom}" placeholder="0"
+                   oninput="formatRupiahInput(this); recalcNativeOngkirTotal();"
+                   class="w-full pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold text-right focus:outline-none focus:border-amber-500 focus:bg-white">
+        </div>
+        <button type="button" onclick="this.closest('.native-ongkir-row').remove(); recalcNativeOngkirTotal();"
+                class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer shrink-0" title="Hapus">
+            <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+        </button>
+    `;
+    container.appendChild(row);
+    recalcNativeOngkirTotal();
+}
+
+function recalcNativeOngkirTotal() {
+    let total = 0;
+    document.querySelectorAll('#nativeOngkirRowsContainer input[name="nominals[]"]').forEach(inp => {
+        const num = parseInt(String(inp.value).replace(/[^0-9]/g, ''), 10) || 0;
+        total += num;
+    });
+    const el = document.getElementById('nativeOngkirTotal');
+    if (el) el.textContent = 'Rp ' + total.toLocaleString('id-ID');
+}
+
+function submitNativeKelolaOngkir(e) {
+    e.preventDefault();
+    const distId = document.getElementById('nativeOngkirDistId').value;
+    const formData = new FormData(document.getElementById('formNativeKelolaOngkir'));
+    const kode = currentOpenKode;
+    if (!kode || !distId) return;
+
+    const btn = document.getElementById('btnSubmitNativeOngkir');
+    if (btn) { btn.disabled = true; btn.textContent = 'Menyimpan...'; }
+
+    fetch('<?= APP_URL ?>/paket/updateOngkir/' + encodeURIComponent(kode) + '/' + encodeURIComponent(distId), {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Simpan Ongkir'; }
+        if (data.success) {
+            window.ProModal.close('modalNativeKelolaOngkir');
+            if (window.ProToast) window.ProToast.success(data.message || 'Ongkos kirim berhasil disimpan!');
+            refreshCurrentNativeModal();
+        } else {
+            if (window.ProToast) window.ProToast.error(data.message || 'Gagal menyimpan ongkos kirim.');
+        }
+    })
+    .catch(() => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Simpan Ongkir'; }
+        window.ProModal.close('modalNativeKelolaOngkir');
+        refreshCurrentNativeModal();
+    });
 }
 
 function toggleNativeStatusBarangInputs() {

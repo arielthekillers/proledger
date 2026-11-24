@@ -55,10 +55,16 @@
                         <?php 
                         $no = 1; 
                         $itemsWithDocs = 0;
+                        $hasGlobalDokTab = false;
+                        $itemDokTabMap = [];
+                        foreach (($generalDokumentasi ?? []) as $gd) {
+                            if (empty($gd['item_id'])) $hasGlobalDokTab = true;
+                            else $itemDokTabMap[(int)$gd['item_id']][] = $gd;
+                        }
                         foreach ($distribusiList as $dist): 
                             $photos = $dokumentasiMap[$dist['id']] ?? [];
                             $photoCount = count($photos);
-                            if ($photoCount > 0) $itemsWithDocs++;
+                            if ($photoCount > 0 || !empty($itemDokTabMap[(int)($dist['item_id'] ?? 0)]) || $hasGlobalDokTab) $itemsWithDocs++;
                             $sDist = $dist['status_distribusi'] ?? '';
                             $isOrdered = (($dist['status_barang'] ?? '') === 'Sudah Dipesan');
                         ?>

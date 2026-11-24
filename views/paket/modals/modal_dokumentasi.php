@@ -3,12 +3,23 @@
  * Modal View: Dokumentasi Pengiriman & Serah Terima Barang
  */
 $role = $_SESSION['admin_role'] ?? 'user';
+$generalDocs = $generalDokumentasi ?? [];
+$globalDocs = [];
+$itemDocMap = [];
+foreach ($generalDocs as $gd) {
+    if (empty($gd['item_id'])) {
+        $globalDocs[] = $gd;
+    } else {
+        $itemDocMap[(int)$gd['item_id']][] = $gd;
+    }
+}
 $totalDist = count($distribusiList);
 $itemsWithDocs = 0;
 $totalQty = 0;
 foreach ($distribusiList as $dist) {
     $photos = $dokumentasiMap[$dist['id']] ?? [];
-    if (count($photos) > 0) $itemsWithDocs++;
+    $repDocs = $itemDocMap[(int)($dist['item_id'] ?? 0)] ?? $globalDocs;
+    if (count($photos) > 0 || count($repDocs) > 0) $itemsWithDocs++;
     $totalQty += (float)$dist['jumlah'];
 }
 $totalFotoAll = (int)($totalDokumentasiFoto ?? 0);
@@ -19,6 +30,13 @@ $paketKode = $paket['kode_paket'] ?: $paket['id'];
 <!-- Header Action Teleport Source -->
 <div id="modalActionSource" class="hidden">
     <div class="flex items-center gap-2">
+        <?php if ($role === 'admin' || $role === 'user'): ?>
+            <button type="button" onclick="openModalDokUmum()"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer">
+                <ion-icon name="add-circle-outline" class="text-sm"></ion-icon>
+                <span>Dokumentasi Umum</span>
+            </button>
+        <?php endif; ?>
         <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-teal-50 text-teal-700 border border-teal-200 hidden sm:inline-flex items-center gap-1">
             <ion-icon name="images-outline"></ion-icon>
             <span>Total: <?= $totalFotoAll ?> Foto</span>
@@ -28,6 +46,42 @@ $paketKode = $paket['kode_paket'] ?: $paket['id'];
 
 <!-- 1. Langsung Tabel Dokumentasi (Full Width, No Horizontal Scroll) -->
 <div class="space-y-3">
+    <?php if (!empty($generalDocs)): ?>
+        <div class="bg-teal-50/50 rounded-xl border border-teal-200/80 p-3 space-y-2" id="generalDokStrip">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-teal-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <ion-icon name="albums-outline" class="text-sm text-teal-600"></ion-icon>
+                    <span>Dokumentasi Umum / Per Komponen (<?= count($generalDocs) ?> Foto)</span>
+                </span>
+                <span class="text-[10px] text-teal-700">Mewakili item distribusi yang belum memiliki foto khusus</span>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <?php
+                $genUrls = array_map(fn($g) => APP_URL . '/' . ltrim($g['file_path'], '/'), $generalDocs);
+                $genUrlsJson = htmlspecialchars(json_encode($genUrls), ENT_QUOTES, 'UTF-8');
+                foreach ($generalDocs as $gIdx => $gd):
+                    $gThumb = !empty($gd['thumb_path']) ? (APP_URL . '/' . ltrim($gd['thumb_path'], '/')) : (APP_URL . '/' . ltrim($gd['file_path'], '/'));
+                    $gLabel = !empty($gd['nama_komponen']) ? $gd['nama_komponen'] : 'Semua Komponen';
+                ?>
+                    <div class="relative group bg-white rounded-lg border border-teal-200/80 p-1.5 flex items-center gap-2 shadow-2xs" id="gen_dok_card_<?= (int)$gd['id'] ?>">
+                        <img src="<?= htmlspecialchars($gThumb) ?>" alt="Foto Umum"
+                             onclick="openProPhotoViewer(<?= $genUrlsJson ?>, <?= $gIdx ?>, 'Dokumentasi Umum')"
+                             class="w-10 h-10 rounded-md object-cover cursor-pointer hover:opacity-90 shrink-0">
+                        <div class="min-w-0 pr-5">
+                            <div class="text-[10px] font-bold text-teal-800 truncate max-w-[130px]" title="<?= htmlspecialchars($gLabel) ?>"><?= htmlspecialchars($gLabel) ?></div>
+                            <div class="text-[9px] text-slate-400 truncate max-w-[130px]"><?= htmlspecialchars($gd['keterangan'] ?: ($gd['nama_file_asli'] ?? 'Foto')) ?></div>
+                        </div>
+                        <?php if ($role === 'admin' || $role === 'user'): ?>
+                            <button type="button" onclick="deleteGeneralDokPhoto(<?= (int)$gd['id'] ?>)"
+                                    class="absolute top-1 right-1 p-1 text-slate-400 hover:text-rose-600 rounded cursor-pointer" title="Hapus foto umum">
+                                <ion-icon name="trash-outline" class="text-xs"></ion-icon>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    <?php endif; ?>
     <div class="bg-white rounded-xl border border-slate-200/90 overflow-hidden shadow-2xs">
         <table class="w-full text-left text-xs table-fixed">
             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
@@ -99,7 +153,25 @@ $paketKode = $paket['kode_paket'] ?: $paket['id'];
                                 </span>
                             </td>
                             <td class="py-2.5 px-3 whitespace-nowrap" id="cell_dok_photos_<?= $dist['id'] ?>">
-                                <?php if ($photoCount === 0): ?>
+                                <?php
+                                $itemRepDocs = $itemDocMap[(int)($dist['item_id'] ?? 0)] ?? [];
+                                $repDocs = !empty($itemRepDocs) ? $itemRepDocs : $globalDocs;
+                                $repLabel = !empty($itemRepDocs) ? 'Diwakili Komponen' : 'Diwakili Umum';
+                                ?>
+                                <?php if ($photoCount === 0 && !empty($repDocs)): ?>
+                                    <?php
+                                    $repUrls = array_map(fn($ph) => APP_URL . '/' . ltrim($ph['file_path'], '/'), $repDocs);
+                                    $repJson = htmlspecialchars(json_encode($repUrls), ENT_QUOTES, 'UTF-8');
+                                    $repCap = htmlspecialchars(addslashes($repLabel . ' - ' . $namaKomp));
+                                    ?>
+                                    <button type="button"
+                                            onclick="openProPhotoViewer(<?= $repJson ?>, 0, '<?= $repCap ?>')"
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-teal-50/70 hover:bg-teal-100 text-teal-700 border border-teal-200/80 cursor-pointer"
+                                            title="Klik untuk melihat foto perwakilan (<?= count($repDocs) ?> foto)">
+                                        <ion-icon name="albums-outline" class="text-xs"></ion-icon>
+                                        <span><?= $repLabel ?></span>
+                                    </button>
+                                <?php elseif ($photoCount === 0): ?>
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-400 border border-slate-200/70">
                                         <ion-icon name="image-outline" class="text-xs"></ion-icon>
                                         <span>Belum Ada</span>
@@ -222,7 +294,7 @@ $paketKode = $paket['kode_paket'] ?: $paket['id'];
                      ondragleave="this.classList.remove('border-teal-500', 'bg-teal-50/50')"
                      ondrop="window.handleDokDrop(event)"
                      class="border-2 border-dashed border-slate-300 hover:border-teal-500 hover:bg-teal-50/30 rounded-xl p-4 text-center cursor-pointer transition-all">
-                    <input type="file" id="dokFileInput" multiple accept="image/jpeg,image/png,image/webp,image/jpg" class="hidden" onchange="window.handleDokFileSelect(this.files)">
+                    <input type="file" id="dokFileInput" multiple accept="image/jpeg,image/png,image/webp,image/jpg,.heic,.heif,image/heic,image/heif" class="hidden" onchange="window.handleDokFileSelect(this.files)">
                     <div class="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center text-teal-600 text-xl mx-auto mb-2 shadow-2xs">
                         <ion-icon name="images-outline"></ion-icon>
                     </div>
@@ -497,10 +569,35 @@ window.clearDokSelectedQueue = function() {
     if (progressContainer) progressContainer.classList.add('hidden');
 };
 
-window.compressImageToBlob = function(file, maxWidth = 1600, quality = 0.82) {
+window.ensureHeic2Any = function() {
+    if (window.heic2any) return Promise.resolve(window.heic2any);
+    return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+        s.onload = () => resolve(window.heic2any);
+        s.onerror = () => reject(new Error('Gagal memuat konverter HEIC'));
+        document.head.appendChild(s);
+    });
+};
+
+window.compressImageToBlob = async function(file, maxWidth = 1600, quality = 0.82) {
+    let sourceFile = file;
+    const isHeic = /\.(heic|heif)$/i.test(file.name) || /image\/(heic|heif)/i.test(file.type || '');
+    if (isHeic) {
+        try {
+            const converter = await window.ensureHeic2Any();
+            const converted = await converter({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+            const blob = Array.isArray(converted) ? converted[0] : converted;
+            const jpgName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+            sourceFile = new File([blob], jpgName, { type: 'image/jpeg' });
+        } catch (err) {
+            console.warn('HEIC convert failed, fallback to raw file:', err);
+        }
+    }
+
     return new Promise((resolve) => {
-        if (!file.type.match(/image\/(jpeg|jpg|png|webp)/i)) {
-            return resolve(file);
+        if (!sourceFile.type.match(/image\/(jpeg|jpg|png|webp)/i)) {
+            return resolve(sourceFile);
         }
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -523,21 +620,21 @@ window.compressImageToBlob = function(file, maxWidth = 1600, quality = 0.82) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, w, h);
                 canvas.toBlob((blob) => {
-                    if (blob && blob.size < file.size) {
-                        resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                    if (blob && blob.size < sourceFile.size) {
+                        resolve(new File([blob], sourceFile.name.replace(/\.[^/.]+$/, "") + ".jpg", {
                             type: 'image/jpeg',
                             lastModified: Date.now()
                         }));
                     } else {
-                        resolve(file);
+                        resolve(sourceFile);
                     }
                 }, 'image/jpeg', quality);
             };
-            img.onerror = () => resolve(file);
+            img.onerror = () => resolve(sourceFile);
             img.src = e.target.result;
         };
-        reader.onerror = () => resolve(file);
-        reader.readAsDataURL(file);
+        reader.onerror = () => resolve(sourceFile);
+        reader.readAsDataURL(sourceFile);
     });
 };
 
@@ -571,7 +668,7 @@ window.startUploadDokumentasi = async function() {
 
     for (let i = 0; i < window.dokSelectedFiles.length; i++) {
         const comp = await window.compressImageToBlob(window.dokSelectedFiles[i], 1600, 0.82);
-        formData.append('fotos[]', comp, window.dokSelectedFiles[i].name);
+        formData.append('fotos[]', comp, comp.name || window.dokSelectedFiles[i].name);
     }
 
     if (progressStatus) progressStatus.textContent = 'Mengunggah ke server...';
@@ -704,4 +801,134 @@ function escapeDokHtml(str) {
         .replace(/'/g, '&#039;');
 }
 window.escapeDokHtml = escapeDokHtml;
+</script>
+
+<!-- ============================================================== -->
+<!-- SUB-MODAL: UPLOAD DOKUMENTASI UMUM / PER KOMPONEN              -->
+<!-- ============================================================== -->
+<div id="modalDokUmum" class="app-modal fixed inset-0 z-[75] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden flex flex-col">
+        <div class="px-5 py-3.5 bg-teal-50/70 border-b border-teal-100 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center text-base shadow-xs">
+                    <ion-icon name="albums-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-sm">Upload Dokumentasi Umum</h3>
+                    <p class="text-[11px] text-slate-500">1 foto mewakili komponen paket tanpa input per lokasi</p>
+                </div>
+            </div>
+            <button type="button" onclick="window.ProModal.close('modalDokUmum')" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+
+        <form id="formDokUmum" onsubmit="submitDokUmum(event)" class="p-5 space-y-3.5">
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Komponen Paket yang Diwakili</label>
+                <select id="dokUmumItemId" name="item_id" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-teal-500 focus:bg-white">
+                    <option value="0">Semua Komponen (Umum Paket)</option>
+                    <?php foreach (($items ?? []) as $it): ?>
+                        <option value="<?= (int)$it['id'] ?>"><?= htmlspecialchars($it['komponen']) ?> (<?= (float)$it['jumlah'] ?> <?= htmlspecialchars($it['satuan'] ?: 'Unit') ?>)</option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Pilih Foto Dokumentasi <span class="text-red-500">*</span></label>
+                <input type="file" id="dokUmumFiles" accept="image/*,.heic,.heif,image/heic,image/heif" multiple required
+                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-600 file:text-white hover:file:bg-teal-700 cursor-pointer">
+                <span class="text-[10px] text-slate-400 mt-1 block">Bisa pilih 1 atau beberapa foto sekaligus (otomatis dikompres).</span>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Keterangan (Opsional)</label>
+                <input type="text" id="dokUmumKeterangan" placeholder="Misal: Foto barang siap kirim / serah terima..."
+                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-teal-500 focus:bg-white">
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex justify-end gap-2">
+                <button type="button" onclick="window.ProModal.close('modalDokUmum')" class="px-3.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 font-semibold text-xs cursor-pointer">Batal</button>
+                <button type="submit" id="btnSubmitDokUmum" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg text-xs shadow-xs cursor-pointer">Upload Foto</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+window.openModalDokUmum = function() {
+    const f = document.getElementById('formDokUmum');
+    if (f) f.reset();
+    window.ProModal.open('modalDokUmum');
+};
+
+window.submitDokUmum = async function(e) {
+    e.preventDefault();
+    const fileInput = document.getElementById('dokUmumFiles');
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) return;
+
+    const btn = document.getElementById('btnSubmitDokUmum');
+    if (btn) { btn.disabled = true; btn.textContent = 'Mengunggah...'; }
+
+    const formData = new FormData();
+    formData.append('is_ajax', '1');
+    formData.append('is_umum', '1');
+    formData.append('item_id', document.getElementById('dokUmumItemId')?.value || '0');
+    const ket = (document.getElementById('dokUmumKeterangan')?.value || '').trim();
+    if (ket) formData.append('keterangan', ket);
+
+    for (let i = 0; i < fileInput.files.length; i++) {
+        const comp = await window.compressImageToBlob(fileInput.files[i], 1600, 0.82);
+        formData.append('fotos[]', comp, comp.name || fileInput.files[i].name);
+    }
+
+    fetch('<?= APP_URL ?>/paket/uploadDokumentasi/<?= $paketKode ?>', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Upload Foto'; }
+        if (data.success) {
+            window.ProModal.close('modalDokUmum');
+            if (window.ProToast) window.ProToast.success(data.message || 'Dokumentasi umum berhasil diunggah!');
+            if (typeof refreshCurrentNativeModal === 'function') {
+                refreshCurrentNativeModal();
+            } else {
+                window.location.reload();
+            }
+        } else {
+            if (window.ProToast) window.ProToast.error(data.message || 'Gagal mengunggah foto.');
+        }
+    })
+    .catch(() => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Upload Foto'; }
+        if (window.ProToast) window.ProToast.error('Gagal terhubung ke server.');
+    });
+};
+
+window.deleteGeneralDokPhoto = function(docId) {
+    if (!confirm('Hapus foto dokumentasi umum ini?')) return;
+    fetch('<?= APP_URL ?>/paket/deleteDokumentasi/<?= $paketKode ?>/' + docId, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            if (window.ProToast) window.ProToast.success('Foto dokumentasi umum berhasil dihapus.');
+            if (typeof refreshCurrentNativeModal === 'function') {
+                refreshCurrentNativeModal();
+            } else {
+                window.location.reload();
+            }
+        } else {
+            if (window.ProToast) window.ProToast.error(res.message || 'Gagal menghapus foto.');
+        }
+    })
+    .catch(() => {
+        if (window.ProToast) window.ProToast.error('Koneksi terputus saat menghapus foto.');
+    });
+};
 </script>

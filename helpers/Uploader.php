@@ -24,9 +24,9 @@ class Uploader {
             'small'  => ['width' => 160,  'height' => 160,  'crop' => false],
         ],
         'kopsurat' => [
-            'large'  => ['width' => 1800, 'height' => 600,  'crop' => false],
-            'medium' => ['width' => 900,  'height' => 300,  'crop' => false],
-            'small'  => ['width' => 350,  'height' => 120,  'crop' => false],
+            'large'  => ['width' => 2480, 'height' => 3508, 'crop' => false],
+            'medium' => ['width' => 1240, 'height' => 1754, 'crop' => false],
+            'small'  => ['width' => 420,  'height' => 594,  'crop' => false],
         ],
         'ttd' => [
             'large'  => ['width' => 1000, 'height' => 500,  'crop' => false],

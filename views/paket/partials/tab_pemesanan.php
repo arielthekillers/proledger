@@ -145,12 +145,28 @@
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Ongkos Kirim -->
+                                <!-- Ongkos Kirim (Klik untuk kelola rincian multi-ongkir) -->
                                 <td class="py-2 px-3 text-right whitespace-nowrap font-mono text-xs">
-                                    <?php if ($ongkirVal > 0): ?>
-                                        <span class="font-semibold text-amber-700"><?= formatRupiah($ongkirVal) ?></span>
+                                    <?php
+                                    $ongkirItemsArr = !empty($dist['ongkir_items']) ? json_decode($dist['ongkir_items'], true) : [];
+                                    $ongkirCount = is_array($ongkirItemsArr) ? count($ongkirItemsArr) : ($ongkirVal > 0 ? 1 : 0);
+                                    ?>
+                                    <?php if ($role === 'admin' || $role === 'user'): ?>
+                                        <button type="button"
+                                                onclick='openOngkirModal(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                                class="inline-flex items-center justify-end gap-1 px-2 py-0.5 rounded-md hover:bg-amber-50 border border-transparent hover:border-amber-200 transition-all cursor-pointer group"
+                                                title="Klik untuk tambah/hapus daftar ongkos kirim">
+                                            <?php if ($ongkirVal > 0): ?>
+                                                <span class="font-semibold text-amber-700"><?= formatRupiah($ongkirVal) ?></span>
+                                                <?php if ($ongkirCount > 1): ?>
+                                                    <span class="px-1 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-sans font-bold"><?= $ongkirCount ?>x</span>
+                                                <?php endif; ?>
+                                            <?php else: ?>
+                                                <span class="text-slate-400 group-hover:text-amber-600 text-[11px] font-sans">+ Ongkir</span>
+                                            <?php endif; ?>
+                                        </button>
                                     <?php else: ?>
-                                        <span class="text-slate-300 font-normal">-</span>
+                                        <?= $ongkirVal > 0 ? formatRupiah($ongkirVal) : '<span class="text-slate-300 font-normal">-</span>' ?>
                                     <?php endif; ?>
                                 </td>
 

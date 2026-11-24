@@ -412,7 +412,15 @@ class Kolaborasi {
                     COUNT(DISTINCT pd.id) as total_dist,
                     COUNT(DISTINCT CASE WHEN pd.status_barang = 'Sudah Dipesan' THEN pd.id END) as pesan_done,
                     COUNT(DISTINCT CASE WHEN pd.status_distribusi IN ('Tiba di Tujuan', 'Tiba di Gudang') THEN pd.id END) as dist_done,
-                    COUNT(DISTINCT pdk.distribusi_id) as dok_done,
+                    COUNT(DISTINCT CASE WHEN EXISTS (
+                        SELECT 1 FROM paket_dokumentasi pdk
+                        WHERE pdk.paket_id = pd.paket_id
+                          AND (
+                              pdk.distribusi_id = pd.id
+                              OR (pdk.distribusi_id IS NULL AND pdk.item_id = pd.item_id)
+                              OR (pdk.distribusi_id IS NULL AND pdk.item_id IS NULL)
+                          )
+                    ) THEN pd.id END) as dok_done,
                     COUNT(DISTINCT pd.nama_tujuan) as total_bast,
                     COUNT(DISTINCT CASE WHEN EXISTS (
                         SELECT 1 FROM paket_dokumen pdoc
@@ -420,7 +428,6 @@ class Kolaborasi {
                         AND (pdoc.nama_dokumen LIKE CONCAT('%', pd.nama_tujuan, '%') OR pdoc.nama_file_asli LIKE CONCAT('%', pd.nama_tujuan, '%'))
                     ) THEN pd.nama_tujuan END) as bast_done
                 FROM paket_distribusi pd
-                LEFT JOIN paket_dokumentasi pdk ON pd.id = pdk.distribusi_id
                 GROUP BY pd.paket_id
             ) p_prog ON pk.id = p_prog.paket_id
             WHERE kg.kolaborasi_id = ?

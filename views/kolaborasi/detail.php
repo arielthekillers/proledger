@@ -146,8 +146,8 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
         <!-- 4 Progress Rings + Status Inline -->
         <div class="flex flex-wrap items-center gap-4 pt-2 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-100 lg:pl-5 shrink-0">
             <div class="flex items-center gap-3">
-                <?php $renderRing($summary['order_pct'], 'Order', '#f59e0b', 'text-amber-600'); ?>
                 <?php $renderRing($summary['dist_pct'], 'Dist', '#6366f1', 'text-indigo-600'); ?>
+                <?php $renderRing($summary['order_pct'], 'Order', '#f59e0b', 'text-amber-600'); ?>
                 <?php $renderRing($summary['dok_pct'], 'Dok', '#10b981', 'text-emerald-600'); ?>
                 <?php $renderRing($summary['bast_pct'], 'BAST', '#a855f7', 'text-purple-600'); ?>
             </div>

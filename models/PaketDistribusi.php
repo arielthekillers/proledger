@@ -14,7 +14,7 @@ class PaketDistribusi {
     }
 
     /**
-     * Pastikan kolom ongkos_kirim tersedia pada paket_distribusi
+     * Pastikan kolom ongkos_kirim dan ongkir_items tersedia pada paket_distribusi
      */
     private function ensureOngkirColumn() {
         if (self::$schemaChecked) return;
@@ -23,6 +23,10 @@ class PaketDistribusi {
             $col = $this->db->query("SHOW COLUMNS FROM paket_distribusi LIKE 'ongkos_kirim'")->fetch();
             if (!$col) {
                 $this->db->exec("ALTER TABLE paket_distribusi ADD COLUMN ongkos_kirim DECIMAL(15,2) NULL DEFAULT NULL AFTER harga_satuan");
+            }
+            $colItems = $this->db->query("SHOW COLUMNS FROM paket_distribusi LIKE 'ongkir_items'")->fetch();
+            if (!$colItems) {
+                $this->db->exec("ALTER TABLE paket_distribusi ADD COLUMN ongkir_items LONGTEXT NULL DEFAULT NULL AFTER ongkos_kirim");
             }
         } catch (Throwable $e) {
             // Abaikan jika permission terbatas
@@ -168,6 +172,7 @@ class PaketDistribusi {
                     nama_barang = NULL,
                     harga_satuan = NULL,
                     ongkos_kirim = NULL,
+                    ongkir_items = NULL,
                     ekspedisi = NULL,
                     no_resi = NULL,
                     link_pembelian = NULL,
@@ -210,6 +215,46 @@ class PaketDistribusi {
                 (int)$id
             ]);
         }
+    }
+
+    /**
+     * Simpan rincian multi-ongkir (JSON) dan sinkronkan total ke ongkos_kirim
+     */
+    public function updateOngkirItems($id, array $rawItems): array {
+        $cleanItems = [];
+        $total = 0.0;
+        $idx = 1;
+        foreach ($rawItems as $item) {
+            $nominal = isset($item['nominal']) ? (float)$item['nominal'] : 0.0;
+            if ($nominal <= 0) continue;
+            $label = trim((string)($item['label'] ?? ''));
+            if ($label === '') {
+                $label = 'Ongkir ' . $idx;
+            }
+            $cleanItems[] = [
+                'label' => $label,
+                'nominal' => $nominal
+            ];
+            $total += $nominal;
+            $idx++;
+        }
+
+        $ongkirJson = !empty($cleanItems) ? json_encode($cleanItems, JSON_UNESCAPED_UNICODE) : null;
+        $totalVal = $total > 0 ? $total : null;
+
+        $stmt = $this->db->prepare("
+            UPDATE paket_distribusi
+            SET ongkos_kirim = ?,
+                ongkir_items = ?,
+                updated_at = NOW()
+            WHERE id = ?
+        ");
+        $stmt->execute([$totalVal, $ongkirJson, (int)$id]);
+
+        return [
+            'total' => $total,
+            'items' => $cleanItems
+        ];
     }
 
     /**

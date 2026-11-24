@@ -6,9 +6,31 @@
 
 class PaketDokumentasi {
     private $db;
+    private static $schemaChecked = false;
     
     public function __construct() {
         $this->db = Database::getInstance()->getConnection();
+        $this->ensureGeneralColumns();
+    }
+
+    /**
+     * Pastikan distribusi_id nullable dan kolom item_id tersedia untuk Dokumentasi Umum/Komponen
+     */
+    private function ensureGeneralColumns() {
+        if (self::$schemaChecked) return;
+        self::$schemaChecked = true;
+        try {
+            $colDist = $this->db->query("SHOW COLUMNS FROM paket_dokumentasi LIKE 'distribusi_id'")->fetch();
+            if ($colDist && strtoupper($colDist['Null'] ?? '') !== 'YES') {
+                $this->db->exec("ALTER TABLE paket_dokumentasi MODIFY COLUMN distribusi_id INT(11) NULL DEFAULT NULL");
+            }
+            $colItem = $this->db->query("SHOW COLUMNS FROM paket_dokumentasi LIKE 'item_id'")->fetch();
+            if (!$colItem) {
+                $this->db->exec("ALTER TABLE paket_dokumentasi ADD COLUMN item_id INT(11) NULL DEFAULT NULL AFTER distribusi_id, ADD INDEX idx_pdok_item (item_id)");
+            }
+        } catch (Throwable $e) {
+            // Abaikan jika permission terbatas
+        }
     }
     
     /**
@@ -33,6 +55,7 @@ class PaketDokumentasi {
         $all = $this->getByPaketId($paketId);
         $grouped = [];
         foreach ($all as $item) {
+            if (empty($item['distribusi_id'])) continue;
             $distId = (int)$item['distribusi_id'];
             if (!isset($grouped[$distId])) {
                 $grouped[$distId] = [];
@@ -40,6 +63,22 @@ class PaketDokumentasi {
             $grouped[$distId][] = $item;
         }
         return $grouped;
+    }
+
+    /**
+     * Ambil foto dokumentasi umum (tidak terikat distribusi_id, terikat komponen item_id atau umum paket)
+     */
+    public function getGeneralByPaketId($paketId) {
+        $stmt = $this->db->prepare("
+            SELECT doc.*, a.name as uploader_nama, pi.komponen as nama_komponen
+            FROM paket_dokumentasi doc
+            LEFT JOIN users a ON doc.uploaded_by = a.id
+            LEFT JOIN paket_items pi ON doc.item_id = pi.id
+            WHERE doc.paket_id = ? AND doc.distribusi_id IS NULL
+            ORDER BY doc.created_at DESC, doc.id DESC
+        ");
+        $stmt->execute([(int)$paketId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
     /**
@@ -78,14 +117,15 @@ class PaketDokumentasi {
     public function create($data) {
         $stmt = $this->db->prepare("
             INSERT INTO paket_dokumentasi (
-                paket_id, distribusi_id, nama_file_asli,
+                paket_id, distribusi_id, item_id, nama_file_asli,
                 file_path, thumb_path, file_size, file_ext, mime_type, keterangan, uploaded_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
             (int)$data['paket_id'],
-            (int)$data['distribusi_id'],
+            !empty($data['distribusi_id']) ? (int)$data['distribusi_id'] : null,
+            !empty($data['item_id']) ? (int)$data['item_id'] : null,
             trim($data['nama_file_asli'] ?? ''),
             trim($data['file_path']),
             !empty($data['thumb_path']) ? trim($data['thumb_path']) : null,

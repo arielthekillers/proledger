@@ -89,7 +89,11 @@ function calculateTotalModal($dpp, $rab, $jumlah_pemodal) {
  * Redirect helper
  */
 function redirect($url) {
-    header("Location: " . APP_URL . $url);
+    if (preg_match('#^https?://#i', $url)) {
+        header("Location: " . $url);
+    } else {
+        header("Location: " . APP_URL . $url);
+    }
     exit;
 }
 

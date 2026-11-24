@@ -118,7 +118,27 @@ $pctPesan = ($totalDist > 0) ? round(($pesanDone / $totalDist) * 100) : 0;
                                 <?= $hSatuan > 0 ? 'Rp ' . number_format($hSatuan, 0, ',', '.') : '-' ?>
                             </td>
                             <td class="py-2.5 px-3 text-right whitespace-nowrap text-xs font-mono text-amber-700">
-                                <?= $ongkirVal > 0 ? 'Rp ' . number_format($ongkirVal, 0, ',', '.') : '-' ?>
+                                <?php
+                                $ongkirItemsArr = !empty($dist['ongkir_items']) ? json_decode($dist['ongkir_items'], true) : [];
+                                $ongkirCount = is_array($ongkirItemsArr) ? count($ongkirItemsArr) : ($ongkirVal > 0 ? 1 : 0);
+                                ?>
+                                <?php if ($role === 'admin' || $role === 'user'): ?>
+                                    <button type="button"
+                                            onclick='openNativeOngkirModal(<?= json_encode($dist, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                            class="inline-flex items-center justify-end gap-1 px-2 py-0.5 rounded-md hover:bg-amber-50 border border-transparent hover:border-amber-200 transition-all cursor-pointer group"
+                                            title="Klik untuk tambah/edit rincian ongkos kirim">
+                                        <?php if ($ongkirVal > 0): ?>
+                                            <span class="font-semibold text-amber-700">Rp <?= number_format($ongkirVal, 0, ',', '.') ?></span>
+                                            <?php if ($ongkirCount > 1): ?>
+                                                <span class="px-1 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-sans font-bold"><?= $ongkirCount ?>x</span>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <span class="text-slate-400 group-hover:text-amber-600 text-[11px] font-sans">+ Ongkir</span>
+                                        <?php endif; ?>
+                                    </button>
+                                <?php else: ?>
+                                    <?= $ongkirVal > 0 ? 'Rp ' . number_format($ongkirVal, 0, ',', '.') : '-' ?>
+                                <?php endif; ?>
                             </td>
                             <td class="py-2.5 px-3 text-right whitespace-nowrap text-xs font-mono font-bold text-slate-800">
                                 <?= $subTotalBeli > 0 ? 'Rp ' . number_format($subTotalBeli, 0, ',', '.') : '-' ?>
