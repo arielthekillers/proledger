@@ -312,6 +312,63 @@ $allProfitPct = $allKontrak > 0 ? round(($allProfit / $allKontrak) * 100, 1) : 0
     </div>
 </div>
 
+<?php if (!empty($delegatedGroups)): ?>
+<div class="mt-5 bg-white rounded-2xl shadow-xs border border-amber-200/80 overflow-hidden">
+    <div class="px-5 py-3.5 bg-amber-50/50 border-b border-amber-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <ion-icon name="key-outline" class="text-amber-600 text-lg"></ion-icon>
+            <div>
+                <h2 class="text-sm font-bold text-slate-800">Group Delegasi yang Saya Kelola</h2>
+                <p class="text-[11px] text-slate-500">Group paket milik perusahaan lain yang dibagikan kepada Anda untuk dikelola &amp; diupdate.</p>
+            </div>
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold"><?= count($delegatedGroups) ?> Group</span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50/80 text-[10px] uppercase tracking-wider text-slate-500 font-bold border-b border-slate-200/80">
+                <tr>
+                    <th class="py-2.5 px-4">Nama Group</th>
+                    <th class="py-2.5 px-3">Perusahaan Pemilik</th>
+                    <th class="py-2.5 px-3 text-center">Paket</th>
+                    <th class="py-2.5 px-3 text-right">Nilai Kontrak</th>
+                    <th class="py-2.5 px-3 text-right">Nilai Bersih</th>
+                    <th class="py-2.5 px-3 text-right">Estimasi Profit</th>
+                    <th class="py-2.5 px-4 text-right">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <?php foreach ($delegatedGroups as $dg): ?>
+                    <tr class="hover:bg-amber-50/30 transition-colors">
+                        <td class="py-2.5 px-4 font-bold text-slate-800">
+                            <a href="<?= APP_URL ?>/group/detail/<?= $dg['id'] ?>" class="hover:text-blue-600"><?= htmlspecialchars($dg['nama_group']) ?></a>
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-semibold">
+                                <?= htmlspecialchars($dg['perusahaan_nama'] ?: ($dg['owner_name'] ?? 'Pemilik')) ?>
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-center font-bold text-slate-700"><?= (int)($dg['total_paket'] ?? 0) ?></td>
+                        <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-800"><?= formatRupiah($dg['total_acuan'] ?? 0) ?></td>
+                        <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-700"><?= formatRupiah($dg['total_bersih'] ?? 0) ?></td>
+                        <td class="py-2.5 px-3 text-right font-mono font-bold <?= ($dg['total_profit'] ?? 0) < 0 ? 'text-rose-600' : 'text-emerald-700' ?>">
+                            <?= formatRupiah($dg['total_profit'] ?? 0) ?>
+                        </td>
+                        <td class="py-2.5 px-4 text-right">
+                            <a href="<?= APP_URL ?>/group/detail/<?= $dg['id'] ?>"
+                               class="inline-flex items-center gap-1 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[11px] font-semibold">
+                                <span>Kelola</span>
+                                <ion-icon name="arrow-forward-outline"></ion-icon>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>
+
 <?php require __DIR__ . '/_modals.php'; ?>
 
 <script>

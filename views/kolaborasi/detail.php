@@ -483,3 +483,5 @@ function copyText(txt, msg) {
     });
 }
 </script>
+
+<?php require VIEW_PATH . '/paket/modals/_modal_setoran_pasal.php'; ?>

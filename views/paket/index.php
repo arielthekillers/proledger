@@ -325,9 +325,22 @@
                                         <div class="font-mono font-bold text-slate-800 group-hover/pasal:text-amber-800 text-xs leading-5">
                                             <?= formatRupiah($totalPasal) ?>
                                         </div>
-                                        <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
+                                        <div class="mt-0.5 min-h-[16px] flex items-center justify-end gap-1">
                                             <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300/80">
                                                 <?= (float)$totalPersen ?>%
+                                            </span>
+                                            <?php
+                                            $spTot = (float)($p['total_setor_pasal'] ?? 0);
+                                            $spPct = ($totalPasal > 0) ? min(100, (int)round(($spTot / $totalPasal) * 100)) : 0;
+                                            $spCls = $spPct >= 100
+                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                : ($spPct > 0 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200');
+                                            $spLbl = $spPct >= 100 ? 'Lunas' : ($spPct > 0 ? $spPct . '%' : '0%');
+                                            ?>
+                                            <span onclick="event.stopPropagation(); openSetoranPasalModal('<?= $p['kode_paket'] ?: $p['id'] ?>', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')"
+                                                  class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold border cursor-pointer hover:opacity-80 <?= $spCls ?>"
+                                                  title="Setoran Pasal: <?= formatRupiah($spTot) ?> (Klik untuk kelola)">
+                                                <?= $spLbl ?>
                                             </span>
                                         </div>
                                     </button>
@@ -533,6 +546,117 @@
     </div>
 </div>
 
+<?php if (!empty($delegatedPakets)): ?>
+<div class="mt-5 bg-white rounded-2xl shadow-sm border border-amber-200/80 overflow-hidden">
+    <div class="px-5 py-3.5 bg-amber-50/50 border-b border-amber-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <ion-icon name="key-outline" class="text-amber-600 text-lg"></ion-icon>
+            <div>
+                <h2 class="text-sm font-bold text-slate-800">Paket Delegasi / Dikelola (Pinjam Perusahaan)</h2>
+                <p class="text-[11px] text-slate-500">Paket milik perusahaan lain yang dibagikan kepada Anda melalui Group Paket — akses penuh edit, pemesanan, dokumentasi, dan BAST.</p>
+            </div>
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold"><?= count($delegatedPakets) ?> Paket</span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200/90 tracking-wider">
+                <tr>
+                    <th class="py-2.5 px-3 w-8 text-center">No</th>
+                    <th class="py-2.5 px-3 min-w-[200px]">Nama Paket &amp; Pemilik</th>
+                    <th class="py-2.5 px-3 text-right">Nilai Kontrak</th>
+                    <th class="py-2.5 px-3 text-right">DPP</th>
+                    <th class="py-2.5 px-3 text-right">Nilai Bersih</th>
+                    <th class="py-2.5 px-3 text-right">HPP</th>
+                    <th class="py-2.5 px-3 text-right">Profit</th>
+                    <th class="py-2.5 px-2 text-center w-14">Dist</th>
+                    <th class="py-2.5 px-2 text-center w-14">Order</th>
+                    <th class="py-2.5 px-2 text-center w-14">Dok</th>
+                    <th class="py-2.5 px-2 text-center w-14">BAST</th>
+                    <th class="py-2.5 px-3 text-right w-16">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <?php $dNo = 1; foreach ($delegatedPakets as $dp):
+                    $dItemTot = (float)($dp['total_item_harga'] ?? 0);
+                    $dEffPagu = ($dItemTot > 0) ? $dItemTot : (float)$dp['pagu'];
+                    $dHasNego = (!empty($dp['pagu_nego']) && (float)$dp['pagu_nego'] > 0);
+                    $dAcuan = $dHasNego ? (float)$dp['pagu_nego'] : $dEffPagu;
+                    $dDpp = calculateDPP($dAcuan);
+                    $dBasis = (($dp['tipe_potongan'] ?? 'dpp') === 'kontrak') ? $dAcuan : $dDpp;
+                    $dPPasal = isset($dp['persen_pasal']) && $dp['persen_pasal'] !== '' ? (float)$dp['persen_pasal'] : 13.0;
+                    $dPAdmin = isset($dp['persen_admin']) && $dp['persen_admin'] !== '' ? (float)$dp['persen_admin'] : 2.0;
+                    $dTotPasal = calculatePasal($dBasis, $dPPasal) + calculateAdmin($dBasis, $dPAdmin);
+                    $dBersih = $dDpp - $dTotPasal;
+                    $dBelanja = (float)($dp['total_belanja'] ?? 0);
+                    $dProfit = $dBersih - $dBelanja;
+                    $dKode = $dp['kode_paket'] ?: $dp['id'];
+                    $dNamaJs = htmlspecialchars(addslashes($dp['nama_paket']));
+                ?>
+                    <tr class="hover:bg-amber-50/20 transition-colors">
+                        <td class="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]"><?= $dNo++ ?></td>
+                        <td class="py-2.5 px-3">
+                            <button type="button" onclick="openPaketModalTab('<?= $dKode ?>', 'info', '<?= $dNamaJs ?>')"
+                                    class="font-bold text-slate-800 hover:text-blue-600 text-left cursor-pointer block">
+                                <?= htmlspecialchars($dp['nama_paket']) ?>
+                            </button>
+                            <div class="flex items-center gap-1.5 flex-wrap mt-1">
+                                <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono text-[10px] font-bold"><?= htmlspecialchars($dKode) ?></span>
+                                <span class="px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold">
+                                    Milik: <?= htmlspecialchars($dp['perusahaan_nama'] ?: ($dp['perusahaan'] ?? '-')) ?>
+                                </span>
+                                <?php if (!empty($dp['nama_group'])): ?>
+                                    <span class="px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 text-[10px] font-semibold"><?= htmlspecialchars($dp['nama_group']) ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-800 whitespace-nowrap"><?= formatRupiah($dAcuan) ?></td>
+                        <td class="py-2.5 px-3 text-right font-mono text-slate-700 whitespace-nowrap"><?= formatRupiah($dDpp) ?></td>
+                        <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-700 whitespace-nowrap"><?= formatRupiah($dBersih) ?></td>
+                        <td class="py-2.5 px-3 text-right font-mono text-indigo-700 whitespace-nowrap">
+                            <button type="button" onclick="openPaketModalTab('<?= $dKode ?>', 'pemesanan', '<?= $dNamaJs ?>')" class="hover:underline cursor-pointer">
+                                <?= formatRupiah($dBelanja) ?>
+                            </button>
+                        </td>
+                        <td class="py-2.5 px-3 text-right font-mono font-bold <?= $dProfit < 0 ? 'text-rose-600' : 'text-emerald-700' ?> whitespace-nowrap">
+                            <button type="button" onclick="openPaketModalTab('<?= $dKode ?>', 'profit', '<?= $dNamaJs ?>')" class="hover:underline cursor-pointer">
+                                <?= formatRupiah($dProfit) ?>
+                            </button>
+                        </td>
+                        <td class="py-2 px-2 text-center whitespace-nowrap">
+                            <button type="button" onclick="openPaketModalTab('<?= $dKode ?>', 'distribusi', '<?= $dNamaJs ?>')" class="cursor-pointer">
+                                <?= renderCircularProgress($dp['dist_done'] ?? 0, $dp['total_dist'] ?? 0, 'distribusi') ?>
+                            </button>
+                        </td>
+                        <td class="py-2 px-2 text-center whitespace-nowrap">
+                            <button type="button" onclick="openPaketModalTab('<?= $dKode ?>', 'pemesanan', '<?= $dNamaJs ?>')" class="cursor-pointer">
+                                <?= renderCircularProgress($dp['pesan_done'] ?? 0, $dp['total_dist'] ?? 0, 'pemesanan') ?>
+                            </button>
+                        </td>
+                        <td class="py-2 px-2 text-center whitespace-nowrap">
+                            <button type="button" onclick="openPaketModalTab('<?= $dKode ?>', 'dokumentasi', '<?= $dNamaJs ?>')" class="cursor-pointer">
+                                <?= renderCircularProgress($dp['dok_done'] ?? 0, $dp['total_dist'] ?? 0, 'dokumentasi') ?>
+                            </button>
+                        </td>
+                        <td class="py-2 px-2 text-center whitespace-nowrap">
+                            <button type="button" onclick="openPaketModalTab('<?= $dKode ?>', 'dokumen', '<?= $dNamaJs ?>')" class="cursor-pointer">
+                                <?= renderCircularProgress($dp['bast_done'] ?? 0, $dp['total_bast'] ?? 0, 'bast') ?>
+                            </button>
+                        </td>
+                        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                            <button type="button" onclick="openPaketModalTab('<?= $dKode ?>', 'info', '<?= $dNamaJs ?>')"
+                                    class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[11px] font-semibold cursor-pointer">
+                                Kelola
+                            </button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Datalist untuk Penanggung Jawab Sesuai Spreadsheet -->
 <datalist id="list_pj">
     <option value="RAHMAN">
@@ -639,6 +763,13 @@
                         <?php foreach ($groups as $grp): ?>
                             <option value="<?= $grp['id'] ?>"><?= htmlspecialchars($grp['nama_group']) ?></option>
                         <?php endforeach; ?>
+                        <?php if (!empty($delegatedGroups)): ?>
+                            <optgroup label="Group Delegasi (Atas Nama Pemilik)">
+                                <?php foreach ($delegatedGroups as $dg): ?>
+                                    <option value="<?= $dg['id'] ?>"><?= htmlspecialchars($dg['nama_group']) ?> (Milik: <?= htmlspecialchars($dg['perusahaan_nama'] ?: ($dg['owner_name'] ?? 'Pemilik')) ?>)</option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                        <?php endif; ?>
                     </select>
                 </div>
 
@@ -796,6 +927,13 @@
                         <?php foreach ($groups as $grp): ?>
                             <option value="<?= $grp['id'] ?>"><?= htmlspecialchars($grp['nama_group']) ?></option>
                         <?php endforeach; ?>
+                        <?php if (!empty($delegatedGroups)): ?>
+                            <optgroup label="Group Delegasi (Atas Nama Pemilik)">
+                                <?php foreach ($delegatedGroups as $dg): ?>
+                                    <option value="<?= $dg['id'] ?>"><?= htmlspecialchars($dg['nama_group']) ?> (Milik: <?= htmlspecialchars($dg['perusahaan_nama'] ?: ($dg['owner_name'] ?? 'Pemilik')) ?>)</option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                        <?php endif; ?>
                     </select>
                 </div>
 
@@ -3110,3 +3248,5 @@ function resetPaketFilters() {
     filterPaketTable();
 }
 </script>
+
+<?php require VIEW_PATH . '/paket/modals/_modal_setoran_pasal.php'; ?>

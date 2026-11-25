@@ -15,7 +15,7 @@ class PaketGroup {
     }
 
     /**
-     * Pastikan kolom user_id tersedia pada paket_group & backfill data lama secara aman
+     * Pastikan kolom user_id & tabel group_delegasi tersedia
      */
     private function ensureUserIdColumn() {
         if (self::$schemaChecked) return;
@@ -28,6 +28,18 @@ class PaketGroup {
                 $this->db->exec("UPDATE paket_group pg INNER JOIN kolaborasi_groups kg ON kg.group_id = pg.id SET pg.user_id = kg.user_id WHERE pg.user_id IS NULL");
                 $this->db->exec("UPDATE paket_group pg INNER JOIN paket_kegiatan pk ON pk.group_id = pg.id INNER JOIN perusahaan p ON pk.perusahaan_id = p.id SET pg.user_id = p.user_id WHERE pg.user_id IS NULL");
             }
+            $this->db->exec("
+                CREATE TABLE IF NOT EXISTS group_delegasi (
+                    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                    group_id INT(11) NOT NULL,
+                    owner_user_id INT(11) NOT NULL,
+                    delegate_user_id INT(11) NOT NULL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE KEY uniq_group_delegate (group_id, delegate_user_id),
+                    INDEX idx_gd_delegate (delegate_user_id),
+                    INDEX idx_gd_group (group_id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            ");
         } catch (Throwable $e) {
             // Abaikan jika gagal migrasi otomatis (misal permission terbatas)
         }
@@ -407,7 +419,105 @@ class PaketGroup {
             // Abaikan jika tabel kolaborasi_groups belum tersedia
         }
 
+        try {
+            $stmtDel = $this->db->prepare("DELETE FROM group_delegasi WHERE group_id = ?");
+            $stmtDel->execute([$id]);
+        } catch (Throwable $e) {
+            // Abaikan
+        }
+
         $stmt = $this->db->prepare("DELETE FROM paket_group WHERE id = ?");
         return $stmt->execute([$id]);
+    }
+
+    /**
+     * Daftar user yang diberi akses kelola (delegasi) pada group tertentu
+     */
+    public function getDelegations(int $groupId): array {
+        $stmt = $this->db->prepare("
+            SELECT gd.*, u.name, u.email
+            FROM group_delegasi gd
+            INNER JOIN users u ON gd.delegate_user_id = u.id
+            WHERE gd.group_id = ?
+            ORDER BY gd.created_at DESC
+        ");
+        $stmt->execute([$groupId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Tambahkan akses kelola (delegasi) ke user lain
+     */
+    public function addDelegation(int $groupId, int $ownerUserId, int $delegateUserId): bool {
+        $stmt = $this->db->prepare("
+            INSERT IGNORE INTO group_delegasi (group_id, owner_user_id, delegate_user_id)
+            VALUES (?, ?, ?)
+        ");
+        return $stmt->execute([$groupId, $ownerUserId, $delegateUserId]);
+    }
+
+    /**
+     * Cabut akses kelola (delegasi) user dari group
+     */
+    public function removeDelegation(int $groupId, int $delegateUserId): bool {
+        $stmt = $this->db->prepare("DELETE FROM group_delegasi WHERE group_id = ? AND delegate_user_id = ?");
+        return $stmt->execute([$groupId, $delegateUserId]);
+    }
+
+    /**
+     * Cek apakah user memiliki akses delegasi pada group tertentu
+     */
+    public function isGroupDelegatedToUser(int $groupId, int $userId): bool {
+        if ($groupId <= 0 || $userId <= 0) return false;
+        $stmt = $this->db->prepare("SELECT 1 FROM group_delegasi WHERE group_id = ? AND delegate_user_id = ? LIMIT 1");
+        $stmt->execute([$groupId, $userId]);
+        return (bool)$stmt->fetchColumn();
+    }
+
+    /**
+     * Ambil daftar group yang didelegasikan ke user tertentu (beserta statistik ringkas)
+     */
+    public function getDelegatedGroupsForUser(int $userId): array {
+        $stmt = $this->db->prepare("
+            SELECT pg.*, p.nama as perusahaan_nama, u.name as owner_name
+            FROM group_delegasi gd
+            INNER JOIN paket_group pg ON gd.group_id = pg.id
+            LEFT JOIN perusahaan p ON pg.perusahaan_id = p.id
+            LEFT JOIN users u ON gd.owner_user_id = u.id
+            WHERE gd.delegate_user_id = ?
+            ORDER BY gd.created_at DESC
+        ");
+        $stmt->execute([$userId]);
+        $groups = $stmt->fetchAll();
+        if (empty($groups)) return [];
+
+        $groupIds = array_column($groups, 'id');
+        $placeholders = implode(',', array_fill(0, count($groupIds), '?'));
+        $paketSql = $this->buildPaketSelectSql("pk.group_id IN ($placeholders)");
+        $pStmt = $this->db->prepare($paketSql);
+        $pStmt->execute($groupIds);
+        $allPakets = $pStmt->fetchAll();
+
+        $paketsByGroup = [];
+        foreach ($allPakets as $p) {
+            $paketsByGroup[$p['group_id']][] = $p;
+        }
+
+        foreach ($groups as &$g) {
+            $list = $paketsByGroup[$g['id']] ?? [];
+            $s = self::computeStatsFromList($list);
+            $g['total_paket']  = $s['total_paket'];
+            $g['total_acuan']  = $s['total_acuan'];
+            $g['total_bersih'] = $s['total_bersih'];
+            $g['total_hpp']    = $s['total_hpp'];
+            $g['total_profit'] = $s['total_profit'];
+            $g['profit_pct']   = $s['profit_pct'];
+            $g['order_pct']    = $s['order_pct'];
+            $g['dist_pct']     = $s['dist_pct'];
+            $g['dok_pct']      = $s['dok_pct'];
+            $g['bast_pct']     = $s['bast_pct'];
+        }
+        unset($g);
+        return $groups;
     }
 }

@@ -80,8 +80,10 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
                     <th class="py-3 px-3">Nama Paket</th>
                     <th class="py-3 px-3 text-right">Nilai Kontrak</th>
                     <th class="py-3 px-3 text-right">DPP</th>
-                    <th class="py-3 px-3 text-right">Total Pasal</th>
-                    <th class="py-3 px-3 text-right">Nilai Bersih</th>
+                    <?php if (empty($isPublicView)): ?>
+                        <th class="py-3 px-3 text-right">Total Pasal</th>
+                        <th class="py-3 px-3 text-right">Nilai Bersih</th>
+                    <?php endif; ?>
                     <th class="py-3 px-2 text-center">Komponen</th>
                     <th class="py-3 px-2 text-center">Dist</th>
                     <th class="py-3 px-2 text-center">Order</th>
@@ -93,7 +95,7 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($pakets)): ?>
                     <tr>
-                        <td colspan="12" class="py-12 text-center text-slate-400">
+                        <td colspan="<?= !empty($isPublicView) ? 10 : 12 ?>" class="py-12 text-center text-slate-400">
                             <p class="text-xs font-semibold text-slate-600 mb-1">Belum ada paket yang terhubung</p>
                             <p class="text-[11px] text-slate-400">Hubungkan Group Paket perusahaan ke ruang kolaborasi ini untuk mulai memantau.</p>
                         </td>
@@ -177,15 +179,30 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
                                 </div>
                             </td>
 
-                            <!-- TOTAL PASAL -->
+                            <?php if (empty($isPublicView)): ?>
+                            <!-- TOTAL PASAL + SETORAN PASAL -->
                             <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                                <?php
+                                $spTotal = (float)($p['total_setor_pasal'] ?? 0);
+                                $spPct = (int)($p['persen_setor_pasal'] ?? 0);
+                                $spClass = $spPct >= 100
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                    : ($spPct > 0 ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200');
+                                $spText = $spPct >= 100 ? 'Lunas 100%' : ($spPct > 0 ? 'Setor ' . $spPct . '%' : 'Belum Setor');
+                                ?>
                                 <div class="font-mono font-bold text-amber-700 text-xs leading-5">
                                     <?= formatRupiah($p['total_pasal']) ?>
                                 </div>
-                                <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
+                                <div class="mt-0.5 min-h-[16px] flex items-center justify-end gap-1">
                                     <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80">
                                         <?= $p['total_persen'] ?>%
                                     </span>
+                                    <button type="button"
+                                            onclick="openSetoranPasalModal('<?= $kodeRef ?>', '<?= $namaJs ?>')"
+                                            class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border transition-colors cursor-pointer <?= $spClass ?>"
+                                            title="Setor: <?= formatRupiah($spTotal) ?> • Klik untuk kelola setoran pasal">
+                                        <span><?= $spText ?></span>
+                                    </button>
                                 </div>
                             </td>
 
@@ -205,6 +222,7 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
                                     </div>
                                 </button>
                             </td>
+                            <?php endif; ?>
 
                             <!-- KOMPONEN (KLIK -> POPUP ITEM READ-ONLY) -->
                             <td class="py-2.5 px-2 text-center whitespace-nowrap">
@@ -263,12 +281,21 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
                         <td class="py-2.5 px-3 text-right font-mono text-slate-800 whitespace-nowrap" id="kolabFootDpp">
                             <?= formatRupiah($summary['total_dpp']) ?>
                         </td>
+                        <?php if (empty($isPublicView)): ?>
                         <td class="py-2.5 px-3 text-right font-mono text-amber-700 whitespace-nowrap" id="kolabFootPasal">
-                            <?= formatRupiah($summary['total_pasal']) ?>
+                            <div><?= formatRupiah($summary['total_pasal']) ?></div>
+                            <?php
+                            $totSetorAll = (float)($summary['total_setor_pasal'] ?? 0);
+                            $totSetorPct = ($summary['total_pasal'] > 0) ? min(100, (int)round(($totSetorAll / $summary['total_pasal']) * 100)) : 0;
+                            ?>
+                            <div class="text-[10px] font-semibold <?= $totSetorPct >= 100 ? 'text-emerald-700' : 'text-slate-500' ?> mt-0.5">
+                                Terkumpul: <?= formatRupiah($totSetorAll) ?> (<?= $totSetorPct ?>%)
+                            </div>
                         </td>
                         <td class="py-2.5 px-3 text-right font-mono text-emerald-700 whitespace-nowrap" id="kolabFootBersih">
                             <?= formatRupiah($summary['total_bersih']) ?>
                         </td>
+                        <?php endif; ?>
                         <td class="py-2.5 px-2 text-center text-slate-600 text-[11px] whitespace-nowrap" id="kolabFootKomponen">
                             <div><?= $summary['total_items'] ?> Item</div>
                             <div class="text-[10px] font-normal text-slate-400"><?= number_format($summary['total_units'], 0, ',', '.') ?> Unit</div>

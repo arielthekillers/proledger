@@ -438,14 +438,21 @@ class Kolaborasi {
         $stmt->execute([$kolabId]);
         $rows = $stmt->fetchAll();
 
+        if (!class_exists('PaketSetoranPasal')) {
+            require_once MODEL_PATH . '/PaketSetoranPasal.php';
+        }
+        $setoranModel = new PaketSetoranPasal();
+        $setoranSumMap = $setoranModel->getSumByPaketIds(array_column($rows, 'id'));
+
         $pakets = [];
         $companyStats = [];
         $summary = [
-            'total_paket'     => 0,
-            'total_kontrak'   => 0,
-            'total_dpp'       => 0,
-            'total_pasal'     => 0,
-            'total_bersih'    => 0,
+            'total_paket'       => 0,
+            'total_kontrak'     => 0,
+            'total_dpp'         => 0,
+            'total_pasal'       => 0,
+            'total_setor_pasal' => 0,
+            'total_bersih'      => 0,
             'total_items'     => 0,
             'total_units'     => 0,
             'total_lokasi'    => 0,
@@ -473,6 +480,8 @@ class Kolaborasi {
             $persenPasal = isset($r['persen_pasal']) && $r['persen_pasal'] !== '' ? (float)$r['persen_pasal'] : 13.0;
             $persenAdmin = isset($r['persen_admin']) && $r['persen_admin'] !== '' ? (float)$r['persen_admin'] : 2.0;
             $totalPasal = calculatePasal($basis, $persenPasal) + calculateAdmin($basis, $persenAdmin);
+            $totalSetorPasal = (float)($setoranSumMap[(int)$r['id']] ?? 0);
+            $persenSetorPasal = ($totalPasal > 0) ? min(100, (int)round(($totalSetorPasal / $totalPasal) * 100)) : 0;
             $nilaiBersih = $dpp - $totalPasal;
 
             $totalDist = (int)$r['total_dist'];
@@ -518,10 +527,11 @@ class Kolaborasi {
             $companyStats[$compKey]['sum_bast']  += $bastPct;
 
             $summary['total_paket']++;
-            $summary['total_kontrak'] += $acuan;
-            $summary['total_dpp']     += $dpp;
-            $summary['total_pasal']   += $totalPasal;
-            $summary['total_bersih']  += $nilaiBersih;
+            $summary['total_kontrak']     += $acuan;
+            $summary['total_dpp']         += $dpp;
+            $summary['total_pasal']       += $totalPasal;
+            $summary['total_setor_pasal'] += $totalSetorPasal;
+            $summary['total_bersih']      += $nilaiBersih;
             $summary['total_items']   += (int)$r['total_item_count'];
             $summary['total_units']   += (float)$r['total_item_qty'];
             $summary['total_lokasi']  += $totalBast;
@@ -544,8 +554,10 @@ class Kolaborasi {
                 'effective_pagu'  => $effectivePagu,
                 'acuan'           => $acuan,
                 'dpp'             => $dpp,
-                'total_pasal'     => $totalPasal,
-                'total_persen'    => $persenPasal + $persenAdmin,
+                'total_pasal'       => $totalPasal,
+                'total_setor_pasal' => $totalSetorPasal,
+                'persen_setor_pasal'=> $persenSetorPasal,
+                'total_persen'      => $persenPasal + $persenAdmin,
                 'nilai_bersih'    => $nilaiBersih,
                 'item_count'      => (int)$r['total_item_count'],
                 'item_qty'        => (float)$r['total_item_qty'],

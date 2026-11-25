@@ -62,10 +62,13 @@ class GroupController {
             $perusahaanList = $this->perusahaanModel->getByUser($userId);
         }
 
+        $delegatedGroups = ($role === 'user') ? $this->groupModel->getDelegatedGroupsForUser((int)$userId) : [];
+
         $data = [
             'title' => 'Group Paket Kegiatan',
             'active' => 'group',
             'groups' => $groups,
+            'delegatedGroups' => $delegatedGroups,
             'perusahaanList' => $perusahaanList,
             'activeCompId' => $activeCompId,
             'role' => $role
@@ -89,10 +92,14 @@ class GroupController {
         $userId = (int)($_SESSION['admin_id'] ?? 0);
         $activeCompId = $_SESSION['active_perusahaan_id'] ?? null;
 
+        $isGroupOwner = true;
+        $isDelegated = false;
         if ($role !== 'admin') {
             $myComps = $this->perusahaanModel->getByUser($userId);
             $myCompIds = array_map('intval', array_column($myComps, 'id'));
-            if (!$this->groupModel->userCanAccess($group, $userId, $myCompIds, $role)) {
+            $isGroupOwner = $this->groupModel->userCanAccess($group, $userId, $myCompIds, $role);
+            $isDelegated = !$isGroupOwner && $this->groupModel->isGroupDelegatedToUser((int)$id, $userId);
+            if (!$isGroupOwner && !$isDelegated) {
                 flash('error', 'Anda tidak memiliki akses ke group paket ini.');
                 redirect('/group');
                 return;
@@ -100,12 +107,13 @@ class GroupController {
         }
 
         $paketList = $this->groupModel->getPaketList($id);
-        if ($role !== 'admin' && empty($group['perusahaan_id'])) {
+        if ($role !== 'admin' && $isGroupOwner && empty($group['perusahaan_id'])) {
             $paketList = array_values(array_filter($paketList, function($pk) use ($myCompIds) {
                 return empty($pk['perusahaan_id']) || in_array((int)$pk['perusahaan_id'], $myCompIds, true);
             }));
         }
         $stats = PaketGroup::computeStatsFromList($paketList);
+        $delegations = $isGroupOwner ? $this->groupModel->getDelegations((int)$id) : [];
 
         if ($role === 'admin') {
             $perusahaanList = $this->perusahaanModel->getAll();
@@ -121,7 +129,10 @@ class GroupController {
             'stats' => $stats,
             'perusahaanList' => $perusahaanList,
             'activeCompId' => $activeCompId,
-            'role' => $role
+            'role' => $role,
+            'isGroupOwner' => $isGroupOwner,
+            'isDelegated' => $isDelegated,
+            'delegations' => $delegations
         ];
 
         $this->view('group/detail', $data);
@@ -291,6 +302,79 @@ class GroupController {
         }
 
         redirect('/group');
+    }
+
+    /**
+     * Berikan akses kelola (delegasi) Group Paket ke user lain via email
+     */
+    public function addDelegation($id) {
+        $this->requireAdminOrUser();
+        $groupId = (int)$id;
+        $group = $this->groupModel->getById($groupId);
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $myCompIds = $role === 'admin' ? [] : array_map('intval', array_column($this->perusahaanModel->getByUser($userId), 'id'));
+
+        if (!$group || !$this->groupModel->userCanAccess($group, $userId, $myCompIds, $role)) {
+            flash('error', 'Anda tidak memiliki akses untuk membagikan group ini.');
+            redirect('/group');
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Permintaan tidak valid.');
+            redirect('/group/detail/' . $groupId);
+            return;
+        }
+
+        $email = trim($_POST['email'] ?? '');
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            flash('error', 'Masukkan alamat email yang valid.');
+            redirect('/group/detail/' . $groupId);
+            return;
+        }
+
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("SELECT id, name, email FROM users WHERE email = ? LIMIT 1");
+        $stmt->execute([$email]);
+        $targetUser = $stmt->fetch();
+
+        if (!$targetUser) {
+            flash('error', 'Pengguna dengan email <strong>' . htmlspecialchars($email) . '</strong> belum terdaftar.');
+            redirect('/group/detail/' . $groupId);
+            return;
+        }
+        if ((int)$targetUser['id'] === $userId) {
+            flash('error', 'Anda adalah pemilik group ini sendiri.');
+            redirect('/group/detail/' . $groupId);
+            return;
+        }
+
+        $this->groupModel->addDelegation($groupId, $userId, (int)$targetUser['id']);
+        flash('success', 'Akses kelola group berhasil diberikan ke <strong>' . htmlspecialchars($targetUser['name']) . '</strong>.');
+        redirect('/group/detail/' . $groupId);
+    }
+
+    /**
+     * Cabut akses kelola (delegasi) user dari Group Paket
+     */
+    public function removeDelegation($id, $targetUserId) {
+        $this->requireAdminOrUser();
+        $groupId = (int)$id;
+        $group = $this->groupModel->getById($groupId);
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $myCompIds = $role === 'admin' ? [] : array_map('intval', array_column($this->perusahaanModel->getByUser($userId), 'id'));
+
+        if (!$group || !$this->groupModel->userCanAccess($group, $userId, $myCompIds, $role)) {
+            flash('error', 'Akses ditolak.');
+            redirect('/group');
+            return;
+        }
+
+        $this->groupModel->removeDelegation($groupId, (int)$targetUserId);
+        flash('success', 'Akses kelola pengguna berhasil dicabut.');
+        redirect('/group/detail/' . $groupId);
     }
 
     private function view($view, $data = []) {

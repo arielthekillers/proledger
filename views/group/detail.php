@@ -67,16 +67,32 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                 <?= htmlspecialchars($group['kode_group']) ?>
             </span>
         <?php endif; ?>
+
+        <?php if (!empty($isDelegated)): ?>
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                <ion-icon name="key-outline" class="text-xs"></ion-icon>
+                <span>Akses Kelola (Delegasi)</span>
+            </span>
+        <?php endif; ?>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
         <?php if ($role === 'admin' || $role === 'user'): ?>
-            <button type="button"
-                    onclick='openEditGroupModal(<?= json_encode($group, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-700 font-semibold rounded-xl border border-slate-200 hover:border-amber-200 transition-all text-xs shadow-2xs cursor-pointer">
-                <ion-icon name="create-outline" class="text-sm"></ion-icon>
-                <span>Edit Group</span>
-            </button>
+            <?php if (!empty($isGroupOwner)): ?>
+                <button type="button"
+                        data-modal-open="modalDelegasiGroup"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-xl border border-indigo-200 transition-all text-xs shadow-2xs cursor-pointer">
+                    <ion-icon name="person-add-outline" class="text-sm"></ion-icon>
+                    <span>Akses Kelola (<?= count($delegations ?? []) ?>)</span>
+                </button>
+
+                <button type="button"
+                        onclick='openEditGroupModal(<?= json_encode($group, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-700 font-semibold rounded-xl border border-slate-200 hover:border-amber-200 transition-all text-xs shadow-2xs cursor-pointer">
+                    <ion-icon name="create-outline" class="text-sm"></ion-icon>
+                    <span>Edit Group</span>
+                </button>
+            <?php endif; ?>
 
             <button type="button"
                     data-modal-open="modalTambahPaketGroup"
@@ -522,6 +538,13 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                        placeholder="Contoh: Pengadaan Alat Laboratorium IPA">
             </div>
 
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor Surat Pesanan (SPK) <span class="text-[10px] text-slate-400 font-normal">(Opsional, tampil di BAST)</span></label>
+                <input type="text" name="nomor_sp"
+                       class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs font-mono focus:bg-white transition-all"
+                       placeholder="Contoh: EP-01M1ZS80DH32WZR9NZ8JCWCA44">
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Kontrak / Pagu Awal <span class="text-red-500">*</span></label>
@@ -575,6 +598,66 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
         </form>
     </div>
 </div>
+
+<?php if (!empty($isGroupOwner)): ?>
+<!-- ========================================== -->
+<!-- MODAL: DELEGASI AKSES KELOLA GROUP         -->
+<!-- ========================================== -->
+<div id="modalDelegasiGroup" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden">
+        <div class="px-5 py-3.5 bg-indigo-50/70 border-b border-indigo-100 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-base shadow-xs">
+                    <ion-icon name="person-add-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-sm">Akses Kelola Group (Delegasi)</h3>
+                    <p class="text-[11px] text-slate-500">Pelaksana dapat menambah & mengupdate paket di group ini</p>
+                </div>
+            </div>
+            <button type="button" data-modal-close="modalDelegasiGroup" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
+                <ion-icon name="close-outline" class="text-xl"></ion-icon>
+            </button>
+        </div>
+
+        <div class="p-5 space-y-4">
+            <form method="POST" action="<?= APP_URL ?>/group/addDelegation/<?= $group['id'] ?>" class="flex gap-2">
+                <?= csrfField() ?>
+                <input type="email" name="email" required placeholder="Email user pelaksana..."
+                       class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 focus:bg-white">
+                <button type="submit" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs cursor-pointer shrink-0">
+                    Bagikan
+                </button>
+            </form>
+
+            <div>
+                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Daftar Pengelola (<?= count($delegations ?? []) ?>)
+                </div>
+                <?php if (empty($delegations)): ?>
+                    <p class="text-xs text-slate-400 italic">Belum ada user lain yang diberi akses kelola.</p>
+                <?php else: ?>
+                    <div class="space-y-2 max-h-52 overflow-y-auto">
+                        <?php foreach ($delegations as $dl): ?>
+                            <div class="flex items-center justify-between gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200/70">
+                                <div class="min-w-0">
+                                    <div class="text-xs font-bold text-slate-800 truncate"><?= htmlspecialchars($dl['name']) ?></div>
+                                    <div class="text-[10px] text-slate-400 truncate"><?= htmlspecialchars($dl['email']) ?></div>
+                                </div>
+                                <a href="<?= APP_URL ?>/group/removeDelegation/<?= $group['id'] ?>/<?= (int)$dl['delegate_user_id'] ?>"
+                                   onclick="return confirm('Cabut akses kelola dari <?= htmlspecialchars(addslashes($dl['name'])) ?>?')"
+                                   class="px-2.5 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-200 shrink-0">
+                                    Cabut
+                                </a>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <?php require __DIR__ . '/_modals.php'; ?>
 

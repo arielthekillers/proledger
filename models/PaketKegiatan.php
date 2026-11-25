@@ -33,12 +33,19 @@ class PaketKegiatan {
      * Get all paket kegiatan with filters
      */
     public function getAll($filters = []) {
+        // Pastikan tabel paket_setoran_pasal sudah ada sebelum LEFT JOIN
+        if (!class_exists('PaketSetoranPasal')) {
+            require_once MODEL_PATH . '/PaketSetoranPasal.php';
+        }
+        new PaketSetoranPasal();
+
         // Updated to JOIN perusahaan, paket_group, paket_items summary, and progress metrics
         $sql = "SELECT pk.*, 
                        COALESCE(pi_sum.total_item_harga, 0) as total_item_harga,
                        COALESCE(pi_sum.total_item_qty, 0) as total_item_qty,
                        COALESCE(pi_sum.total_item_count, 0) as total_item_count,
                        COALESCE(pd_sum.total_belanja, 0) as total_belanja,
+                       COALESCE(psp_sum.total_setor_pasal, 0) as total_setor_pasal,
                        COALESCE(p_prog.total_dist, 0) as total_dist,
                        COALESCE(p_prog.pesan_done, 0) as pesan_done,
                        COALESCE(p_prog.dist_done, 0) as dist_done,
@@ -79,6 +86,11 @@ class PaketKegiatan {
                     LEFT JOIN paket_dokumentasi pdk ON pd.id = pdk.distribusi_id
                     GROUP BY pd.paket_id
                 ) p_prog ON pk.id = p_prog.paket_id
+                LEFT JOIN (
+                    SELECT paket_id, COALESCE(SUM(nominal), 0) as total_setor_pasal
+                    FROM paket_setoran_pasal
+                    GROUP BY paket_id
+                ) psp_sum ON pk.id = psp_sum.paket_id
                 LEFT JOIN perusahaan p ON pk.perusahaan_id = p.id
                 LEFT JOIN paket_group pg ON pk.group_id = pg.id
                 WHERE 1=1";
@@ -135,6 +147,12 @@ class PaketKegiatan {
         if (!empty($filters['max_pagu'])) {
             $sql .= " AND pk.pagu <= ?";
             $params[] = $filters['max_pagu'];
+        }
+
+        // Filter by delegated_user_id (Group Paket yang dibagikan akses kelolanya ke user)
+        if (!empty($filters['delegated_user_id'])) {
+            $sql .= " AND EXISTS (SELECT 1 FROM group_delegasi gd WHERE gd.group_id = pk.group_id AND gd.delegate_user_id = ?)";
+            $params[] = (int)$filters['delegated_user_id'];
         }
         
         $sql .= " ORDER BY pk.created_at DESC";

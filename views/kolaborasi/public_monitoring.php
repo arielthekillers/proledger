@@ -144,6 +144,7 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
 
         <!-- Table + Read-Only Modals -->
         <?php
+        $isPublicView = true;
         $modalBaseUrl = APP_URL . '/monitoring/' . rawurlencode($kolab['share_token']) . '/modalView';
         require __DIR__ . '/_paket_table.php';
         ?>

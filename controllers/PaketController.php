@@ -74,10 +74,12 @@ class PaketController {
         }
 
         $role = $_SESSION['admin_role'] ?? 'user';
-        $userId = $_SESSION['admin_id'] ?? 0;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
 
-        // Validasi kepemilikan paket: perusahaan paket harus dimiliki oleh user yang login (kecuali superadmin)
-        if (!$this->perusahaanModel->isOwnerOrAdmin($paket['perusahaan_id'], $userId, $role)) {
+        // Validasi kepemilikan paket ATAU akses delegasi group (pinjam perusahaan)
+        $isOwner = $this->perusahaanModel->isOwnerOrAdmin($paket['perusahaan_id'], $userId, $role);
+        $isDelegated = !$isOwner && !empty($paket['group_id']) && $this->groupModel->isGroupDelegatedToUser((int)$paket['group_id'], $userId);
+        if (!$isOwner && !$isDelegated) {
             if ($isAjax) {
                 header('Content-Type: application/json');
                 http_response_code(403);
@@ -110,6 +112,8 @@ class PaketController {
         ];
         
         $paket = $activeCompId ? $this->paketModel->getAll($filters) : [];
+        $delegatedPakets = ($role === 'user') ? $this->paketModel->getAll(['delegated_user_id' => $userId]) : [];
+        $delegatedGroups = ($role === 'user') ? $this->groupModel->getDelegatedGroupsForUser($userId) : [];
         $groups = $this->groupModel->getAll($activeCompId, $role === 'admin' ? null : (int)$userId);
         $skemas = $this->skemaModel->getAll($activeCompId);
         $kabupatenList = $this->lokasiModel->getAllKabupaten();
@@ -121,6 +125,8 @@ class PaketController {
             'active' => 'paket',
             'activeTab' => $_GET['tab'] ?? 'info',
             'paket' => array_values($paket),
+            'delegatedPakets' => array_values($delegatedPakets),
+            'delegatedGroups' => $delegatedGroups,
             'groups' => $groups,
             'skemas' => $skemas,
             'kabupatenList' => $kabupatenList,
@@ -154,8 +160,22 @@ class PaketController {
             return;
         }
 
-        $activeCompany = getActivePerusahaan();
-        if (!$activeCompany) {
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $groupId = !empty($_POST['group_id']) ? (int)$_POST['group_id'] : null;
+        $targetCompany = null;
+
+        // Jika membuat paket ke dalam Group yang didelegasikan, otomatis gunakan perusahaan pemilik Group tersebut
+        if ($groupId && $this->groupModel->isGroupDelegatedToUser($groupId, $userId)) {
+            $delGroup = $this->groupModel->getById($groupId);
+            if ($delGroup && !empty($delGroup['perusahaan_id'])) {
+                $targetCompany = $this->perusahaanModel->getById($delGroup['perusahaan_id']);
+            }
+        }
+
+        if (!$targetCompany) {
+            $targetCompany = getActivePerusahaan();
+        }
+        if (!$targetCompany) {
             flash('error', 'Perusahaan masih kosong. Silakan buat perusahaan terlebih dahulu sebelum menambahkan paket.');
             redirect('/perusahaan?action=create');
             return;
@@ -183,12 +203,12 @@ class PaketController {
                 'nama_paket' => sanitize($_POST['nama_paket']),
                 'nomor_sp' => !empty($_POST['nomor_sp']) ? sanitize($_POST['nomor_sp']) : null,
                 'kab_kota' => !empty($_POST['kab_kota']) ? sanitize($_POST['kab_kota']) : null,
-                'perusahaan_id' => $activeCompany['id'],
-                'group_id' => !empty($_POST['group_id']) ? (int)$_POST['group_id'] : null,
+                'perusahaan_id' => $targetCompany['id'],
+                'group_id' => $groupId,
                 'tahun_anggaran' => $tahunAnggaran,
                 'tags' => !empty($_POST['tags']) ? sanitize($_POST['tags']) : null,
                 'skema_id' => $skemaId,
-                'perusahaan' => $activeCompany['nama'],
+                'perusahaan' => $targetCompany['nama'],
                 'penanggung_jawab' => !empty($_POST['penanggung_jawab']) ? sanitize($_POST['penanggung_jawab']) : null,
                 'progres_barang' => $_POST['progres_barang'] ?? 'Belum',
                 'pagu' => $pagu,
@@ -1947,6 +1967,143 @@ class PaketController {
         redirect('/paket/detail/' . ($paket['kode_paket'] ?: $paket['id']) . '?tab=dokumentasi#dokumentasi');
     }
     
+    /**
+     * Cek apakah user berhak melihat & menginput setoran pasal (Pemilik/Delegasi ATAU Koordinator Kolaborasi)
+     */
+    private function canManageSetoranPasal(array $paket, int $userId, string $role): bool {
+        if ($this->perusahaanModel->isOwnerOrAdmin($paket['perusahaan_id'], $userId, $role)) {
+            return true;
+        }
+        if (!empty($paket['group_id']) && $this->groupModel->isGroupDelegatedToUser((int)$paket['group_id'], $userId)) {
+            return true;
+        }
+        if (!empty($paket['group_id'])) {
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->prepare("
+                SELECT 1 FROM kolaborasi k
+                INNER JOIN kolaborasi_groups kg ON k.id = kg.kolaborasi_id
+                WHERE kg.group_id = ? AND k.owner_id = ?
+                LIMIT 1
+            ");
+            $stmt->execute([(int)$paket['group_id'], $userId]);
+            if ($stmt->fetchColumn()) return true;
+        }
+        return false;
+    }
+
+    private function canViewSetoranPasal(array $paket, int $userId, string $role): bool {
+        if ($this->canManageSetoranPasal($paket, $userId, $role)) {
+            return true;
+        }
+        if (!empty($paket['group_id'])) {
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->prepare("
+                SELECT 1 FROM kolaborasi_groups kg
+                INNER JOIN kolaborasi_anggota ka ON kg.kolaborasi_id = ka.kolaborasi_id
+                WHERE kg.group_id = ? AND ka.user_id = ? AND ka.status = 'joined'
+                LIMIT 1
+            ");
+            $stmt->execute([(int)$paket['group_id'], $userId]);
+            if ($stmt->fetchColumn()) return true;
+        }
+        return false;
+    }
+
+    public function getSetoranPasal($idOrKode) {
+        header('Content-Type: application/json');
+        $this->requireUser();
+        $paket = $this->paketModel->getById($idOrKode);
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $role = $_SESSION['admin_role'] ?? 'user';
+
+        if (!$paket || !$this->canViewSetoranPasal($paket, $userId, $role)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Akses ditolak.']);
+            exit;
+        }
+
+        require_once MODEL_PATH . '/PaketSetoranPasal.php';
+        $spModel = new PaketSetoranPasal();
+        $items = $spModel->getByPaketId((int)$paket['id']);
+        $totalSetor = array_sum(array_map(fn($it) => (float)$it['nominal'], $items));
+
+        $hasNego = (!empty($paket['pagu_nego']) && (float)$paket['pagu_nego'] > 0);
+        $acuan = $hasNego ? (float)$paket['pagu_nego'] : (float)$paket['pagu'];
+        $dpp = calculateDPP($acuan);
+        $basis = (($paket['tipe_potongan'] ?? 'dpp') === 'kontrak') ? $acuan : $dpp;
+        $pPasal = isset($paket['persen_pasal']) && $paket['persen_pasal'] !== '' ? (float)$paket['persen_pasal'] : 13.0;
+        $pAdmin = isset($paket['persen_admin']) && $paket['persen_admin'] !== '' ? (float)$paket['persen_admin'] : 2.0;
+        $totalPasal = calculatePasal($basis, $pPasal) + calculateAdmin($basis, $pAdmin);
+
+        $sisa = max(0, $totalPasal - $totalSetor);
+        $persen = ($totalPasal > 0) ? min(100, (int)round(($totalSetor / $totalPasal) * 100)) : 0;
+
+        echo json_encode([
+            'success' => true,
+            'total_pasal' => $totalPasal,
+            'total_setor' => $totalSetor,
+            'sisa' => $sisa,
+            'persen' => $persen,
+            'can_edit' => $this->canManageSetoranPasal($paket, $userId, $role),
+            'items' => $items
+        ]);
+        exit;
+    }
+
+    public function storeSetoranPasal($idOrKode) {
+        header('Content-Type: application/json');
+        $this->requireUser();
+        $paket = $this->paketModel->getById($idOrKode);
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $role = $_SESSION['admin_role'] ?? 'user';
+
+        if (!$paket || !$this->canManageSetoranPasal($paket, $userId, $role)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Hanya pemilik paket atau koordinator kolaborasi yang dapat mengupdate setoran pasal.']);
+            exit;
+        }
+
+        $nominal = parseRupiah($_POST['nominal'] ?? '0');
+        if ($nominal <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Nominal setoran harus lebih dari 0.']);
+            exit;
+        }
+
+        require_once MODEL_PATH . '/PaketSetoranPasal.php';
+        $spModel = new PaketSetoranPasal();
+        $spModel->create([
+            'paket_id' => (int)$paket['id'],
+            'tanggal_setor' => !empty($_POST['tanggal_setor']) ? $_POST['tanggal_setor'] : date('Y-m-d'),
+            'nominal' => $nominal,
+            'catatan' => trim($_POST['catatan'] ?? ''),
+            'created_by' => $userId
+        ]);
+
+        echo json_encode(['success' => true, 'message' => 'Setoran pasal berhasil dicatat!']);
+        exit;
+    }
+
+    public function deleteSetoranPasal($idOrKode, $setoranId) {
+        header('Content-Type: application/json');
+        $this->requireUser();
+        $paket = $this->paketModel->getById($idOrKode);
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $role = $_SESSION['admin_role'] ?? 'user';
+
+        if (!$paket || !$this->canManageSetoranPasal($paket, $userId, $role)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Akses ditolak.']);
+            exit;
+        }
+
+        require_once MODEL_PATH . '/PaketSetoranPasal.php';
+        $spModel = new PaketSetoranPasal();
+        $spModel->delete((int)$setoranId, (int)$paket['id']);
+
+        echo json_encode(['success' => true, 'message' => 'Catatan setoran pasal berhasil dihapus.']);
+        exit;
+    }
+
     private function view($view, $data = []) {
         extract($data);
         if (!empty($_GET['modal']) && $_GET['modal'] === '1') {
