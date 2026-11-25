@@ -63,14 +63,73 @@ class AdminController {
         $this->requireAdmin();
 
         $search = trim($_GET['search'] ?? '');
-        $companies = $this->dashModel->getPerusahaanList($search);
+        $companies   = $this->dashModel->getPerusahaanList($search);
+        $activeUsers = $this->dashModel->getActiveUsersForAssign();
 
         $this->view('admin/perusahaan', [
-            'title'     => 'Direktori Perusahaan',
-            'active'    => 'admin_perusahaan',
-            'companies' => $companies,
-            'search'    => $search,
+            'title'       => 'Direktori Perusahaan',
+            'active'      => 'admin_perusahaan',
+            'companies'   => $companies,
+            'activeUsers' => $activeUsers,
+            'search'      => $search,
         ]);
+    }
+
+    /**
+     * Assign pemilik akun ke perusahaan yatim
+     */
+    public function assignPerusahaanOwner($id = null) {
+        $this->requireAdmin();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !$id) {
+            redirect('/admin/perusahaan');
+            return;
+        }
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Token CSRF tidak valid.');
+            redirect('/admin/perusahaan');
+            return;
+        }
+
+        $userId = (int)($_POST['user_id'] ?? 0);
+        $user = $this->adminModel->findById($userId);
+        if (!$user || ($user['role'] ?? '') === 'admin') {
+            flash('error', 'User pemilik yang dipilih tidak valid.');
+            redirect('/admin/perusahaan');
+            return;
+        }
+
+        $this->dashModel->assignPerusahaanOwner((int)$id, $userId);
+        logActivity('assign_perusahaan_owner', 'perusahaan', "Menghubungkan perusahaan #" . (int)$id . " ke user {$user['name']} ({$user['email']})", $id);
+        flash('success', 'Pemilik perusahaan berhasil dihubungkan ke ' . htmlspecialchars($user['name']) . '.');
+        redirect('/admin/perusahaan');
+    }
+
+    /**
+     * Hapus perusahaan kosong (0 paket) tanpa pemilik
+     */
+    public function deletePerusahaan($id = null) {
+        $this->requireAdmin();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !$id) {
+            redirect('/admin/perusahaan');
+            return;
+        }
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Token CSRF tidak valid.');
+            redirect('/admin/perusahaan');
+            return;
+        }
+
+        if (!$this->dashModel->deleteOrphanPerusahaan((int)$id)) {
+            flash('error', 'Perusahaan tidak dapat dihapus karena masih memiliki paket.');
+            redirect('/admin/perusahaan');
+            return;
+        }
+
+        logActivity('delete_orphan_perusahaan', 'perusahaan', "Menghapus perusahaan yatim kosong #" . (int)$id, $id);
+        flash('success', 'Perusahaan kosong tanpa pemilik berhasil dihapus.');
+        redirect('/admin/perusahaan');
     }
 
     /**

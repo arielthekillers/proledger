@@ -166,6 +166,34 @@ class AdminDashboard {
     }
 
     /**
+     * Daftar user aktif untuk assign pemilik perusahaan
+     */
+    public function getActiveUsersForAssign() {
+        return $this->db->query("SELECT id, name, email FROM users WHERE role != 'admin' AND status = 'active' ORDER BY name ASC")->fetchAll();
+    }
+
+    /**
+     * Hubungkan perusahaan ke pemilik akun tertentu
+     */
+    public function assignPerusahaanOwner($perusahaanId, $userId) {
+        $stmt = $this->db->prepare("UPDATE perusahaan SET user_id = ? WHERE id = ?");
+        return $stmt->execute([(int)$userId, (int)$perusahaanId]);
+    }
+
+    /**
+     * Hapus perusahaan kosong (0 paket) tanpa pemilik
+     */
+    public function deleteOrphanPerusahaan($perusahaanId) {
+        $pid = (int)$perusahaanId;
+        $cnt = (int)$this->db->query("SELECT COUNT(*) FROM paket_kegiatan WHERE perusahaan_id = {$pid}")->fetchColumn();
+        if ($cnt > 0) {
+            return false;
+        }
+        $stmt = $this->db->prepare("DELETE FROM perusahaan WHERE id = ?");
+        return $stmt->execute([$pid]);
+    }
+
+    /**
      * Pencarian paket global lintas perusahaan
      */
     public function getGlobalPakets($search = '', $status = '', $perusahaanId = 0, $limit = 150) {

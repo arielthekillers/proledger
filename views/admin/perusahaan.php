@@ -44,8 +44,28 @@
                                     <div class="text-[11px] text-slate-400"><?= htmlspecialchars($c['telepon'] ?: ($c['email'] ?: '-')) ?></div>
                                 </td>
                                 <td class="py-3 px-4">
-                                    <div class="font-semibold text-slate-700"><?= htmlspecialchars($c['owner_name'] ?: '-') ?></div>
-                                    <div class="text-[11px] text-slate-400"><?= htmlspecialchars($c['owner_email'] ?: '-') ?></div>
+                                    <?php if (!empty($c['owner_name'])): ?>
+                                        <div class="font-semibold text-slate-700"><?= htmlspecialchars($c['owner_name']) ?></div>
+                                        <div class="text-[11px] text-slate-400"><?= htmlspecialchars($c['owner_email'] ?: '-') ?></div>
+                                    <?php else: ?>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
+                                            Tanpa Pemilik
+                                        </span>
+                                        <?php if (!empty($activeUsers)): ?>
+                                            <form method="POST" action="<?= APP_URL ?>/admin/assignPerusahaanOwner/<?= (int)$c['id'] ?>" class="mt-1.5 flex items-center gap-1">
+                                                <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
+                                                <select name="user_id" required class="px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg text-[11px] text-slate-700 max-w-[160px]">
+                                                    <option value="">-- Pilih Pemilik --</option>
+                                                    <?php foreach ($activeUsers as $au): ?>
+                                                        <option value="<?= (int)$au['id'] ?>"><?= htmlspecialchars($au['name']) ?></option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                                <button type="submit" class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-semibold cursor-pointer">
+                                                    Assign
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="py-3 px-4 text-center">
                                     <a href="<?= APP_URL ?>/admin/paket?perusahaan_id=<?= (int)$c['id'] ?>"
@@ -62,13 +82,21 @@
                                            class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold">
                                             Lihat Paket
                                         </a>
-                                        <?php if (!empty($c['user_id'])): ?>
+                                        <?php if (!empty($c['user_id']) && !empty($c['owner_name'])): ?>
                                             <form method="POST" action="<?= APP_URL ?>/admin/impersonate/<?= (int)$c['user_id'] ?>" class="inline"
-                                                  onsubmit="return confirm('Masuk ke mode support sebagai <?= htmlspecialchars(addslashes($c['owner_name'] ?? 'User')) ?>?')">
+                                                  onsubmit="return confirm('Masuk ke mode support sebagai <?= htmlspecialchars(addslashes($c['owner_name'])) ?>?')">
                                                 <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
                                                 <input type="hidden" name="perusahaan_id" value="<?= (int)$c['id'] ?>">
                                                 <button type="submit" class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-[11px] font-semibold cursor-pointer">
                                                     Login As
+                                                </button>
+                                            </form>
+                                        <?php elseif (empty($c['owner_name']) && (int)$c['total_paket'] === 0): ?>
+                                            <form method="POST" action="<?= APP_URL ?>/admin/deletePerusahaan/<?= (int)$c['id'] ?>" class="inline"
+                                                  onsubmit="return confirm('Hapus permanen perusahaan kosong <?= htmlspecialchars(addslashes($c['nama'])) ?>?')">
+                                                <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
+                                                <button type="submit" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] font-semibold cursor-pointer">
+                                                    Hapus
                                                 </button>
                                             </form>
                                         <?php endif; ?>
