@@ -271,6 +271,7 @@ class UserController {
         }
 
         $this->adminModel->updateStatus($id, 'active');
+        logActivity('approve_user', 'user', "Menyetujui pendaftaran user {$user['name']} ({$user['email']})", $id);
         flash('success', "Pendaftaran untuk <strong>" . htmlspecialchars($user['name']) . "</strong> berhasil disetujui! Pengguna kini dapat login.");
         redirect('/user?tab=pending');
     }
@@ -287,6 +288,7 @@ class UserController {
         }
 
         $this->adminModel->updateStatus($id, 'rejected');
+        logActivity('reject_user', 'user', "Menolak pendaftaran user {$user['name']} ({$user['email']})", $id);
         flash('success', "Pendaftaran untuk <strong>" . htmlspecialchars($user['name']) . "</strong> telah ditolak.");
         redirect('/user?tab=pending');
     }
@@ -310,6 +312,7 @@ class UserController {
 
         $newStatus = ($user['status'] === 'active') ? 'inactive' : 'active';
         $this->adminModel->updateStatus($id, $newStatus);
+        logActivity('toggle_status', 'user', "Mengubah status user {$user['name']} menjadi {$newStatus}", $id);
 
         $statusLabel = ($newStatus === 'active') ? 'diaktifkan' : 'dinonaktifkan';
         flash('success', "Akun " . htmlspecialchars($user['name']) . " berhasil {$statusLabel}.");
@@ -335,6 +338,7 @@ class UserController {
 
         try {
             $this->adminModel->delete($id);
+            logActivity('delete_user', 'user', "Menghapus user {$user['name']} ({$user['email']})", $id);
             flash('success', 'Pengguna berhasil dihapus.');
         } catch (Exception $e) {
             flash('error', 'Gagal menghapus pengguna: ' . $e->getMessage());

@@ -2078,6 +2078,7 @@ class PaketController {
             'catatan' => trim($_POST['catatan'] ?? ''),
             'created_by' => $userId
         ]);
+        logActivity('store_setoran_pasal', 'paket', 'Mencatat setoran pasal ' . formatRupiah($nominal) . ' untuk paket ' . ($paket['kode_paket'] ?: $paket['id']), $paket['id']);
 
         echo json_encode(['success' => true, 'message' => 'Setoran pasal berhasil dicatat!']);
         exit;
@@ -2099,6 +2100,7 @@ class PaketController {
         require_once MODEL_PATH . '/PaketSetoranPasal.php';
         $spModel = new PaketSetoranPasal();
         $spModel->delete((int)$setoranId, (int)$paket['id']);
+        logActivity('delete_setoran_pasal', 'paket', 'Menghapus catatan setoran pasal #' . (int)$setoranId . ' pada paket ' . ($paket['kode_paket'] ?: $paket['id']), $paket['id']);
 
         echo json_encode(['success' => true, 'message' => 'Catatan setoran pasal berhasil dihapus.']);
         exit;

@@ -371,6 +371,7 @@ class KolaborasiController {
 
         $newState = ((int)$kolab['share_enabled'] === 1) ? 0 : 1;
         $this->kolabModel->toggleShare($kolabId, $newState);
+        logActivity($newState ? 'enable_public_link' : 'disable_public_link', 'kolaborasi', ($newState ? 'Mengaktifkan' : 'Menonaktifkan') . ' link monitoring publik untuk kolaborasi ' . $kolab['nama'], $kolabId);
         flash('success', $newState ? 'Link monitoring publik diaktifkan.' : 'Link monitoring publik dinonaktifkan.');
         redirect('/kolaborasi/detail/' . $kolabId);
     }

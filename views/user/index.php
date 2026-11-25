@@ -209,6 +209,16 @@
                                         <span>Tolak</span>
                                     </a>
                                 <?php else: ?>
+                                    <?php if (($u['role'] ?? '') !== 'admin' && ($u['status'] ?? '') === 'active'): ?>
+                                        <form method="POST" action="<?= APP_URL ?>/admin/impersonate/<?= (int)$u['id'] ?>" class="inline"
+                                              onsubmit="return confirm('Login sebagai <?= htmlspecialchars(addslashes($u['name'])) ?> (Mode Support)?')">
+                                            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
+                                            <button type="submit" class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors text-base cursor-pointer" title="Login Sebagai User Ini (Support)">
+                                                <ion-icon name="log-in-outline"></ion-icon>
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+
                                     <a href="<?= APP_URL ?>/user/edit/<?= $u['id'] ?>" 
                                        class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors text-base"
                                        title="Edit">

@@ -385,3 +385,23 @@ function getActivePerusahaan() {
 
     return $activeComp;
 }
+
+/**
+ * Rekam aktivitas penting ke tabel activity_logs
+ */
+function logActivity($action, $module, $description = '', $targetId = null, $userId = null, $userName = null, $userRole = null) {
+    require_once MODEL_PATH . '/ActivityLog.php';
+    ActivityLog::record($action, $module, $description, $targetId, $userId, $userName, $userRole);
+}
+
+/**
+ * Format ukuran byte menjadi KB / MB / GB
+ */
+function formatBytes($bytes, $precision = 2) {
+    $bytes = max(0, (float)$bytes);
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $pow = $bytes > 0 ? floor(log($bytes, 1024)) : 0;
+    $pow = min($pow, count($units) - 1);
+    $val = $bytes / pow(1024, $pow);
+    return round($val, $precision) . ' ' . $units[$pow];
+}

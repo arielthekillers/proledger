@@ -60,8 +60,15 @@
         $pendingBadge = $navAdminModel->getPendingCount();
 
         $navItemDetails = [
-            'users'  => ['icon' => 'people-circle-outline', 'label' => 'Kelola Pengguna', 'url' => APP_URL . '/user', 'roles' => ['admin'], 'badge' => $pendingBadge],
-            'tujuan' => ['icon' => 'location-outline', 'label' => 'Tujuan Distribusi', 'url' => APP_URL . '/tujuan', 'roles' => ['admin']],
+            'admin_dashboard'  => ['icon' => 'grid-outline', 'label' => 'Dashboard', 'url' => APP_URL . '/admin', 'roles' => ['admin']],
+            'users'            => ['icon' => 'people-circle-outline', 'label' => 'Pengguna', 'url' => APP_URL . '/user', 'roles' => ['admin'], 'badge' => $pendingBadge],
+            'admin_perusahaan' => ['icon' => 'business-outline', 'label' => 'Perusahaan', 'url' => APP_URL . '/admin/perusahaan', 'roles' => ['admin']],
+            'admin_paket'      => ['icon' => 'cube-outline', 'label' => 'Paket', 'url' => APP_URL . '/admin/paket', 'roles' => ['admin']],
+            'admin_kolaborasi' => ['icon' => 'people-outline', 'label' => 'Kolaborasi', 'url' => APP_URL . '/admin/kolaborasi', 'roles' => ['admin']],
+            'tujuan'           => ['icon' => 'location-outline', 'label' => 'Tujuan', 'url' => APP_URL . '/tujuan', 'roles' => ['admin']],
+            'admin_logs'       => ['icon' => 'receipt-outline', 'label' => 'Log', 'url' => APP_URL . '/admin/logs', 'roles' => ['admin']],
+            'admin_storage'    => ['icon' => 'server-outline', 'label' => 'Storage', 'url' => APP_URL . '/admin/storage', 'roles' => ['admin']],
+            'admin_settings'   => ['icon' => 'settings-outline', 'label' => 'Pengaturan', 'url' => APP_URL . '/admin/settings', 'roles' => ['admin']],
         ];
     } else {
         $navItemDetails = [
@@ -76,6 +83,18 @@
     ?>
     
     <div class="min-h-screen flex flex-col">
+        <?php if (!empty($_SESSION['impersonator_admin'])): ?>
+            <div class="bg-amber-600 text-white px-4 py-1.5 text-xs flex flex-wrap items-center justify-between gap-2 z-50">
+                <div class="flex items-center gap-2 font-medium">
+                    <ion-icon name="shield-half-outline" class="text-base shrink-0"></ion-icon>
+                    <span>Mode Support Admin: Anda sedang login sebagai <strong><?= htmlspecialchars($_SESSION['admin_name'] ?? 'User') ?></strong> (<?= htmlspecialchars($_SESSION['admin_email'] ?? '') ?>)</span>
+                </div>
+                <a href="<?= APP_URL ?>/admin/stopImpersonate"
+                   class="px-2.5 py-1 bg-white text-amber-800 hover:bg-amber-50 rounded-lg font-bold text-[11px] transition-colors shadow-xs">
+                    Kembali ke Akun Admin
+                </a>
+            </div>
+        <?php endif; ?>
         <!-- Top Navigation Bar -->
         <header class="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/80 shadow-2xs">
             <div class="h-14 px-4 md:px-6 flex items-center justify-between gap-4">
@@ -87,7 +106,7 @@
                     </button>
 
                     <!-- Brand -->
-                    <a href="<?= ($role === 'admin') ? APP_URL . '/user' : APP_URL . '/' ?>" class="flex items-center gap-2.5 shrink-0">
+                    <a href="<?= ($role === 'admin') ? APP_URL . '/admin' : APP_URL . '/' ?>" class="flex items-center gap-2.5 shrink-0">
                         <img src="<?= APP_URL ?>/favicon.svg" alt="SimPaket" class="w-8 h-8 rounded-lg shadow-sm">
                         <span class="font-bold text-lg tracking-tight text-slate-800">Sim<span class="text-blue-600">Paket</span></span>
                     </a>
@@ -233,6 +252,35 @@
         <main id="mainContent" class="flex-1 flex flex-col w-full">
             <!-- Page Content Wrapper -->
             <div class="p-4 md:p-5 flex-1 w-full">
+                <?php
+                if ($role !== 'admin') {
+                    require_once MODEL_PATH . '/AppSetting.php';
+                    $annEnabled = AppSetting::get('announcement_enabled', '0');
+                    $annMsg = trim((string)AppSetting::get('announcement_message', ''));
+                    if ($annEnabled === '1' && $annMsg !== '') {
+                        $annType  = AppSetting::get('announcement_type', 'info');
+                        $annTitle = trim((string)AppSetting::get('announcement_title', ''));
+                        $annColors = [
+                            'info'    => 'bg-blue-50 border-blue-200 text-blue-800',
+                            'warning' => 'bg-amber-50 border-amber-200 text-amber-800',
+                            'success' => 'bg-emerald-50 border-emerald-200 text-emerald-800',
+                            'danger'  => 'bg-rose-50 border-rose-200 text-rose-800',
+                        ];
+                        $annStyle = $annColors[$annType] ?? $annColors['info'];
+                        ?>
+                        <div class="mb-4 px-4 py-3 rounded-xl border <?= $annStyle ?> flex items-start gap-3 text-xs shadow-2xs">
+                            <ion-icon name="megaphone-outline" class="text-lg shrink-0 mt-0.5"></ion-icon>
+                            <div class="min-w-0">
+                                <?php if ($annTitle !== ''): ?>
+                                    <div class="font-bold mb-0.5"><?= htmlspecialchars($annTitle) ?></div>
+                                <?php endif; ?>
+                                <div class="leading-relaxed"><?= nl2br(htmlspecialchars($annMsg)) ?></div>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                }
+                ?>
                 <?php 
                 $flashSuccess = flash('success');
                 $flashError = flash('error');

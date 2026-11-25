@@ -34,7 +34,7 @@ if (in_array(strtolower($url[0] ?? ''), ['rekap', 'transaksi', 'pemodal'])) {
 if (empty($url[0])) {
     // Check if user is logged in as admin
     if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true && ($_SESSION['admin_role'] ?? '') === 'admin') {
-        header('Location: ' . APP_URL . '/user');
+        header('Location: ' . APP_URL . '/admin');
         exit;
     }
     // Home -> Dashboard

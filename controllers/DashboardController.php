@@ -28,7 +28,7 @@ class DashboardController {
         $userId = (int)($_SESSION['admin_id'] ?? 0);
 
         if ($role === 'admin') {
-            header('Location: ' . APP_URL . '/user');
+            header('Location: ' . APP_URL . '/admin');
             exit;
         }
 

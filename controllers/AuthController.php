@@ -161,8 +161,10 @@ class AuthController {
             $_SESSION['admin_role'] = $admin['role'] ?? 'user';
             $_SESSION['admin_ref_id'] = $admin['reference_id'] ?? null;
             
+            logActivity('login', 'auth', 'User login ke sistem (' . $admin['email'] . ')', $admin['id'], $admin['id'], $admin['name'], $admin['role'] ?? 'user');
+
             if (($admin['role'] ?? 'user') === 'admin') {
-                header('Location: ' . APP_URL . '/user');
+                header('Location: ' . APP_URL . '/admin');
             } else {
                 header('Location: ' . APP_URL);
             }
@@ -179,6 +181,9 @@ class AuthController {
      * Proses logout
      */
     public function logout() {
+        if (!empty($_SESSION['admin_id'])) {
+            logActivity('logout', 'auth', 'User logout dari sistem.');
+        }
         session_destroy();
         header('Location: ' . APP_URL . '/login');
         exit;
