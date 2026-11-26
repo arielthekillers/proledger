@@ -3339,9 +3339,9 @@ function openEditPaketModal(p) {
 }
 
 function triggerMenuAturPagu() {
-    if (!currentMenuTarget) return;
-    const pkg = currentMenuTarget.pkg;
-    closePaketActionMenu();
+    if (!currentPaketData) return;
+    const pkg = currentPaketData;
+    closeActionMenu();
     openEditPaguModal(pkg);
 }
 
