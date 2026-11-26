@@ -314,7 +314,7 @@ $brandDone = count(array_filter($brandChecks, fn($b) => $b['ok']));
                         <th class="py-2.5 px-3 text-right">Nilai Kontrak</th>
                         <th class="py-2.5 px-3 text-right">Est. Profit</th>
                         <th class="py-2.5 px-3 text-center">Progres</th>
-                        <th class="py-2.5 px-4 text-center">Pencairan</th>
+                        <th class="py-2.5 px-4 text-center">Pembayaran</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">

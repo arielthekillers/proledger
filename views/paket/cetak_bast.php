@@ -216,27 +216,27 @@ if ($isBulk && !empty($groupedList)) {
                 </p>
 
                 <!-- 4. PIHAK PERTAMA (PENERIMA / SEKOLAH / INSTANSI) -->
-                <div class="mb-4 pl-4 space-y-1">
-                    <table class="w-full text-left" style="border-collapse: collapse;">
+                <div class="mb-2 pl-4">
+                    <table class="w-full text-left leading-tight" style="border-collapse: collapse;">
                         <tr>
-                            <td class="w-24 align-top py-0.5 font-normal">Nama</td>
-                            <td class="w-4 align-top py-0.5 text-center">:</td>
-                            <td class="align-top py-0.5 font-bold">&nbsp;</td>
+                            <td class="w-20 align-top py-0 font-normal">Nama</td>
+                            <td class="w-3 align-top py-0 text-center">:</td>
+                            <td class="align-top py-0 font-bold">&nbsp;</td>
                         </tr>
                         <tr>
-                            <td class="align-top py-0.5 font-normal">Jabatan</td>
-                            <td class="align-top py-0.5 text-center">:</td>
-                            <td class="align-top py-0.5">&nbsp;</td>
+                            <td class="align-top py-0 font-normal">Jabatan</td>
+                            <td class="align-top py-0 text-center">:</td>
+                            <td class="align-top py-0">&nbsp;</td>
                         </tr>
                         <tr>
-                            <td class="align-top py-0.5 font-normal">Instansi</td>
-                            <td class="align-top py-0.5 text-center">:</td>
-                            <td class="align-top py-0.5 font-semibold"><?= htmlspecialchars($curTujuan['nama_tujuan']) ?></td>
+                            <td class="align-top py-0 font-normal">Instansi</td>
+                            <td class="align-top py-0 text-center">:</td>
+                            <td class="align-top py-0 font-semibold"><?= htmlspecialchars($curTujuan['nama_tujuan']) ?></td>
                         </tr>
                         <tr>
-                            <td class="align-top py-0.5 font-normal">Alamat</td>
-                            <td class="align-top py-0.5 text-center">:</td>
-                            <td class="align-top py-0.5">
+                            <td class="align-top py-0 font-normal">Alamat</td>
+                            <td class="align-top py-0 text-center">:</td>
+                            <td class="align-top py-0">
                                 <?= htmlspecialchars($curTujuan['alamat'] ?: '-') ?>
                                 <?= !empty($curTujuan['kab_kota']) ? ', ' . htmlspecialchars($curTujuan['kab_kota']) : '' ?>
                             </td>
@@ -244,65 +244,65 @@ if ($isBulk && !empty($groupedList)) {
                     </table>
                 </div>
 
-                <p class="mb-4">
+                <p class="mb-2.5">
                     Selanjutnya, disebut <strong>PIHAK PERTAMA</strong>
                 </p>
 
                 <!-- 5. PIHAK KEDUA (PELAKSANA / PERUSAHAAN REKANAN) -->
-                <div class="mb-4 pl-4 space-y-1">
-                    <table class="w-full text-left" style="border-collapse: collapse;">
+                <div class="mb-2 pl-4">
+                    <table class="w-full text-left leading-tight" style="border-collapse: collapse;">
                         <tr>
-                            <td class="w-24 align-top py-0.5 font-normal">Nama</td>
-                            <td class="w-4 align-top py-0.5 text-center">:</td>
-                            <td class="align-top py-0.5 font-bold">
+                            <td class="w-20 align-top py-0 font-normal">Nama</td>
+                            <td class="w-3 align-top py-0 text-center">:</td>
+                            <td class="align-top py-0 font-bold">
                                 <?= htmlspecialchars($perusahaan['nama_direktur'] ?: ($perusahaan['penanggung_jawab'] ?: '-')) ?>
                             </td>
                         </tr>
                         <tr>
-                            <td class="align-top py-0.5 font-normal">Jabatan</td>
-                            <td class="align-top py-0.5 text-center">:</td>
-                            <td class="align-top py-0.5"><?= htmlspecialchars($perusahaan['jabatan_direktur'] ?: 'Direktur') ?></td>
+                            <td class="align-top py-0 font-normal">Jabatan</td>
+                            <td class="align-top py-0 text-center">:</td>
+                            <td class="align-top py-0"><?= htmlspecialchars($perusahaan['jabatan_direktur'] ?: 'Direktur') ?></td>
                         </tr>
                         <tr>
-                            <td class="align-top py-0.5 font-normal">Instansi</td>
-                            <td class="align-top py-0.5 text-center">:</td>
-                            <td class="align-top py-0.5 font-semibold"><?= htmlspecialchars($perusahaan['nama']) ?></td>
+                            <td class="align-top py-0 font-normal">Instansi</td>
+                            <td class="align-top py-0 text-center">:</td>
+                            <td class="align-top py-0 font-semibold"><?= htmlspecialchars($perusahaan['nama']) ?></td>
                         </tr>
                     </table>
                 </div>
 
-                <p class="mb-5">
+                <p class="mb-3.5">
                     Selanjutnya disebut <strong>PIHAK KEDUA</strong>
                 </p>
 
                 <!-- 6. DASAR PEKERJAAN & SURAT PESANAN -->
-                <p class="mb-4 text-justify leading-relaxed">
+                <p class="mb-3 text-justify leading-relaxed">
                     Berdasarkan <strong>Surat Pesanan Nomor : <?= htmlspecialchars($paket['nomor_sp'] ?: ($paket['kode_paket'] ?: '-')) ?></strong> (<strong><?= htmlspecialchars($paket['nama_paket']) ?></strong>) PIHAK KEDUA telah menyelesaikan pekerjaan :
                 </p>
 
                 <!-- 7. TABEL BARANG YANG DISERAHKAN KE SEKOLAH / LOKASI INI -->
-                <div class="mb-5 overflow-hidden">
-                    <table class="w-full border-collapse border border-black text-xs md:text-sm">
+                <div class="mb-4 overflow-hidden">
+                    <table class="w-full table-fixed border-collapse border border-black text-xs">
                         <thead>
                             <tr class="bg-slate-100 text-center font-bold">
-                                <th class="border border-black py-1.5 px-2 w-10 text-center">NO.</th>
-                                <th class="border border-black py-1.5 px-3 text-left">ITEM BARANG</th>
-                                <th class="border border-black py-1.5 px-3 text-center w-28">MERK</th>
-                                <th class="border border-black py-1.5 px-3 text-center w-28">JUMLAH</th>
+                                <th class="border border-black py-1 px-2 w-10 text-center">NO.</th>
+                                <th class="border border-black py-1 px-2.5 text-left">ITEM BARANG</th>
+                                <th class="border border-black py-1 px-2 text-center w-32">MERK</th>
+                                <th class="border border-black py-1 px-2 text-center w-24">JUMLAH</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($curItems)): ?>
                                 <tr>
-                                    <td colspan="4" class="border border-black py-3 text-center text-slate-500 italic">Tidak ada rincian barang.</td>
+                                    <td colspan="4" class="border border-black py-2.5 text-center text-slate-500 italic">Tidak ada rincian barang.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php $no = 1; foreach ($curItems as $it): ?>
                                     <tr>
-                                        <td class="border border-black py-1.5 px-2 text-center align-top"><?= $no++ ?>.</td>
-                                        <td class="border border-black py-1.5 px-3 font-semibold align-top"><?= htmlspecialchars($it['nama_komponen']) ?></td>
-                                        <td class="border border-black py-1.5 px-3 text-center align-top"><?= htmlspecialchars(!empty($it['nama_barang']) ? $it['nama_barang'] : '-') ?></td>
-                                        <td class="border border-black py-1.5 px-3 text-center align-top font-bold whitespace-nowrap">
+                                        <td class="border border-black py-1 px-2 text-center align-top"><?= $no++ ?>.</td>
+                                        <td class="border border-black py-1 px-2.5 font-semibold align-top break-words leading-snug"><?= htmlspecialchars($it['nama_komponen']) ?></td>
+                                        <td class="border border-black py-1 px-2 text-center align-top break-words leading-snug"><?= htmlspecialchars(!empty($it['nama_barang']) ? $it['nama_barang'] : '-') ?></td>
+                                        <td class="border border-black py-1 px-2 text-center align-top font-bold whitespace-nowrap">
                                             <?= (float)$it['jumlah'] ?> <?= htmlspecialchars($it['satuan'] ?: 'Unit') ?>
                                         </td>
                                     </tr>
@@ -323,35 +323,39 @@ if ($isBulk && !empty($groupedList)) {
                 <!-- 9. TANDA TANGAN KEDUA PIHAK -->
                 <div class="grid grid-cols-2 gap-8 text-center mt-8">
                     <!-- Pihak Pertama (Kosong untuk diisi manual pakai pena) -->
-                    <div>
-                        <p class="font-bold mb-20 uppercase tracking-wider text-xs md:text-sm">PIHAK PERTAMA</p>
-                        <p class="font-bold text-sm md:text-base h-6">&nbsp;</p>
-                        <p class="text-xs text-slate-600 h-5">&nbsp;</p>
+                    <div class="relative flex flex-col items-center">
+                        <p class="font-bold uppercase tracking-wider text-xs md:text-sm">PIHAK PERTAMA</p>
+                        <div class="h-24 w-full shrink-0"></div>
+                        <p class="font-bold text-sm md:text-base h-6 min-w-[180px] border-b border-slate-800 inline-block">&nbsp;</p>
+                        <p class="text-xs text-slate-600 h-5 mt-0.5">&nbsp;</p>
                     </div>
 
                     <!-- Pihak Kedua -->
-                    <div class="relative">
-                        <p class="font-bold mb-20 uppercase tracking-wider text-xs md:text-sm">PIHAK KEDUA</p>
-                        
-                        <!-- Stamp / TTD Digital jika ada -->
-                        <?php
-                        $ttdUrls = !empty($perusahaan['ttd']) ? Uploader::getAllUrls($perusahaan['ttd'], 'perusahaan', 'ttd') : null;
-                        $ttdSrc = $ttdUrls['medium'] ?? (!empty($perusahaan['stempel_ttd']) ? (APP_URL . '/' . ltrim($perusahaan['stempel_ttd'], '/')) : null);
-                        $ttdScale = max(30, min(250, (int)($perusahaan['ttd_scale'] ?? 100)));
-                        $ttdHeightPx = round(56 * ($ttdScale / 100));
-                        ?>
-                        <?php if ($ttdSrc): ?>
-                            <img src="<?= htmlspecialchars($ttdSrc) ?>" 
-                                 alt="Tanda Tangan" 
-                                 style="height: <?= $ttdHeightPx ?>px; width: auto;"
-                                 class="mx-auto -mt-16 mb-2 object-contain pointer-events-none relative z-10">
-                        <?php endif; ?>
+                    <div class="relative flex flex-col items-center">
+                        <p class="font-bold uppercase tracking-wider text-xs md:text-sm">PIHAK KEDUA</p>
+                        <div class="relative h-24 w-full shrink-0">
+                            <!-- Stamp / TTD Digital overlaps di atas teks PIHAK KEDUA & nama/jabatan tanpa menggeser jarak -->
+                            <?php
+                            $ttdUrls = !empty($perusahaan['ttd']) ? Uploader::getAllUrls($perusahaan['ttd'], 'perusahaan', 'ttd') : null;
+                            $ttdSrc = $ttdUrls['medium'] ?? (!empty($perusahaan['stempel_ttd']) ? (APP_URL . '/' . ltrim($perusahaan['stempel_ttd'], '/')) : null);
+                            $ttdScale = max(30, min(250, (int)($perusahaan['ttd_scale'] ?? 100)));
+                            $ttdHeightPx = round(56 * ($ttdScale / 100));
+                            $pihakKeduaNama = trim((string)($perusahaan['nama_direktur'] ?: ($perusahaan['penanggung_jawab'] ?? '')));
+                            $pihakKeduaJabatan = trim((string)($perusahaan['jabatan_direktur'] ?: 'Direktur'));
+                            ?>
+                            <?php if ($ttdSrc): ?>
+                                <img src="<?= htmlspecialchars($ttdSrc) ?>"
+                                     alt="Tanda Tangan"
+                                     style="height: <?= $ttdHeightPx ?>px; width: auto; max-width: none;"
+                                     class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 object-contain pointer-events-none z-20">
+                            <?php endif; ?>
+                        </div>
 
-                        <p class="font-bold underline text-sm md:text-base">
-                            <?= htmlspecialchars($perusahaan['nama_direktur'] ?: ($perusahaan['penanggung_jawab'] ?: '-')) ?>
+                        <p class="font-bold text-sm md:text-base h-6 min-w-[180px] border-b border-slate-800 inline-block relative z-10">
+                            <?= $pihakKeduaNama !== '' ? htmlspecialchars($pihakKeduaNama) : '&nbsp;' ?>
                         </p>
-                        <p class="text-xs text-slate-600">
-                            <?= htmlspecialchars($perusahaan['jabatan_direktur'] ?: 'Direktur') ?>
+                        <p class="text-xs text-slate-600 h-5 mt-0.5 relative z-10">
+                            <?= $pihakKeduaJabatan !== '' ? htmlspecialchars($pihakKeduaJabatan) : '&nbsp;' ?>
                         </p>
                     </div>
                 </div>

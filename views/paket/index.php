@@ -116,10 +116,10 @@
                 <?php endforeach; ?>
             </select>
 
-            <!-- Filter Status Pencairan -->
+            <!-- Filter Status Pembayaran -->
             <select id="filterStatusSelect" onchange="filterPaketTable()" 
                     class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-blue-500 transition-all cursor-pointer">
-                <option value="">Semua Pencairan</option>
+                <option value="">Semua Pembayaran</option>
                 <option value="belum">Belum</option>
                 <option value="proses">Proses</option>
                 <option value="selesai">Selesai</option>
@@ -155,7 +155,7 @@
                     <th class="py-2.5 px-2 text-center w-16" title="Progres Pemesanan Barang (Supplier/Toko)">Order</th>
                     <th class="py-2.5 px-2 text-center w-16" title="Progres Foto Dokumentasi Titik Penerima">Dok</th>
                     <th class="py-2.5 px-2 text-center w-16" title="Progres Upload Berkas BAST Titik Penerima">BAST</th>
-                    <th class="py-2.5 px-3 text-center">Pencairan</th>
+                    <th class="py-2.5 px-3 text-center">Pembayaran</th>
                     <th class="py-2.5 px-3 text-right w-16">Aksi</th>
                 </tr>
             </thead>
@@ -1567,12 +1567,12 @@
 
         <form id="formNativeUploadBast" action="" method="POST" enctype="multipart/form-data" class="overflow-y-auto p-5 space-y-4">
             <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
-            <input type="hidden" name="jenis_dokumen" value="BAST">
+            <input type="hidden" name="jenis_dokumen" id="nativeUploadBastJenis" value="BAST">
             <input type="hidden" name="redirect_to" id="nativeUploadBastRedirect" value="">
 
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">
-                    Nama Dokumen BAST <span class="text-rose-500">*</span>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" id="nativeUploadBastLabel">
+                    Nama Dokumen <span class="text-rose-500">*</span>
                 </label>
                 <input type="text" name="nama_dokumen" id="nativeUploadBastNama" required
                        placeholder="Misal: BAST SMAN 2 Bontang"
@@ -2092,10 +2092,24 @@ function openNativeUploadBastModal(kode, namaTujuan) {
     const form = document.getElementById('formNativeUploadBast');
     if (form) {
         form.action = '<?= APP_URL ?>/paket/storeDokumen/' + encodeURIComponent(kode);
+        document.getElementById('nativeUploadBastJenis').value = 'BAST';
         document.getElementById('nativeUploadBastRedirect').value = '/paket?open_modal=' + encodeURIComponent(kode) + '&tab=dokumen';
         document.getElementById('nativeUploadBastNama').value = namaTujuan ? ('BAST - ' + namaTujuan) : 'BAST Umum Paket';
         const titleEl = document.getElementById('nativeUploadBastTitle');
         if (titleEl) titleEl.textContent = namaTujuan ? ('Upload BAST: ' + namaTujuan) : 'Upload BAST Umum Paket';
+    }
+    window.ProModal.open('modalNativeUploadBast');
+}
+
+function openNativeUploadDokumenPaketModal(kode, jenis, label, redirectTab) {
+    const form = document.getElementById('formNativeUploadBast');
+    if (form) {
+        form.action = '<?= APP_URL ?>/paket/storeDokumen/' + encodeURIComponent(kode);
+        document.getElementById('nativeUploadBastJenis').value = jenis || 'BAST';
+        document.getElementById('nativeUploadBastRedirect').value = '/paket?open_modal=' + encodeURIComponent(kode) + '&tab=' + encodeURIComponent(redirectTab || 'info');
+        document.getElementById('nativeUploadBastNama').value = label || 'Dokumen Paket';
+        const titleEl = document.getElementById('nativeUploadBastTitle');
+        if (titleEl) titleEl.textContent = 'Upload ' + (label || 'Dokumen Paket');
     }
     window.ProModal.open('modalNativeUploadBast');
 }

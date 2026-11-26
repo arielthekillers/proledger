@@ -215,4 +215,10 @@ if (!empty($paket['tags'])) {
             </tfoot>
         </table>
     </div>
+
+    <!-- 3. Dokumen Paket (Faktur Pajak, Surat Pesanan, BAST Paket) -->
+    <?php
+    $dokumenPaketRedirectTab = 'info';
+    require VIEW_PATH . '/paket/partials/_dokumen_paket_cards.php';
+    ?>
 </div>

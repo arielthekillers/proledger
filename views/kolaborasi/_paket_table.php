@@ -58,7 +58,7 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
 
             <select id="filterKolabStatus" onchange="filterKolabTable()"
                     class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer">
-                <option value="">Semua Pencairan</option>
+                <option value="">Semua Pembayaran</option>
                 <option value="belum">Belum</option>
                 <option value="proses">Proses</option>
                 <option value="selesai">Cair / Selesai</option>
@@ -89,7 +89,7 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
                     <th class="py-3 px-2 text-center">Order</th>
                     <th class="py-3 px-2 text-center">Dok</th>
                     <th class="py-3 px-2 text-center">BAST</th>
-                    <th class="py-3 px-3 text-center">Pencairan</th>
+                    <th class="py-3 px-3 text-center">Pembayaran</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">

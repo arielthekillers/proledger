@@ -5,6 +5,10 @@
 $uploadedBastByTujuan = [];
 $generalPaketBasts = [];
 foreach ($dokumenList as $doc) {
+    $jenisDoc = strtoupper(trim((string)($doc['jenis_dokumen'] ?? '')));
+    if (in_array($jenisDoc, ['FAKTUR_PAJAK', 'SURAT_PESANAN'], true)) {
+        continue;
+    }
     $matched = false;
     foreach ($groupedDistribusi as $tujuanKey => $grpVal) {
         if (stripos($doc['nama_dokumen'], $tujuanKey) !== false || stripos($doc['nama_file_asli'], $tujuanKey) !== false) {
