@@ -325,15 +325,15 @@ if ($isBulk && !empty($groupedList)) {
                     <!-- Pihak Pertama (Kosong untuk diisi manual pakai pena) -->
                     <div class="relative flex flex-col items-center">
                         <p class="font-bold uppercase tracking-wider text-xs md:text-sm">PIHAK PERTAMA</p>
-                        <div class="h-24 w-full shrink-0"></div>
-                        <p class="font-bold text-sm md:text-base h-6 min-w-[180px] border-b border-slate-800 inline-block">&nbsp;</p>
-                        <p class="text-xs text-slate-600 h-5 mt-0.5">&nbsp;</p>
+                        <div style="height: 88px; width: 100%;"></div>
+                        <p class="font-bold text-sm md:text-base" style="min-width: 180px; height: 24px; border-bottom: 1px solid #1e293b; display: inline-block;">&nbsp;</p>
+                        <p class="text-xs text-slate-600 mt-0.5" style="height: 20px;">&nbsp;</p>
                     </div>
 
                     <!-- Pihak Kedua -->
                     <div class="relative flex flex-col items-center">
                         <p class="font-bold uppercase tracking-wider text-xs md:text-sm">PIHAK KEDUA</p>
-                        <div class="relative h-24 w-full shrink-0">
+                        <div style="position: relative; height: 88px; width: 100%;">
                             <!-- Stamp / TTD Digital overlaps di atas teks PIHAK KEDUA & nama/jabatan tanpa menggeser jarak -->
                             <?php
                             $ttdUrls = !empty($perusahaan['ttd']) ? Uploader::getAllUrls($perusahaan['ttd'], 'perusahaan', 'ttd') : null;
@@ -346,15 +346,14 @@ if ($isBulk && !empty($groupedList)) {
                             <?php if ($ttdSrc): ?>
                                 <img src="<?= htmlspecialchars($ttdSrc) ?>"
                                      alt="Tanda Tangan"
-                                     style="height: <?= $ttdHeightPx ?>px; width: auto; max-width: none;"
-                                     class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 object-contain pointer-events-none z-20">
+                                     style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: <?= $ttdHeightPx ?>px; width: auto; max-width: none; object-fit: contain; pointer-events: none; z-index: 20;">
                             <?php endif; ?>
                         </div>
 
-                        <p class="font-bold text-sm md:text-base h-6 min-w-[180px] border-b border-slate-800 inline-block relative z-10">
+                        <p class="font-bold text-sm md:text-base relative z-10" style="min-width: 180px; height: 24px; border-bottom: 1px solid #1e293b; display: inline-block;">
                             <?= $pihakKeduaNama !== '' ? htmlspecialchars($pihakKeduaNama) : '&nbsp;' ?>
                         </p>
-                        <p class="text-xs text-slate-600 h-5 mt-0.5 relative z-10">
+                        <p class="text-xs text-slate-600 mt-0.5 relative z-10" style="height: 20px;">
                             <?= $pihakKeduaJabatan !== '' ? htmlspecialchars($pihakKeduaJabatan) : '&nbsp;' ?>
                         </p>
                     </div>
