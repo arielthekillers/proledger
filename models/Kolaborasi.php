@@ -379,7 +379,7 @@ class Kolaborasi {
     public function getDashboardData(int $kolabId): array {
         $stmt = $this->db->prepare("
             SELECT pk.id, pk.kode_paket, pk.nama_paket, pk.tahun_anggaran, pk.tags,
-                   pk.pagu, pk.pagu_nego, pk.tipe_potongan, pk.persen_pasal, pk.persen_admin,
+                   pk.pagu, pk.pagu_nego, pk.pagu_diterima, pk.tipe_potongan, pk.persen_pasal, pk.persen_admin,
                    pk.status, pk.group_id, pk.perusahaan_id, pk.created_at,
                    COALESCE(pi_sum.total_item_harga, 0) as total_item_harga,
                    COALESCE(pi_sum.total_item_qty, 0) as total_item_qty,
@@ -390,6 +390,9 @@ class Kolaborasi {
                    CASE WHEN COALESCE(pk.is_dok_selesai, 0) = 1 THEN COALESCE(p_prog.total_dist, 0) ELSE COALESCE(p_prog.dok_done, 0) END as dok_done,
                    COALESCE(p_prog.total_bast, 0) as total_bast,
                    COALESCE(p_prog.bast_done, 0) as bast_done,
+                   COALESCE(pdoc_chk.has_sp, 0) as has_sp,
+                   COALESCE(pdoc_chk.has_bast_paket, 0) as has_bast_paket,
+                   COALESCE(pdoc_chk.has_fp, 0) as has_fp,
                    p.nama as perusahaan_nama,
                    pg.nama_group, pg.kode_group,
                    a.name as pic_user_name
@@ -423,6 +426,14 @@ class Kolaborasi {
                 LEFT JOIN paket_dokumentasi pdk ON pd.id = pdk.distribusi_id
                 GROUP BY pd.paket_id
             ) p_prog ON pk.id = p_prog.paket_id
+            LEFT JOIN (
+                SELECT paket_id,
+                       MAX(CASE WHEN UPPER(jenis_dokumen) = 'SURAT_PESANAN' THEN 1 ELSE 0 END) AS has_sp,
+                       MAX(CASE WHEN UPPER(jenis_dokumen) = 'BAST_PAKET' OR (UPPER(jenis_dokumen) = 'BAST' AND nama_dokumen NOT LIKE 'BAST - %') THEN 1 ELSE 0 END) AS has_bast_paket,
+                       MAX(CASE WHEN UPPER(jenis_dokumen) = 'FAKTUR_PAJAK' THEN 1 ELSE 0 END) AS has_fp
+                FROM paket_dokumen
+                GROUP BY paket_id
+            ) pdoc_chk ON pk.id = pdoc_chk.paket_id
             WHERE kg.kolaborasi_id = ?
               AND (
                   pk.perusahaan_id IS NULL
@@ -451,7 +462,13 @@ class Kolaborasi {
             'total_kontrak'     => 0,
             'total_dpp'         => 0,
             'total_pasal'       => 0,
+            'total_pasal_utama' => 0,
+            'total_admin_fee'   => 0,
             'total_setor_pasal' => 0,
+            'total_setor_utama' => 0,
+            'total_setor_admin' => 0,
+            'pasal_by_rate'     => [],
+            'admin_by_rate'     => [],
             'total_bersih'      => 0,
             'total_items'     => 0,
             'total_units'     => 0,
@@ -470,7 +487,7 @@ class Kolaborasi {
 
         foreach ($rows as $r) {
             $itemTotal = (float)($r['total_item_harga'] ?? 0);
-            $effectivePagu = ($itemTotal > 0) ? $itemTotal : (float)($r['pagu'] ?? 0);
+            $effectivePagu = ((float)($r['pagu'] ?? 0) > 0) ? (float)$r['pagu'] : $itemTotal;
             $hasNego = (!empty($r['pagu_nego']) && (float)$r['pagu_nego'] > 0);
             $acuan = $hasNego ? (float)$r['pagu_nego'] : $effectivePagu;
 
@@ -479,10 +496,15 @@ class Kolaborasi {
             $basis = ($tipePotongan === 'kontrak') ? $acuan : $dpp;
             $persenPasal = isset($r['persen_pasal']) && $r['persen_pasal'] !== '' ? (float)$r['persen_pasal'] : 13.0;
             $persenAdmin = isset($r['persen_admin']) && $r['persen_admin'] !== '' ? (float)$r['persen_admin'] : 2.0;
-            $totalPasal = calculatePasal($basis, $persenPasal) + calculateAdmin($basis, $persenAdmin);
+            $pasalVal = calculatePasal($basis, $persenPasal);
+            $adminVal = calculateAdmin($basis, $persenAdmin);
+            $totalPasal = $pasalVal + $adminVal;
             $totalSetorPasal = (float)($setoranSumMap[(int)$r['id']] ?? 0);
             $persenSetorPasal = ($totalPasal > 0) ? min(100, (int)round(($totalSetorPasal / $totalPasal) * 100)) : 0;
-            $nilaiBersih = $dpp - $totalPasal;
+            $setorUtamaVal = ($totalPasal > 0) ? round($totalSetorPasal * ($pasalVal / $totalPasal)) : 0;
+            $setorAdminVal = max(0, $totalSetorPasal - $setorUtamaVal);
+            $basisProfit = (!empty($r['pagu_diterima']) && (float)$r['pagu_diterima'] > 0) ? (float)$r['pagu_diterima'] : $dpp;
+            $nilaiBersih = $basisProfit - $totalPasal;
 
             $totalDist = (int)$r['total_dist'];
             $totalBast = (int)$r['total_bast'];
@@ -514,8 +536,12 @@ class Kolaborasi {
                     'belum'         => 0,
                     'sum_order'     => 0,
                     'sum_dist'      => 0,
-                    'sum_dok'       => 0,
-                    'sum_bast'      => 0,
+                    'sum_dok'         => 0,
+                    'sum_bast'        => 0,
+                    'total_pasal'     => 0,
+                    'total_admin'     => 0,
+                    'total_kewajiban' => 0,
+                    'total_setor'     => 0,
                 ];
             }
             $companyStats[$compKey]['total_paket']++;
@@ -525,13 +551,38 @@ class Kolaborasi {
             $companyStats[$compKey]['sum_dist']  += $distPct;
             $companyStats[$compKey]['sum_dok']   += $dokPct;
             $companyStats[$compKey]['sum_bast']  += $bastPct;
+            $companyStats[$compKey]['total_pasal']     += $pasalVal;
+            $companyStats[$compKey]['total_admin']     += $adminVal;
+            $companyStats[$compKey]['total_kewajiban'] += $totalPasal;
+            $companyStats[$compKey]['total_setor']     += $totalSetorPasal;
 
             $summary['total_paket']++;
             $summary['total_kontrak']     += $acuan;
             $summary['total_dpp']         += $dpp;
             $summary['total_pasal']       += $totalPasal;
+            $summary['total_pasal_utama'] += $pasalVal;
+            $summary['total_admin_fee']   += $adminVal;
             $summary['total_setor_pasal'] += $totalSetorPasal;
+            $summary['total_setor_utama'] += $setorUtamaVal;
+            $summary['total_setor_admin'] += $setorAdminVal;
             $summary['total_bersih']      += $nilaiBersih;
+
+            // Kelompokkan berdasarkan tarif persentase masing-masing (untuk laporan koordinator)
+            $pRateKey = (string)$persenPasal;
+            if (!isset($summary['pasal_by_rate'][$pRateKey])) {
+                $summary['pasal_by_rate'][$pRateKey] = ['rate' => $persenPasal, 'paket_count' => 0, 'tagihan' => 0, 'tersetor' => 0];
+            }
+            $summary['pasal_by_rate'][$pRateKey]['paket_count']++;
+            $summary['pasal_by_rate'][$pRateKey]['tagihan']  += $pasalVal;
+            $summary['pasal_by_rate'][$pRateKey]['tersetor'] += $setorUtamaVal;
+
+            $aRateKey = (string)$persenAdmin;
+            if (!isset($summary['admin_by_rate'][$aRateKey])) {
+                $summary['admin_by_rate'][$aRateKey] = ['rate' => $persenAdmin, 'paket_count' => 0, 'tagihan' => 0, 'tersetor' => 0];
+            }
+            $summary['admin_by_rate'][$aRateKey]['paket_count']++;
+            $summary['admin_by_rate'][$aRateKey]['tagihan']  += $adminVal;
+            $summary['admin_by_rate'][$aRateKey]['tersetor'] += $setorAdminVal;
             $summary['total_items']   += (int)$r['total_item_count'];
             $summary['total_units']   += (float)$r['total_item_qty'];
             $summary['total_lokasi']  += $totalBast;
@@ -555,7 +606,13 @@ class Kolaborasi {
                 'acuan'           => $acuan,
                 'dpp'             => $dpp,
                 'total_pasal'       => $totalPasal,
+                'pasal_val'         => $pasalVal,
+                'admin_val'         => $adminVal,
+                'persen_pasal'      => $persenPasal,
+                'persen_admin'      => $persenAdmin,
                 'total_setor_pasal' => $totalSetorPasal,
+                'setor_pasal_val'   => $setorUtamaVal,
+                'setor_admin_val'   => $setorAdminVal,
                 'persen_setor_pasal'=> $persenSetorPasal,
                 'total_persen'      => $persenPasal + $persenAdmin,
                 'nilai_bersih'    => $nilaiBersih,
@@ -572,6 +629,9 @@ class Kolaborasi {
                 'dist_pct'        => $distPct,
                 'dok_pct'         => $dokPct,
                 'bast_pct'        => $bastPct,
+                'has_sp'          => !empty($r['has_sp']),
+                'has_bast_paket'  => !empty($r['has_bast_paket']),
+                'has_fp'          => !empty($r['has_fp']),
             ];
         }
 
@@ -594,11 +654,150 @@ class Kolaborasi {
 
         $summary['total_perusahaan'] = count($companyStats);
 
+        // Urutkan default berdasarkan rata-rata progres (Order, Dist, Dok, BAST) paling rendah
+        usort($pakets, function ($a, $b) {
+            $progA = ($a['order_pct'] + $a['dist_pct'] + $a['dok_pct'] + $a['bast_pct']);
+            $progB = ($b['order_pct'] + $b['dist_pct'] + $b['dok_pct'] + $b['bast_pct']);
+            if ($progA !== $progB) {
+                return $progA <=> $progB;
+            }
+            if ($a['order_pct'] !== $b['order_pct']) {
+                return $a['order_pct'] <=> $b['order_pct'];
+            }
+            return $b['id'] <=> $a['id'];
+        });
+
         return [
             'pakets'       => $pakets,
             'companyStats' => array_values($companyStats),
             'summary'      => $summary,
         ];
+    }
+
+    /**
+     * Analisa distribusi per tujuan penerima lintas perusahaan dalam ruang kolaborasi
+     */
+    public function getDistribusiPerTujuan(int $kolabId) {
+        $stmt = $this->db->prepare("
+            SELECT pd.id, pd.paket_id, pd.item_id, pd.nama_tujuan, pd.kab_kota, pd.alamat,
+                   pd.nama_pic, pd.no_kontak, pd.jumlah, pd.status_barang, pd.status_distribusi,
+                   pd.ekspedisi, pd.no_resi,
+                   pk.kode_paket, pk.nama_paket,
+                   pi.komponen, pi.satuan,
+                   p.id as perusahaan_id, p.nama as perusahaan_nama
+            FROM kolaborasi_groups kg
+            INNER JOIN paket_group pg ON kg.group_id = pg.id
+            INNER JOIN paket_kegiatan pk ON pk.group_id = pg.id
+            INNER JOIN paket_distribusi pd ON pd.paket_id = pk.id
+            LEFT JOIN paket_items pi ON pd.item_id = pi.id
+            LEFT JOIN perusahaan p ON pk.perusahaan_id = p.id
+            WHERE kg.kolaborasi_id = ?
+              AND (
+                  pk.perusahaan_id IS NULL
+                  OR EXISTS (
+                      SELECT 1 FROM kolaborasi_anggota km
+                      WHERE km.kolaborasi_id = kg.kolaborasi_id
+                        AND km.user_id = p.user_id
+                        AND km.status = 'joined'
+                  )
+              )
+            ORDER BY pd.nama_tujuan ASC, p.nama ASC, pk.id DESC
+        ");
+        $stmt->execute([$kolabId]);
+        $rows = $stmt->fetchAll();
+
+        $tujuanMap = [];
+        $totals = ['tujuan' => 0, 'items' => 0, 'terkirim' => 0, 'sedang_dikirim' => 0, 'belum_dipesan' => 0];
+
+        foreach ($rows as $r) {
+            $rawTujuan = trim((string)($r['nama_tujuan'] ?? ''));
+            if ($rawTujuan === '') continue;
+            $key = mb_strtoupper($rawTujuan);
+
+            if (!isset($tujuanMap[$key])) {
+                $tujuanMap[$key] = [
+                    'key'              => $key,
+                    'nama_tujuan'      => $rawTujuan,
+                    'kab_kota'         => trim((string)($r['kab_kota'] ?? '')),
+                    'alamat'           => trim((string)($r['alamat'] ?? '')),
+                    'nama_pic'         => trim((string)($r['nama_pic'] ?? '')),
+                    'no_kontak'        => trim((string)($r['no_kontak'] ?? '')),
+                    'paket_ids'        => [],
+                    'perusahaan_names' => [],
+                    'cnt_terkirim'     => 0,
+                    'cnt_sedang'       => 0,
+                    'cnt_belum'        => 0,
+                    'items'            => [],
+                ];
+            }
+
+            if ($tujuanMap[$key]['kab_kota'] === '' && !empty($r['kab_kota'])) $tujuanMap[$key]['kab_kota'] = trim($r['kab_kota']);
+            if ($tujuanMap[$key]['alamat'] === '' && !empty($r['alamat'])) $tujuanMap[$key]['alamat'] = trim($r['alamat']);
+            if ($tujuanMap[$key]['nama_pic'] === '' && !empty($r['nama_pic'])) $tujuanMap[$key]['nama_pic'] = trim($r['nama_pic']);
+            if ($tujuanMap[$key]['no_kontak'] === '' && !empty($r['no_kontak'])) $tujuanMap[$key]['no_kontak'] = trim($r['no_kontak']);
+
+            $tujuanMap[$key]['paket_ids'][(int)$r['paket_id']] = true;
+            if (!empty($r['perusahaan_nama'])) {
+                $tujuanMap[$key]['perusahaan_names'][$r['perusahaan_nama']] = true;
+            }
+
+            $isOrdered = (($r['status_barang'] ?? '') === 'Sudah Dipesan');
+            $sDist = trim((string)($r['status_distribusi'] ?? ''));
+            if (!$isOrdered) {
+                $bucket = 'belum_dipesan';
+                $statusLabel = 'Belum Dipesan';
+                $tujuanMap[$key]['cnt_belum']++;
+                $totals['belum_dipesan']++;
+            } elseif ($sDist === 'Tiba di Tujuan' || $sDist === 'Tiba di Gudang') {
+                $bucket = 'terkirim';
+                $statusLabel = $sDist;
+                $tujuanMap[$key]['cnt_terkirim']++;
+                $totals['terkirim']++;
+            } else {
+                $bucket = 'sedang_dikirim';
+                $statusLabel = $sDist !== '' ? $sDist : 'Sudah Dipesan / Menunggu Kirim';
+                $tujuanMap[$key]['cnt_sedang']++;
+                $totals['sedang_dikirim']++;
+            }
+
+            $totals['items']++;
+            $tujuanMap[$key]['items'][] = [
+                'kode_paket'      => $r['kode_paket'] ?: ('#' . $r['paket_id']),
+                'nama_paket'      => $r['nama_paket'] ?? '-',
+                'perusahaan_nama' => $r['perusahaan_nama'] ?? '-',
+                'komponen'        => $r['komponen'] ?? '-',
+                'jumlah'          => (float)($r['jumlah'] ?? 0),
+                'satuan'          => $r['satuan'] ?: 'Unit',
+                'bucket'          => $bucket,
+                'status_label'    => $statusLabel,
+                'ekspedisi'       => trim((string)($r['ekspedisi'] ?? '')),
+                'no_resi'         => trim((string)($r['no_resi'] ?? '')),
+            ];
+        }
+
+        $list = [];
+        foreach ($tujuanMap as $t) {
+            $t['total_paket']      = count($t['paket_ids']);
+            $t['total_perusahaan'] = count($t['perusahaan_names']);
+            $t['total_items']      = count($t['items']);
+            $t['pending_count']    = $t['cnt_sedang'] + $t['cnt_belum'];
+            unset($t['paket_ids'], $t['perusahaan_names']);
+            $list[] = $t;
+        }
+
+        // Prioritaskan tujuan yang masih punya barang perlu dikirim / dipesan terbanyak
+        usort($list, function ($a, $b) {
+            if ($a['pending_count'] !== $b['pending_count']) {
+                return $b['pending_count'] <=> $a['pending_count'];
+            }
+            if ($a['total_items'] !== $b['total_items']) {
+                return $b['total_items'] <=> $a['total_items'];
+            }
+            return strcmp($a['nama_tujuan'], $b['nama_tujuan']);
+        });
+
+        $totals['tujuan'] = count($list);
+        return ['tujuanList' => $list, 'totals' => $totals];
     }
 
     /**

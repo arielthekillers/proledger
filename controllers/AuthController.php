@@ -6,30 +6,33 @@
 
 require_once __DIR__ . '/../models/Admin.php';
 
-class AuthController {
-    
+class AuthController
+{
+
     /**
      * Tampilkan halaman login
      */
-    public function login() {
+    public function login()
+    {
         if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
             header('Location: ' . APP_URL);
             exit;
         }
-        
+
         $title = 'Login';
         require_once __DIR__ . '/../views/auth/login.php';
     }
-    
+
     /**
      * Tampilkan halaman pendaftaran
      */
-    public function register() {
+    public function register()
+    {
         if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
             header('Location: ' . APP_URL);
             exit;
         }
-        
+
         $title = 'Pendaftaran Pengguna';
         require_once __DIR__ . '/../views/auth/register.php';
     }
@@ -37,7 +40,8 @@ class AuthController {
     /**
      * Proses pendaftaran user baru
      */
-    public function registerStore() {
+    public function registerStore()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect('/register');
             return;
@@ -109,7 +113,8 @@ class AuthController {
     /**
      * Proses login
      */
-    public function authenticate() {
+    public function authenticate()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . APP_URL . '/login');
             exit;
@@ -121,17 +126,17 @@ class AuthController {
             header('Location: ' . APP_URL . '/login');
             exit;
         }
-        
+
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
-        
+
         $adminModel = new Admin();
         $admin = $adminModel->findByEmail($email);
-        
+
         if ($admin && $adminModel->verifyPassword($password, $admin['password'])) {
             // Check status
             $status = $admin['status'] ?? 'active';
-            
+
             if ($status === 'pending') {
                 flash('error', 'Akun Anda sedang menunggu persetujuan (approval) dari Administrator.');
                 header('Location: ' . APP_URL . '/login');
@@ -160,7 +165,7 @@ class AuthController {
             $_SESSION['admin_email'] = $admin['email'];
             $_SESSION['admin_role'] = $admin['role'] ?? 'user';
             $_SESSION['admin_ref_id'] = $admin['reference_id'] ?? null;
-            
+
             logActivity('login', 'auth', 'User login ke sistem (' . $admin['email'] . ')', $admin['id'], $admin['id'], $admin['name'], $admin['role'] ?? 'user');
 
             if (($admin['role'] ?? 'user') === 'admin') {
@@ -176,11 +181,12 @@ class AuthController {
             exit;
         }
     }
-    
+
     /**
      * Proses logout
      */
-    public function logout() {
+    public function logout()
+    {
         if (!empty($_SESSION['admin_id'])) {
             logActivity('logout', 'auth', 'User logout dari sistem.');
         }

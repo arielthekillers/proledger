@@ -85,17 +85,18 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
                         <th class="py-3 px-3 text-right">Nilai Bersih</th>
                     <?php endif; ?>
                     <th class="py-3 px-2 text-center">Komponen</th>
-                    <th class="py-3 px-2 text-center">Dist</th>
                     <th class="py-3 px-2 text-center">Order</th>
+                    <th class="py-3 px-2 text-center">Dist</th>
                     <th class="py-3 px-2 text-center">Dok</th>
                     <th class="py-3 px-2 text-center">BAST</th>
+                    <th class="py-3 px-2 text-center">Dok. Paket</th>
                     <th class="py-3 px-3 text-center">Pembayaran</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 <?php if (empty($pakets)): ?>
                     <tr>
-                        <td colspan="<?= !empty($isPublicView) ? 10 : 12 ?>" class="py-12 text-center text-slate-400">
+                        <td colspan="<?= !empty($isPublicView) ? 11 : 13 ?>" class="py-12 text-center text-slate-400">
                             <p class="text-xs font-semibold text-slate-600 mb-1">Belum ada paket yang terhubung</p>
                             <p class="text-[11px] text-slate-400">Hubungkan Group Paket perusahaan ke ruang kolaborasi ini untuk mulai memantau.</p>
                         </td>
@@ -126,11 +127,20 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
                             </td>
 
                             <!-- NAMA PAKET + PERUSAHAAN + GROUP + TAGS -->
-                            <td class="py-2.5 px-3 min-w-[230px]">
+                            <td class="py-2.5 px-3 min-w-[230px] max-w-[300px]">
+                                <?php
+                                $namaFull = (string)($p['nama_paket'] ?? '');
+                                $namaTrim = mb_strlen($namaFull) > 48 ? mb_substr($namaFull, 0, 48) . '..' : $namaFull;
+                                $isTrimmed = ($namaTrim !== $namaFull);
+                                ?>
                                 <button type="button"
                                         onclick="openKolabReadonlyModal('<?= $kodeRef ?>', 'info', '<?= $namaJs ?>')"
-                                        class="text-left font-bold text-slate-800 hover:text-blue-600 text-xs transition-colors cursor-pointer block">
-                                    <?= htmlspecialchars($p['nama_paket']) ?>
+                                        class="text-left font-bold text-slate-800 hover:text-blue-600 text-xs transition-colors cursor-pointer block <?= $isTrimmed ? 'pro-dark-tooltip' : '' ?>"
+                                        <?php if ($isTrimmed): ?>
+                                            data-tooltip-title="Nama Lengkap Paket"
+                                            data-tooltip-body="<?= htmlspecialchars($namaFull, ENT_QUOTES) ?>"
+                                        <?php endif; ?>>
+                                    <?= htmlspecialchars($namaTrim) ?>
                                 </button>
                                 <div class="flex items-center gap-1 flex-wrap mt-1">
                                     <span class="px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200/80 text-[10px]">
@@ -241,13 +251,13 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
 
                             <!-- PROGRES CIRCLES (TOOLTIP + KLIK POPUP READ-ONLY) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
-                                <button type="button" onclick="openKolabReadonlyModal('<?= $kodeRef ?>', 'distribusi', '<?= $namaJs ?>')" class="hover:scale-105 transition-transform inline-block cursor-pointer">
-                                    <?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?>
+                                <button type="button" onclick="openKolabReadonlyModal('<?= $kodeRef ?>', 'pemesanan', '<?= $namaJs ?>')" class="hover:scale-105 transition-transform inline-block cursor-pointer">
+                                    <?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?>
                                 </button>
                             </td>
                             <td class="py-2 px-2 text-center whitespace-nowrap">
-                                <button type="button" onclick="openKolabReadonlyModal('<?= $kodeRef ?>', 'pemesanan', '<?= $namaJs ?>')" class="hover:scale-105 transition-transform inline-block cursor-pointer">
-                                    <?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?>
+                                <button type="button" onclick="openKolabReadonlyModal('<?= $kodeRef ?>', 'distribusi', '<?= $namaJs ?>')" class="hover:scale-105 transition-transform inline-block cursor-pointer">
+                                    <?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?>
                                 </button>
                             </td>
                             <td class="py-2 px-2 text-center whitespace-nowrap">
@@ -261,7 +271,29 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
                                 </button>
                             </td>
 
-                            <!-- PENCAIRAN -->
+                            <!-- CHECKLIST 3 DOKUMEN PAKET (SP, BAST PAKET, FAKTUR PAJAK) -->
+                            <td class="py-2 px-2 text-center whitespace-nowrap">
+                                <button type="button"
+                                        onclick="openKolabReadonlyModal('<?= $kodeRef ?>', 'dokumen_paket', '<?= $namaJs ?>')"
+                                        class="inline-flex items-center gap-1 px-1.5 py-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                                        title="Klik untuk lihat Surat Pemesanan, BAST Paket &amp; Faktur Pajak">
+                                    <?php
+                                    $dokChecks = [
+                                        ['lbl' => 'SP',   'ok' => !empty($p['has_sp'])],
+                                        ['lbl' => 'BAST', 'ok' => !empty($p['has_bast_paket'])],
+                                        ['lbl' => 'FP',   'ok' => !empty($p['has_fp'])],
+                                    ];
+                                    foreach ($dokChecks as $dc):
+                                    ?>
+                                        <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold border <?= $dc['ok'] ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-400 border-slate-200' ?>">
+                                            <span><?= $dc['ok'] ? '✓' : '·' ?></span>
+                                            <span><?= $dc['lbl'] ?></span>
+                                        </span>
+                                    <?php endforeach; ?>
+                                </button>
+                            </td>
+
+                            <!-- PEMBAYARAN -->
                             <td class="py-2.5 px-3 text-center whitespace-nowrap">
                                 <?= getStatusBadge($p['status']) ?>
                             </td>
@@ -300,7 +332,7 @@ asort($allTagsMap, SORT_NATURAL | SORT_FLAG_CASE);
                             <div><?= $summary['total_items'] ?> Item</div>
                             <div class="text-[10px] font-normal text-slate-400"><?= number_format($summary['total_units'], 0, ',', '.') ?> Unit</div>
                         </td>
-                        <td colspan="5" class="py-2.5 px-3"></td>
+                        <td colspan="6" class="py-2.5 px-3"></td>
                     </tr>
                 </tfoot>
             <?php endif; ?>
@@ -421,7 +453,8 @@ function openKolabReadonlyModal(idOrKode, mod, namaPaket) {
         'pemesanan':   { name: 'Progres Pemesanan', icon: 'bag-check-outline', bg: 'bg-amber-50 text-amber-700' },
         'distribusi':  { name: 'Alokasi Distribusi Titik', icon: 'navigate-outline', bg: 'bg-indigo-50 text-indigo-600' },
         'dokumentasi': { name: 'Foto Dokumentasi', icon: 'camera-outline', bg: 'bg-teal-50 text-teal-600' },
-        'dokumen':     { name: 'Berkas Dokumen BAST', icon: 'ribbon-outline', bg: 'bg-amber-50 text-amber-700' }
+        'dokumen':     { name: 'Berkas Dokumen BAST', icon: 'ribbon-outline', bg: 'bg-amber-50 text-amber-700' },
+        'dokumen_paket': { name: 'Dokumen Paket (SP, BAST, Faktur Pajak)', icon: 'folder-open-outline', bg: 'bg-blue-50 text-blue-600' }
     };
     const cfg = cfgMap[mod] || cfgMap['info'];
 

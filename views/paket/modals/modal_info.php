@@ -16,7 +16,9 @@ $totalPersen = $persenPasal + $persenAdmin;
 $pasalVal = !empty($paket['pasal_13']) ? (float)$paket['pasal_13'] : calculatePasal($basisPotongan, $persenPasal);
 $adminVal = isset($paket['admin_2']) ? (float)$paket['admin_2'] : calculateAdmin($basisPotongan, $persenAdmin);
 $totalPasal = !empty($paket['total_pasal']) ? (float)$paket['total_pasal'] : ($pasalVal + $adminVal);
-$danaBersih = $dpp - $totalPasal;
+$paguDiterima = (!empty($paket['pagu_diterima']) && (float)$paket['pagu_diterima'] > 0) ? (float)$paket['pagu_diterima'] : 0;
+$basisProfit = ($paguDiterima > 0) ? $paguDiterima : $dpp;
+$danaBersih = $basisProfit - $totalPasal;
 
 $tagList = [];
 if (!empty($paket['tags'])) {
@@ -160,6 +162,20 @@ if (!empty($paket['tags'])) {
                         </div>
                     </td>
                 </tr>
+
+                <?php if ($paguDiterima > 0): ?>
+                <tr class="hover:bg-slate-50/70 transition-colors bg-emerald-50/30">
+                    <td class="py-2.5 px-3 text-center text-emerald-600 font-mono text-[11px]">3b</td>
+                    <td class="py-2.5 px-3 font-bold text-emerald-800 whitespace-nowrap">Pagu Diterima (Acuan Profit)</td>
+                    <td class="py-2.5 px-3 text-emerald-700 font-medium">Nett Cair Diterima</td>
+                    <td class="py-2.5 px-3 text-right font-mono font-extrabold text-emerald-700">
+                        Rp <?= number_format($paguDiterima, 0, ',', '.') ?>
+                    </td>
+                    <td class="py-2.5 px-3 text-emerald-600 text-[11px]">
+                        <div class="truncate">Dipakai sebagai acuan Nilai Bersih &amp; Profit (pengganti DPP)</div>
+                    </td>
+                </tr>
+                <?php endif; ?>
 
                 <tr class="hover:bg-slate-50/70 transition-colors">
                     <td class="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">4</td>

@@ -151,8 +151,8 @@
                     <th class="py-2.5 px-3 text-right" title="Total Belanja Toko / HPP (Klik untuk Kelola Pemesanan)">HPP</th>
                     <th class="py-2.5 px-3 text-right" title="Estimasi Profit Bersih Setelah Potongan & Belanja (Klik untuk Rincian Profit)">Profit</th>
                     <th class="py-2.5 px-2 text-center" title="Jumlah Macam Item Komponen & Total Unit (Klik untuk Kelola Item)">Komponen</th>
-                    <th class="py-2.5 px-2 text-center w-16" title="Progres Pengiriman & Distribusi">Dist</th>
                     <th class="py-2.5 px-2 text-center w-16" title="Progres Pemesanan Barang (Supplier/Toko)">Order</th>
+                    <th class="py-2.5 px-2 text-center w-16" title="Progres Pengiriman & Distribusi">Dist</th>
                     <th class="py-2.5 px-2 text-center w-16" title="Progres Foto Dokumentasi Titik Penerima">Dok</th>
                     <th class="py-2.5 px-2 text-center w-16" title="Progres Upload Berkas BAST Titik Penerima">BAST</th>
                     <th class="py-2.5 px-3 text-center">Pembayaran</th>
@@ -197,7 +197,7 @@
                     $sumHpp = 0; $sumProfit = 0; $sumItems = 0; $sumUnits = 0;
                     foreach ($paket as $p): 
                         $itemTotal = (float)($p['total_item_harga'] ?? 0);
-                        $effectivePagu = ($itemTotal > 0) ? $itemTotal : (float)$p['pagu'];
+                        $effectivePagu = ((float)($p['pagu'] ?? 0) > 0) ? (float)$p['pagu'] : $itemTotal;
                         $hasNego = (!empty($p['pagu_nego']) && (float)$p['pagu_nego'] > 0);
                         $acuan = $hasNego ? (float)$p['pagu_nego'] : $effectivePagu;
                         $tipePotongan = $p['tipe_potongan'] ?? 'dpp';
@@ -211,7 +211,9 @@
                         $pasalVal = calculatePasal($basis, $persenPasal);
                         $adminVal = calculateAdmin($basis, $persenAdmin);
                         $totalPasal = $pasalVal + $adminVal;
-                        $nilaiBersih = $dpp - $totalPasal;
+                        $paguDiterimaRow = (float)($p['pagu_diterima'] ?? 0);
+                        $basisProfit = ($paguDiterimaRow > 0) ? $paguDiterimaRow : $dpp;
+                        $nilaiBersih = $basisProfit - $totalPasal;
                         $totalBelanja = (float)($p['total_belanja'] ?? 0);
                         $estimasiProfit = $nilaiBersih - $totalBelanja;
                         $profitPct = ($acuan > 0) ? round(($estimasiProfit / $acuan) * 100, 1) : 0;
@@ -291,27 +293,65 @@
                                 <?php endif; ?>
                             </td>
 
-                            <!-- Nilai Kontrak (Pagu Nego di Atas, Pagu Awal Dicoret di Bawah) -->
+                            <!-- Nilai Kontrak (Klik -> Popup Atur Nilai Kontrak, Pagu Nego & Pagu Diterima) -->
                             <td class="py-2.5 px-3 text-right whitespace-nowrap">
-                                <!-- Pagu Nego: Ditampilkan di Atas (Acuan Utama) -->
-                                <div class="font-mono font-bold text-slate-800 text-xs leading-5" title="Nilai Hasil Negosiasi (Acuan Utama): <?= formatRupiah($acuan) ?>">
-                                    <?= formatRupiah($acuan) ?>
-                                </div>
-                                <!-- Pagu Awal: Grey & Coretan di Tengah Text di Bawah -->
-                                <div class="font-mono text-slate-400 line-through text-[11px] leading-4" title="Nilai Kontrak / Pagu Awal">
-                                    <?= formatRupiah($effectivePagu) ?>
-                                </div>
+                                <?php if ($role === 'admin' || $role === 'user'): ?>
+                                    <button type="button"
+                                            onclick='openEditPaguModal(<?= json_encode([
+                                                "id" => $p["id"],
+                                                "kode_paket" => $p["kode_paket"],
+                                                "nama_paket" => $p["nama_paket"],
+                                                "pagu" => $effectivePagu,
+                                                "pagu_nego" => $p["pagu_nego"] ?? 0,
+                                                "pagu_diterima" => $paguDiterimaRow
+                                            ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'
+                                            class="text-right hover:bg-blue-50/80 px-2 py-1 -my-1 -mx-2 rounded-lg transition-all cursor-pointer inline-block"
+                                            title="Klik untuk atur Nilai Kontrak, Pagu Negosiasi & Pagu Diterima">
+                                        <div class="font-mono font-bold text-slate-800 text-xs leading-5">
+                                            <?= formatRupiah($acuan) ?>
+                                        </div>
+                                        <div class="font-mono text-slate-400 line-through text-[11px] leading-4">
+                                            <?= formatRupiah($effectivePagu) ?>
+                                        </div>
+                                        <?php if ($paguDiterimaRow > 0): ?>
+                                            <div class="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 rounded px-1 mt-0.5 inline-block">
+                                                Diterima: <?= formatRupiah($paguDiterimaRow) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </button>
+                                <?php else: ?>
+                                    <div class="font-mono font-bold text-slate-800 text-xs leading-5"><?= formatRupiah($acuan) ?></div>
+                                    <div class="font-mono text-slate-400 line-through text-[11px] leading-4"><?= formatRupiah($effectivePagu) ?></div>
+                                <?php endif; ?>
                             </td>
 
-                            <!-- DPP (-11% PPN dari Nilai Nego) -->
+                            <!-- DPP (-11% PPN dari Nilai Nego) + Kroscek Total Komponen -->
                             <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                                <?php
+                                $selisihKomp = $itemTotal - $dpp;
+                                $isKompCocok = ($dpp > 0 && abs($selisihKomp) <= 100);
+                                ?>
                                 <div class="font-mono font-bold text-slate-800 text-xs leading-5" title="DPP dihitung dari Nilai Nego / 1.11">
                                     <?= formatRupiah($dpp) ?>
                                 </div>
-                                <div class="mt-0.5 min-h-[16px] flex items-center justify-end">
+                                <div class="mt-0.5 min-h-[16px] flex items-center justify-end gap-1">
                                     <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200" title="Dasar Pengenaan Pajak (-11% PPN dari Nego)">
                                         DPP -11%
                                     </span>
+                                    <?php if ($dpp > 0 || $itemTotal > 0): ?>
+                                        <button type="button"
+                                                onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'items', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')"
+                                                class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold border cursor-pointer transition-colors <?= $isKompCocok ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : ($itemTotal <= 0 ? 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200' : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100') ?>"
+                                                title="Total Komponen: <?= formatRupiah($itemTotal) ?> vs DPP: <?= formatRupiah($dpp) ?> • Klik untuk cek Komponen">
+                                            <?php if ($isKompCocok): ?>
+                                                ✓ Cocok
+                                            <?php elseif ($itemTotal <= 0): ?>
+                                                Item Rp 0
+                                            <?php else: ?>
+                                                <?= ($selisihKomp > 0 ? '+' : '-') . formatRupiah(abs($selisihKomp)) ?>
+                                            <?php endif; ?>
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
                             </td>
 
@@ -428,21 +468,21 @@
                                 </button>
                             </td>
 
-                            <!-- Progres Distribusi (Lingkaran - Klik untuk Buka Popup) -->
-                            <td class="py-2 px-2 text-center whitespace-nowrap">
-                                <button type="button" 
-                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'distribusi', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
-                                        class="hover:scale-105 transition-transform inline-block cursor-pointer">
-                                    <?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?>
-                                </button>
-                            </td>
-
                             <!-- Progres Pemesanan (Lingkaran - Klik untuk Buka Popup) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
                                 <button type="button" 
                                         onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'pemesanan', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
                                         class="hover:scale-105 transition-transform inline-block cursor-pointer">
                                     <?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?>
+                                </button>
+                            </td>
+
+                            <!-- Progres Distribusi (Lingkaran - Klik untuk Buka Popup) -->
+                            <td class="py-2 px-2 text-center whitespace-nowrap">
+                                <button type="button" 
+                                        onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'distribusi', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
+                                        class="hover:scale-105 transition-transform inline-block cursor-pointer">
+                                    <?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?>
                                 </button>
                             </td>
 
@@ -788,37 +828,6 @@
                 </div>
             </div>
 
-            <!-- Financials Grid: Pagu Awal & Pagu Nego (Wajib) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <!-- Pagu Awal -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Kontrak / Pagu Awal <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
-                        <input type="text" name="pagu" id="tambah_pagu" required oninput="formatRupiahInput(this)"
-                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs font-mono font-medium focus:bg-white transition-all"
-                               placeholder="15.584.400">
-                    </div>
-                </div>
-
-                <!-- Pagu Akhir / Nego -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">
-                        Pagu Nego (Hasil Negosiasi) <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
-                        <input type="text" name="pagu_nego" id="tambah_pagu_nego" required oninput="formatRupiahInput(this)"
-                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700 font-bold"
-                               placeholder="14.850.000">
-                    </div>
-                    <p class="text-[10px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
-                        <ion-icon name="checkmark-circle-outline"></ion-icon>
-                        <span>Acuan utama DPP & potongan pasal</span>
-                    </p>
-                </div>
-            </div>
-
             <!-- Footer -->
             <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 shrink-0">
                 <button type="button" data-modal-close="modalTambahPaket" 
@@ -952,36 +961,6 @@
                 </div>
             </div>
 
-            <!-- Financials Grid: Pagu Awal & Pagu Nego (Wajib) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <!-- Pagu Awal -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nilai Kontrak / Pagu Awal <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
-                        <input type="text" name="pagu" id="edit_pagu" required oninput="formatRupiahInput(this)"
-                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs font-mono font-medium focus:bg-white transition-all">
-                    </div>
-                </div>
-
-                <!-- Pagu Akhir / Nego -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">
-                        Pagu Nego (Hasil Negosiasi) <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
-                        <input type="text" name="pagu_nego" id="edit_pagu_nego" required oninput="formatRupiahInput(this)"
-                               class="w-full pl-8 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-medium focus:bg-white transition-all text-emerald-700 font-bold"
-                               placeholder="14.850.000">
-                    </div>
-                    <p class="text-[10px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
-                        <ion-icon name="checkmark-circle-outline"></ion-icon>
-                        <span>Acuan utama DPP & potongan pasal</span>
-                    </p>
-                </div>
-            </div>
-
             <!-- Footer -->
             <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 shrink-0">
                 <button type="button" data-modal-close="modalEditPaket" 
@@ -992,6 +971,76 @@
                         class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-xs shadow-xs transition-all flex items-center gap-1.5">
                     <ion-icon name="checkmark-outline" class="text-sm"></ion-icon>
                     <span>Simpan Perubahan</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: ATUR NILAI KONTRAK & PAGU (POPUP)   -->
+<!-- ========================================== -->
+<div id="modalEditPagu" class="app-modal fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden flex flex-col">
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-base shadow-xs">
+                    <ion-icon name="cash-outline"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-xs">Atur Nilai Kontrak &amp; Pagu</h3>
+                    <p class="text-[10px] text-slate-400 truncate max-w-[260px]" id="editPaguSubtitle">-</p>
+                </div>
+            </div>
+            <button type="button" data-modal-close="modalEditPagu" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+
+        <form id="formEditPagu" action="" method="POST" class="p-5 space-y-3.5">
+            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
+            <input type="hidden" name="redirect_to" value="/paket">
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">1. Nilai Kontrak / Pagu Awal</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
+                    <input type="text" name="pagu" id="pagu_modal_kontrak" oninput="formatRupiahInput(this)"
+                           class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs font-mono font-bold focus:bg-white transition-all"
+                           placeholder="0">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">2. Pagu Negosiasi</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
+                    <input type="text" name="pagu_nego" id="pagu_modal_nego" oninput="formatRupiahInput(this)"
+                           class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs font-mono font-bold text-blue-700 focus:bg-white transition-all"
+                           placeholder="0 (Opsional, kosongkan jika sama dengan kontrak)">
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1">Acuan utama perhitungan DPP dan potongan pasal.</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">3. Pagu Diterima (Nett Cair)</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">Rp</span>
+                    <input type="text" name="pagu_diterima" id="pagu_modal_diterima" oninput="formatRupiahInput(this)"
+                           class="w-full pl-9 pr-3 py-2 bg-emerald-50/40 border border-emerald-200 rounded-xl focus:outline-none focus:border-emerald-500 text-xs font-mono font-bold text-emerald-700 focus:bg-white transition-all"
+                           placeholder="0 (Acuan Nilai Bersih &amp; Profit)">
+                </div>
+                <p class="text-[10px] text-emerald-700 mt-1">Jika diisi, <strong>Nilai Bersih &amp; Profit</strong> dihitung dari Pagu Diterima (bukan dari DPP).</p>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button type="button" data-modal-close="modalEditPagu"
+                        class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-xs cursor-pointer">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-xs shadow-xs cursor-pointer">
+                    Simpan Nilai Pagu
                 </button>
             </div>
         </form>
@@ -1495,6 +1544,10 @@
                 <ion-icon name="create-outline" class="text-sm text-amber-500"></ion-icon>
                 <span>Edit Data Paket</span>
             </button>
+            <button type="button" onclick="triggerMenuAturPagu()" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer">
+                <ion-icon name="cash-outline" class="text-sm text-blue-600"></ion-icon>
+                <span>Atur Nilai &amp; Pagu</span>
+            </button>
             <button type="button" onclick="triggerMenuSkemaPotongan()" class="w-full px-3.5 py-1.5 text-left flex items-center gap-2 hover:bg-amber-50 hover:text-amber-700 transition-colors cursor-pointer">
                 <ion-icon name="options-outline" class="text-sm text-amber-500"></ion-icon>
                 <span>Atur Skema Potongan</span>
@@ -1654,7 +1707,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Jumlah (Qty) <span class="text-rose-500">*</span></label>
-                    <input type="number" name="jumlah" id="nativeItemJumlah" value="1" min="1" step="any" required
+                    <input type="number" name="jumlah" id="nativeItemJumlah" value="1" min="1" step="any" required oninput="updateNativeItemAlokasiSummary()"
                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-blue-500 transition-all font-semibold">
                 </div>
                 <div>
@@ -1662,6 +1715,25 @@
                     <input type="text" name="harga_satuan" id="nativeItemHargaSatuan" value="0"
                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-blue-500 transition-all font-mono font-semibold">
                 </div>
+            </div>
+
+            <!-- Alokasi Distribusi Awal (khusus Tambah Komponen) -->
+            <div id="nativeItemAlokasiSection" class="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-3 space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                    <div>
+                        <div class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
+                            <ion-icon name="navigate-outline" class="text-indigo-600"></ion-icon>
+                            <span>Alokasi Distribusi Barang (Opsional)</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500" id="nativeItemAlokasiHint">Teralokasi: 0 / 1 unit</div>
+                    </div>
+                    <button type="button" onclick="addNativeItemAlokasiRow()"
+                            class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold inline-flex items-center gap-1 cursor-pointer">
+                        <ion-icon name="add-outline"></ion-icon>
+                        <span>Tambah Tujuan</span>
+                    </button>
+                </div>
+                <div id="nativeItemAlokasiRows" class="space-y-2"></div>
             </div>
 
             <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
@@ -2117,6 +2189,150 @@ function openNativeUploadDokumenPaketModal(kode, jenis, label, redirectTab) {
 /**
  * Native Tambah & Edit Item Modal Trigger
  */
+const NATIVE_ITEM_LOKASI_OPTIONS = <?= json_encode(array_map(function($l) {
+    return ['id' => (int)$l['id'], 'nama' => $l['nama_lokasi'], 'kota' => $l['kab_kota'] ?? ''];
+}, $allLokasiList ?? []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+
+function addNativeItemAlokasiRow(selectedId = '', qtyVal = '') {
+    const container = document.getElementById('nativeItemAlokasiRows');
+    if (!container) return;
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-2 bg-white p-2 rounded-lg border border-slate-200/90';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'relative flex-1 min-w-0';
+
+    const hiddenId = document.createElement('input');
+    hiddenId.type = 'hidden';
+    hiddenId.name = 'alokasi_lokasi_id[]';
+    hiddenId.value = selectedId || '';
+
+    const searchInp = document.createElement('input');
+    searchInp.type = 'text';
+    searchInp.autocomplete = 'off';
+    searchInp.placeholder = 'Ketik nama tujuan / sekolah...';
+    searchInp.className = 'w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:bg-white focus:border-indigo-500 focus:outline-none';
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'hidden fixed bg-white border border-slate-200 rounded-xl shadow-2xl max-h-48 overflow-y-auto z-[9999] divide-y divide-slate-100';
+    document.body.appendChild(dropdown);
+
+    if (selectedId) {
+        const found = NATIVE_ITEM_LOKASI_OPTIONS.find(l => String(l.id) === String(selectedId));
+        if (found) searchInp.value = found.nama + (found.kota ? ' (' + found.kota + ')' : '');
+    }
+
+    const positionDropdown = () => {
+        const rect = searchInp.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom - 12;
+        dropdown.style.left = rect.left + 'px';
+        dropdown.style.width = rect.width + 'px';
+        if (spaceBelow < 160 && rect.top > 180) {
+            dropdown.style.top = 'auto';
+            dropdown.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+        } else {
+            dropdown.style.bottom = 'auto';
+            dropdown.style.top = (rect.bottom + 4) + 'px';
+        }
+    };
+
+    const renderMatches = (q) => {
+        const term = (q || '').trim().toLowerCase();
+        if (!term) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+        dropdown.innerHTML = '';
+        const seen = new Set();
+        const matches = [];
+        for (const l of NATIVE_ITEM_LOKASI_OPTIONS) {
+            const label = l.nama + (l.kota ? ' (' + l.kota + ')' : '');
+            const key = l.nama.trim().toLowerCase() + '|' + (l.kota || '').trim().toLowerCase();
+            if (seen.has(key)) continue;
+            if (label.toLowerCase().includes(term)) {
+                seen.add(key);
+                matches.push({ id: l.id, nama: l.nama, kota: l.kota, label });
+                if (matches.length >= 12) break;
+            }
+        }
+        if (matches.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'px-3 py-2 text-[11px] text-slate-400 italic';
+            empty.textContent = 'Tujuan tidak ditemukan.';
+            dropdown.appendChild(empty);
+        } else {
+            matches.forEach(m => {
+                const itemBtn = document.createElement('button');
+                itemBtn.type = 'button';
+                itemBtn.className = 'w-full text-left px-3 py-1.5 hover:bg-indigo-50 text-xs flex items-center justify-between gap-2 cursor-pointer';
+                itemBtn.innerHTML = '<span class="font-semibold text-slate-800 truncate"></span><span class="text-[10px] text-slate-400 shrink-0"></span>';
+                itemBtn.children[0].textContent = m.nama;
+                itemBtn.children[1].textContent = m.kota || '';
+                itemBtn.onmousedown = function(ev) {
+                    ev.preventDefault();
+                    hiddenId.value = m.id;
+                    searchInp.value = m.label;
+                    dropdown.classList.add('hidden');
+                };
+                dropdown.appendChild(itemBtn);
+            });
+        }
+        positionDropdown();
+        dropdown.classList.remove('hidden');
+    };
+
+    searchInp.addEventListener('input', () => {
+        hiddenId.value = '';
+        renderMatches(searchInp.value);
+    });
+    searchInp.addEventListener('blur', () => {
+        setTimeout(() => dropdown.classList.add('hidden'), 150);
+    });
+
+    wrap.appendChild(hiddenId);
+    wrap.appendChild(searchInp);
+
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.name = 'alokasi_jumlah[]';
+    inp.min = '1';
+    inp.step = 'any';
+    inp.placeholder = 'Qty';
+    inp.value = qtyVal || '1';
+    inp.className = 'w-20 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-center font-bold shrink-0';
+    inp.addEventListener('input', updateNativeItemAlokasiSummary);
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'p-1 text-slate-400 hover:text-rose-600 cursor-pointer shrink-0';
+    delBtn.innerHTML = '<ion-icon name="close-circle-outline" class="text-base"></ion-icon>';
+    delBtn.onclick = function() {
+        dropdown.remove();
+        row.remove();
+        updateNativeItemAlokasiSummary();
+    };
+
+    row.appendChild(wrap);
+    row.appendChild(inp);
+    row.appendChild(delBtn);
+    container.appendChild(row);
+    updateNativeItemAlokasiSummary();
+    searchInp.focus();
+}
+
+function updateNativeItemAlokasiSummary() {
+    const qtyTotal = parseFloat(document.getElementById('nativeItemJumlah')?.value || 0) || 0;
+    let sum = 0;
+    document.querySelectorAll('#nativeItemAlokasiRows input[name="alokasi_jumlah[]"]').forEach(el => {
+        sum += parseFloat(el.value || 0) || 0;
+    });
+    const hint = document.getElementById('nativeItemAlokasiHint');
+    if (hint) {
+        hint.textContent = 'Teralokasi: ' + sum + ' / ' + qtyTotal + ' unit';
+        hint.className = sum > qtyTotal ? 'text-[10px] font-bold text-rose-600' : 'text-[10px] text-slate-500';
+    }
+}
+
 function openNativeTambahItemModal(kode) {
     const targetKode = kode || currentOpenKode;
     const form = document.getElementById('formNativeItem');
@@ -2130,6 +2346,11 @@ function openNativeTambahItemModal(kode) {
         document.getElementById('nativeItemSatuan').value = 'Unit';
         document.getElementById('nativeItemJumlah').value = '1';
         document.getElementById('nativeItemHargaSatuan').value = '0';
+        const alokasiSec = document.getElementById('nativeItemAlokasiSection');
+        const alokasiRows = document.getElementById('nativeItemAlokasiRows');
+        if (alokasiRows) alokasiRows.innerHTML = '';
+        if (alokasiSec) alokasiSec.classList.remove('hidden');
+        updateNativeItemAlokasiSummary();
     }
     window.ProModal.open('modalNativeItem');
 }
@@ -2148,6 +2369,8 @@ function openNativeEditItemModal(it) {
         document.getElementById('nativeItemSatuan').value = it.satuan || 'Unit';
         document.getElementById('nativeItemJumlah').value = it.jumlah || 1;
         document.getElementById('nativeItemHargaSatuan').value = it.harga_satuan ? new Intl.NumberFormat('id-ID').format(it.harga_satuan) : '0';
+        const alokasiSec = document.getElementById('nativeItemAlokasiSection');
+        if (alokasiSec) alokasiSec.classList.add('hidden');
     }
     window.ProModal.open('modalNativeItem');
 }
@@ -3112,15 +3335,29 @@ function openEditPaketModal(p) {
     if (document.getElementById('edit_status')) document.getElementById('edit_status').value = p.status || 'Proses';
     document.getElementById('editPaketSubtitle').textContent = 'Mengubah: ' + (p.nama_paket || '') + (p.kode_paket ? ' [' + p.kode_paket + ']' : '');
 
+    window.ProModal.open('modalEditPaket');
+}
+
+function triggerMenuAturPagu() {
+    if (!currentMenuTarget) return;
+    const pkg = currentMenuTarget.pkg;
+    closePaketActionMenu();
+    openEditPaguModal(pkg);
+}
+
+function openEditPaguModal(p) {
+    if (!p) return;
+    const form = document.getElementById('formEditPagu');
+    form.action = '<?= APP_URL ?>/paket/updatePagu/' + encodeURIComponent(p.kode_paket || p.id);
+    document.getElementById('editPaguSubtitle').textContent = (p.nama_paket || '') + (p.kode_paket ? ' [' + p.kode_paket + ']' : '');
+
     const itemTotal = parseFloat(p.total_item_harga) || 0;
     const effectivePagu = itemTotal > 0 ? itemTotal : (parseFloat(p.pagu) || 0);
-    const paguInput = document.getElementById('edit_pagu');
-    paguInput.value = effectivePagu ? Math.round(effectivePagu).toLocaleString('id-ID') : '';
+    document.getElementById('pagu_modal_kontrak').value = effectivePagu > 0 ? Math.round(effectivePagu).toLocaleString('id-ID') : '';
+    document.getElementById('pagu_modal_nego').value = (p.pagu_nego && parseFloat(p.pagu_nego) > 0) ? Math.round(parseFloat(p.pagu_nego)).toLocaleString('id-ID') : '';
+    document.getElementById('pagu_modal_diterima').value = (p.pagu_diterima && parseFloat(p.pagu_diterima) > 0) ? Math.round(parseFloat(p.pagu_diterima)).toLocaleString('id-ID') : '';
 
-    const negoInput = document.getElementById('edit_pagu_nego');
-    negoInput.value = (p.pagu_nego && p.pagu_nego > 0) ? parseInt(p.pagu_nego, 10).toLocaleString('id-ID') : '';
-
-    window.ProModal.open('modalEditPaket');
+    window.ProModal.open('modalEditPagu');
 }
 
 /**

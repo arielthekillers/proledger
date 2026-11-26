@@ -66,7 +66,7 @@ class PaketGroup {
      */
     public static function calculatePaketMetrics(array $p): array {
         $itemTotal = (float)($p['total_item_harga'] ?? 0);
-        $effectivePagu = ($itemTotal > 0) ? $itemTotal : (float)($p['pagu'] ?? 0);
+        $effectivePagu = ((float)($p['pagu'] ?? 0) > 0) ? (float)$p['pagu'] : $itemTotal;
         $hasNego = (!empty($p['pagu_nego']) && (float)$p['pagu_nego'] > 0);
         $acuan = $hasNego ? (float)$p['pagu_nego'] : $effectivePagu;
 
@@ -80,7 +80,9 @@ class PaketGroup {
         $pasalVal = calculatePasal($basis, $persenPasal);
         $adminVal = calculateAdmin($basis, $persenAdmin);
         $totalPasal = $pasalVal + $adminVal;
-        $nilaiBersih = $dpp - $totalPasal;
+        $paguDiterima = (!empty($p['pagu_diterima']) && (float)$p['pagu_diterima'] > 0) ? (float)$p['pagu_diterima'] : 0;
+        $basisProfit = ($paguDiterima > 0) ? $paguDiterima : $dpp;
+        $nilaiBersih = $basisProfit - $totalPasal;
         $hpp = (float)($p['total_belanja'] ?? 0);
         $profit = $nilaiBersih - $hpp;
         $profitPct = ($acuan > 0) ? round(($profit / $acuan) * 100, 1) : 0;
@@ -104,6 +106,7 @@ class PaketGroup {
         return [
             'effective_pagu' => $effectivePagu,
             'acuan'          => $acuan,
+            'pagu_diterima'  => $paguDiterima,
             'dpp'            => $dpp,
             'persen_pasal'   => $persenPasal,
             'persen_admin'   => $persenAdmin,

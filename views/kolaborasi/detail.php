@@ -87,6 +87,12 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
             </a>
         <?php endif; ?>
 
+        <a href="<?= APP_URL ?>/kolaborasi/distribusi/<?= (int)$kolab['id'] ?>"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-semibold transition-colors">
+            <ion-icon name="navigate-outline" class="text-sm"></ion-icon>
+            <span>Analisa Per Tujuan</span>
+        </a>
+
         <button type="button" data-modal-open="modalKolabAnggotaGroup"
                 class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer">
             <ion-icon name="git-network-outline" class="text-sm"></ion-icon>
@@ -94,6 +100,11 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
         </button>
 
         <?php if ($isOwner): ?>
+            <a href="<?= APP_URL ?>/kolaborasi/laporan/<?= (int)$kolab['id'] ?>"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-semibold transition-colors">
+                <ion-icon name="document-text-outline" class="text-sm"></ion-icon>
+                <span>Laporan Keuangan</span>
+            </a>
             <button type="button" data-modal-open="modalEditKolab"
                     class="p-1.5 bg-white hover:bg-amber-50 text-slate-600 hover:text-amber-600 border border-slate-200 rounded-xl transition-colors cursor-pointer"
                     title="Pengaturan Kolaborasi">
@@ -146,8 +157,8 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
         <!-- 4 Progress Rings + Status Inline -->
         <div class="flex flex-wrap items-center gap-4 pt-2 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-100 lg:pl-5 shrink-0">
             <div class="flex items-center gap-3">
-                <?php $renderRing($summary['dist_pct'], 'Dist', '#6366f1', 'text-indigo-600'); ?>
                 <?php $renderRing($summary['order_pct'], 'Order', '#f59e0b', 'text-amber-600'); ?>
+                <?php $renderRing($summary['dist_pct'], 'Dist', '#6366f1', 'text-indigo-600'); ?>
                 <?php $renderRing($summary['dok_pct'], 'Dok', '#10b981', 'text-emerald-600'); ?>
                 <?php $renderRing($summary['bast_pct'], 'BAST', '#a855f7', 'text-purple-600'); ?>
             </div>

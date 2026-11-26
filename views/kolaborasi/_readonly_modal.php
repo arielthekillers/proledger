@@ -73,7 +73,7 @@ $fin        = $modalData['finansial'];
                     <?php foreach ($items as $idx => $it): ?>
                         <tr>
                             <td class="py-2 px-3 text-slate-400 font-mono"><?= $idx + 1 ?></td>
-                            <td class="py-2 px-3 font-semibold text-slate-800"><?= htmlspecialchars($it['nama_item']) ?></td>
+                            <td class="py-2 px-3 font-semibold text-slate-800"><?= htmlspecialchars($it['komponen'] ?? $it['nama_komponen'] ?? $it['nama_item'] ?? '-') ?></td>
                             <td class="py-2 px-3 text-slate-500"><?= htmlspecialchars(trim(($it['merk'] ?? '') . ' ' . ($it['spesifikasi'] ?? '')) ?: '-') ?></td>
                             <td class="py-2 px-3 text-center font-semibold"><?= rtrim(rtrim(number_format((float)$it['jumlah'], 2, ',', '.'), '0'), ',') ?> <?= htmlspecialchars($it['satuan'] ?? 'Unit') ?></td>
                             <td class="py-2 px-3 text-right font-mono text-slate-700"><?= formatRupiah($it['harga_satuan'] ?? 0) ?></td>
@@ -330,5 +330,85 @@ $fin        = $modalData['finansial'];
                 <?php endif; ?>
             </tbody>
         </table>
+    </div>
+<?php elseif ($module === 'dokumen_paket'):
+    $dokumens = $modalData['dokumens'] ?? [];
+    $groupedDist = $modalData['groupedDistribusi'] ?? [];
+    $tujuanKeys = array_keys($groupedDist);
+    $isPerTujuanBast = function ($doc) use ($tujuanKeys) {
+        $jenis = strtoupper(trim((string)($doc['jenis_dokumen'] ?? '')));
+        if ($jenis !== '' && $jenis !== 'BAST') return false;
+        foreach ($tujuanKeys as $tk) {
+            if ($tk !== '' && (stripos((string)$doc['nama_dokumen'], $tk) !== false || stripos((string)$doc['nama_file_asli'], $tk) !== false)) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    $spDocs = []; $bastPaketDocs = []; $fpDocs = [];
+    foreach ($dokumens as $d) {
+        $j = strtoupper(trim((string)($d['jenis_dokumen'] ?? '')));
+        if ($j === 'SURAT_PESANAN') {
+            $spDocs[] = $d;
+        } elseif ($j === 'FAKTUR_PAJAK') {
+            $fpDocs[] = $d;
+        } elseif ($j === 'BAST_PAKET' || ($j === 'BAST' && !$isPerTujuanBast($d))) {
+            $bastPaketDocs[] = $d;
+        }
+    }
+
+    $slots = [
+        ['no' => '1', 'label' => 'Surat Pemesanan', 'docs' => $spDocs, 'color' => 'indigo'],
+        ['no' => '2', 'label' => 'BAST (Paket)',    'docs' => $bastPaketDocs, 'color' => 'amber'],
+        ['no' => '3', 'label' => 'Faktur Pajak',    'docs' => $fpDocs, 'color' => 'blue'],
+    ];
+?>
+    <div class="space-y-3">
+        <?php foreach ($slots as $sl):
+            $hasDocs = !empty($sl['docs']);
+        ?>
+            <div class="rounded-xl border border-slate-200/90 bg-white p-3.5 shadow-2xs">
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-md bg-<?= $sl['color'] ?>-50 text-<?= $sl['color'] ?>-700 border border-<?= $sl['color'] ?>-200 text-[11px] font-bold flex items-center justify-center">
+                            <?= $sl['no'] ?>
+                        </span>
+                        <span class="font-bold text-slate-800 text-xs"><?= $sl['label'] ?></span>
+                    </div>
+                    <?php if ($hasDocs): ?>
+                        <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                            ✓ Sudah Diupload (<?= count($sl['docs']) ?>)
+                        </span>
+                    <?php else: ?>
+                        <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 text-[10px] font-semibold">
+                            Belum Diupload
+                        </span>
+                    <?php endif; ?>
+                </div>
+
+                <?php if ($hasDocs): ?>
+                    <div class="space-y-1.5">
+                        <?php foreach ($sl['docs'] as $doc): ?>
+                            <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200/70">
+                                <div class="min-w-0">
+                                    <div class="text-xs font-semibold text-slate-800 truncate"><?= htmlspecialchars($doc['nama_dokumen']) ?></div>
+                                    <div class="text-[10px] text-slate-400 truncate"><?= htmlspecialchars($doc['nama_file_asli']) ?></div>
+                                </div>
+                                <?php if (!empty($doc['file_path'])): ?>
+                                    <a href="<?= APP_URL . '/' . ltrim($doc['file_path'], '/') ?>" target="_blank"
+                                       class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-<?= $sl['color'] ?>-600 hover:bg-<?= $sl['color'] ?>-700 text-white text-[11px] font-semibold shrink-0 transition-colors">
+                                        <ion-icon name="open-outline"></ion-icon>
+                                        <span>Lihat Dokumen</span>
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="text-[11px] text-slate-400 italic">Belum ada berkas <?= strtolower($sl['label']) ?> yang diupload untuk paket ini.</div>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
     </div>
 <?php endif; ?>

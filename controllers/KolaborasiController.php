@@ -192,6 +192,62 @@ class KolaborasiController {
     }
 
     /**
+     * Laporan Keuangan Koordinator Kolaborasi (khusus Owner/Koordinator)
+     */
+    public function laporan($id) {
+        $kolabId = (int)$id;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $kolab = $this->kolabModel->getById($kolabId);
+        if (!$kolab || (int)$kolab['owner_id'] !== $userId) {
+            flash('error', 'Hanya koordinator ruang kolaborasi yang dapat mengakses laporan keuangan.');
+            redirect('/kolaborasi/detail/' . $kolabId);
+            return;
+        }
+
+        $dashboard = $this->kolabModel->getDashboardData($kolabId);
+
+        $this->view('kolaborasi/laporan_keuangan', [
+            'title'        => 'Laporan Keuangan Koordinator: ' . $kolab['nama'],
+            'active'       => 'kolaborasi',
+            'kolab'        => $kolab,
+            'pakets'       => $dashboard['pakets'],
+            'companyStats' => $dashboard['companyStats'],
+            'summary'      => $dashboard['summary'],
+        ]);
+    }
+
+    /**
+     * Analisa Distribusi Per Tujuan Lintas Perusahaan
+     */
+    public function distribusi($id) {
+        $kolabId = (int)$id;
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $kolab = $this->kolabModel->getById($kolabId);
+        if (!$kolab) {
+            flash('error', 'Ruang kolaborasi tidak ditemukan.');
+            redirect('/kolaborasi');
+            return;
+        }
+
+        $membership = $this->kolabModel->getMembership($kolabId, $userId);
+        if (!$membership || $membership['status'] !== 'joined') {
+            flash('error', 'Anda tidak memiliki akses ke ruang kolaborasi ini.');
+            redirect('/kolaborasi');
+            return;
+        }
+
+        $analisa = $this->kolabModel->getDistribusiPerTujuan($kolabId);
+
+        $this->view('kolaborasi/distribusi_tujuan', [
+            'title'      => 'Analisa Distribusi Per Tujuan: ' . $kolab['nama'],
+            'active'     => 'kolaborasi',
+            'kolab'      => $kolab,
+            'tujuanList' => $analisa['tujuanList'],
+            'totals'     => $analisa['totals'],
+        ]);
+    }
+
+    /**
      * Update Pengaturan Ruang Kolaborasi (Owner)
      */
     public function update($id) {
@@ -421,7 +477,7 @@ class KolaborasiController {
             exit;
         }
 
-        $allowedModules = ['info', 'items', 'pemesanan', 'distribusi', 'dokumentasi', 'dokumen'];
+        $allowedModules = ['info', 'items', 'pemesanan', 'distribusi', 'dokumentasi', 'dokumen', 'dokumen_paket'];
         $module = in_array($module, $allowedModules, true) ? $module : 'info';
 
         $modalData = $this->kolabModel->getReadonlyModalData((int)$kolabId, (string)$paketIdOrKode);

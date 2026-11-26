@@ -24,6 +24,10 @@ class PaketKegiatan {
             if (!$col) {
                 $this->db->exec("ALTER TABLE paket_kegiatan ADD COLUMN is_dok_selesai TINYINT(1) NOT NULL DEFAULT 0");
             }
+            $colDiterima = $this->db->query("SHOW COLUMNS FROM paket_kegiatan LIKE 'pagu_diterima'")->fetch();
+            if (!$colDiterima) {
+                $this->db->exec("ALTER TABLE paket_kegiatan ADD COLUMN pagu_diterima DECIMAL(15,2) NULL DEFAULT NULL AFTER pagu_nego");
+            }
         } catch (Throwable $e) {
             // Abaikan jika permission terbatas
         }
@@ -237,6 +241,7 @@ class PaketKegiatan {
 
             $pagu = (float)($data['pagu'] ?? 0);
             $paguNego = (!empty($data['pagu_nego']) && (float)$data['pagu_nego'] > 0) ? (float)$data['pagu_nego'] : null;
+            $paguDiterima = (!empty($data['pagu_diterima']) && (float)$data['pagu_diterima'] > 0) ? (float)$data['pagu_diterima'] : null;
             $acuan = $paguNego !== null ? $paguNego : $pagu;
 
             $persenPasal = isset($data['persen_pasal']) && $data['persen_pasal'] !== '' ? (float)$data['persen_pasal'] : 13.0;
@@ -326,6 +331,7 @@ class PaketKegiatan {
 
             $pagu = (float)($data['pagu'] ?? 0);
             $paguNego = (!empty($data['pagu_nego']) && (float)$data['pagu_nego'] > 0) ? (float)$data['pagu_nego'] : null;
+            $paguDiterima = (!empty($data['pagu_diterima']) && (float)$data['pagu_diterima'] > 0) ? (float)$data['pagu_diterima'] : null;
             $acuan = $paguNego !== null ? $paguNego : $pagu;
 
             $persenPasal = isset($data['persen_pasal']) && $data['persen_pasal'] !== '' ? (float)$data['persen_pasal'] : 13.0;
@@ -352,7 +358,7 @@ class PaketKegiatan {
             
             $stmt = $this->db->prepare("
                 UPDATE paket_kegiatan 
-                SET nama_paket = ?, nomor_sp = ?, kab_kota = ?, pagu = ?, pagu_nego = ?, dpp = ?, pasal_13 = ?, admin_2 = ?, total_pasal = ?, tipe_potongan = ?,
+                SET nama_paket = ?, nomor_sp = ?, kab_kota = ?, pagu = ?, pagu_nego = ?, pagu_diterima = ?, dpp = ?, pasal_13 = ?, admin_2 = ?, total_pasal = ?, tipe_potongan = ?,
                     persen_pasal = ?, persen_admin = ?,
                     setor_awal = ?, selisih = ?, rab = ?, status = ?, progres_barang = ?,
                     perusahaan_id = ?, group_id = ?, tahun_anggaran = ?, tags = ?, skema_id = ?, perusahaan = ?, penanggung_jawab = ?
@@ -365,6 +371,7 @@ class PaketKegiatan {
                 !empty($data['kab_kota']) ? trim($data['kab_kota']) : null,
                 $pagu,
                 $paguNego,
+                $paguDiterima,
                 $dpp,
                 $pasal,
                 $admin,
@@ -578,6 +585,36 @@ class PaketKegiatan {
     }
 
     /**
+     * Update Nilai Kontrak, Pagu Negosiasi, dan Pagu Diterima dari popup khusus
+     */
+    public function updatePagu($idOrKode, $pagu, $paguNego, $paguDiterima) {
+        $existing = $this->getById($idOrKode);
+        if (!$existing) return false;
+
+        $pagu = max(0, (float)$pagu);
+        $paguNegoVal = ($paguNego !== null && (float)$paguNego > 0) ? (float)$paguNego : null;
+        $paguDiterimaVal = ($paguDiterima !== null && (float)$paguDiterima > 0) ? (float)$paguDiterima : null;
+        $acuan = $paguNegoVal !== null ? $paguNegoVal : $pagu;
+
+        $persenPasal = isset($existing['persen_pasal']) && $existing['persen_pasal'] !== '' ? (float)$existing['persen_pasal'] : 13.0;
+        $persenAdmin = isset($existing['persen_admin']) && $existing['persen_admin'] !== '' ? (float)$existing['persen_admin'] : 2.0;
+        $tipePotongan = in_array($existing['tipe_potongan'] ?? '', ['kontrak', 'dpp']) ? $existing['tipe_potongan'] : 'dpp';
+
+        $dpp = calculateDPP($acuan);
+        $basis = ($tipePotongan === 'kontrak') ? $acuan : $dpp;
+        $pasal = calculatePasal($basis, $persenPasal);
+        $admin = calculateAdmin($basis, $persenAdmin);
+        $totalPasal = $pasal + $admin;
+
+        $stmt = $this->db->prepare("
+            UPDATE paket_kegiatan
+            SET pagu = ?, pagu_nego = ?, pagu_diterima = ?, dpp = ?, pasal_13 = ?, admin_2 = ?, total_pasal = ?
+            WHERE id = ?
+        ");
+        return $stmt->execute([$pagu, $paguNegoVal, $paguDiterimaVal, $dpp, $pasal, $admin, $totalPasal, (int)$existing['id']]);
+    }
+
+    /**
      * Get summary metrics for a paket kegiatan
      */
     public function getSummary($paket_id) {
@@ -599,6 +636,7 @@ class PaketKegiatan {
         return [
             'pagu' => (float)($paket['pagu'] ?? 0),
             'pagu_nego' => (float)($paket['pagu_nego'] ?? 0),
+            'pagu_diterima' => (float)($paket['pagu_diterima'] ?? 0),
             'dpp' => (float)($paket['dpp'] ?? 0),
             'total_pasal' => (float)($paket['total_pasal'] ?? 0),
             'rab' => (float)($paket['rab'] ?? 0),

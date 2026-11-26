@@ -286,8 +286,8 @@ if ($isBulk && !empty($groupedList)) {
                         <thead>
                             <tr class="bg-slate-100 text-center font-bold">
                                 <th class="border border-black py-1 px-2 w-10 text-center">NO.</th>
-                                <th class="border border-black py-1 px-2.5 text-left">ITEM BARANG</th>
-                                <th class="border border-black py-1 px-2 text-center w-32">MERK</th>
+                                <th class="border border-black py-1 px-2.5 text-left w-[42%]">ITEM BARANG</th>
+                                <th class="border border-black py-1 px-2 text-center w-[36%]">MERK</th>
                                 <th class="border border-black py-1 px-2 text-center w-24">JUMLAH</th>
                             </tr>
                         </thead>

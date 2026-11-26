@@ -37,7 +37,7 @@ class MonitoringController {
             exit;
         }
 
-        $allowedModules = ['info', 'items', 'pemesanan', 'distribusi', 'dokumentasi', 'dokumen'];
+        $allowedModules = ['info', 'items', 'pemesanan', 'distribusi', 'dokumentasi', 'dokumen', 'dokumen_paket'];
         $module = in_array($module, $allowedModules, true) ? $module : 'info';
 
         $modalData = $this->kolabModel->getReadonlyModalData((int)$kolab['id'], $paketIdOrKode);

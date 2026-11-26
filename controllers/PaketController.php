@@ -117,6 +117,7 @@ class PaketController {
         $groups = $this->groupModel->getAll($activeCompId, $role === 'admin' ? null : (int)$userId);
         $skemas = $this->skemaModel->getAll($activeCompId);
         $kabupatenList = $this->lokasiModel->getAllKabupaten();
+        $allLokasiList = $this->lokasiModel->getAll();
         
         $allTags = !empty($activeCompany['id']) ? $this->paketModel->getAllTags($activeCompany['id']) : [];
 
@@ -130,6 +131,7 @@ class PaketController {
             'groups' => $groups,
             'skemas' => $skemas,
             'kabupatenList' => $kabupatenList,
+            'allLokasiList' => $allLokasiList,
             'allTags' => $allTags,
             'users' => [],
             'activeCompany' => $activeCompany,
@@ -182,15 +184,10 @@ class PaketController {
         }
         
         try {
-            // Parse Rupiah & Validasi
-            if (empty($_POST['pagu'])) {
-                throw new Exception("Nilai Kontrak / Pagu Awal wajib diisi.");
-            }
-            if (empty($_POST['pagu_nego'])) {
-                throw new Exception("Pagu Negosiasi wajib diisi. Semua paket memerlukan nilai hasil negosiasi.");
-            }
-            $pagu = parseRupiah($_POST['pagu']);
-            $paguNego = parseRupiah($_POST['pagu_nego']);
+            // Nilai Kontrak & Pagu Nego kini diatur di popup terpisah
+            $pagu = !empty($_POST['pagu']) ? parseRupiah($_POST['pagu']) : 0;
+            $paguNego = !empty($_POST['pagu_nego']) ? parseRupiah($_POST['pagu_nego']) : null;
+            $paguDiterima = !empty($_POST['pagu_diterima']) ? parseRupiah($_POST['pagu_diterima']) : null;
             $tahunAnggaran = !empty($_POST['tahun_anggaran']) ? (int)$_POST['tahun_anggaran'] : (int)date('Y');
 
             // Potongan standar bawaan saat buat paket baru
@@ -213,6 +210,7 @@ class PaketController {
                 'progres_barang' => $_POST['progres_barang'] ?? 'Belum',
                 'pagu' => $pagu,
                 'pagu_nego' => $paguNego,
+                'pagu_diterima' => $paguDiterima,
                 'tipe_potongan' => $tipePotongan,
                 'persen_pasal' => $persenPasal,
                 'persen_admin' => $persenAdmin,
@@ -306,6 +304,7 @@ class PaketController {
         $paketKota = trim($paket['kab_kota'] ?? '');
         $lokasiList = !empty($paketKota) ? $this->lokasiModel->getAll(null, null, $paketKota) : $this->lokasiModel->getAll();
         $kabupatenList = $this->lokasiModel->getAllKabupaten();
+        $allLokasiList = $this->lokasiModel->getAll();
         $dokumenList = $this->dokumenModel->getByPaketId($paket['id']);
 
         // Calculate item allocation metrics
@@ -487,7 +486,8 @@ class PaketController {
             $totalQtyAllItems += $itQty;
         }
 
-        $nilaiBersihProfit = $dppNilai - $totalPasalVal - $totalBeliBarang;
+        $basisProfit = (!empty($paket['pagu_diterima']) && (float)$paket['pagu_diterima'] > 0) ? (float)$paket['pagu_diterima'] : $dppNilai;
+        $nilaiBersihProfit = $basisProfit - $totalPasalVal - $totalBeliBarang;
         $profitMarginPct = ($acuanPagu > 0) ? round(($nilaiBersihProfit / $acuanPagu) * 100, 2) : 0;
         $roiPct = ($totalBeliBarang > 0) ? round(($nilaiBersihProfit / $totalBeliBarang) * 100, 2) : 0;
 
@@ -564,6 +564,7 @@ class PaketController {
         $groups = $this->groupModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null), $role === 'admin' ? null : $userId);
         $skemas = $this->skemaModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null));
         $kabupatenList = $this->lokasiModel->getAllKabupaten();
+        $allLokasiList = $this->lokasiModel->getAll();
         
         $data = [
             'title' => 'Edit Paket Kegiatan',
@@ -595,16 +596,10 @@ class PaketController {
         }
         
         try {
-
-            // Parse Rupiah & Validasi
-            if (empty($_POST['pagu'])) {
-                throw new Exception("Nilai Kontrak / Pagu Awal wajib diisi.");
-            }
-            if (empty($_POST['pagu_nego'])) {
-                throw new Exception("Pagu Negosiasi wajib diisi. Semua paket memerlukan nilai hasil negosiasi.");
-            }
-            $pagu = parseRupiah($_POST['pagu']);
-            $paguNego = parseRupiah($_POST['pagu_nego']);
+            // Pertahankan Nilai Kontrak, Pagu Nego & Pagu Diterima jika tidak dikirim dari form edit teks
+            $pagu = isset($_POST['pagu']) && trim($_POST['pagu']) !== '' ? parseRupiah($_POST['pagu']) : (float)($existing['pagu'] ?? 0);
+            $paguNego = isset($_POST['pagu_nego']) ? (!empty($_POST['pagu_nego']) ? parseRupiah($_POST['pagu_nego']) : null) : ($existing['pagu_nego'] ?? null);
+            $paguDiterima = isset($_POST['pagu_diterima']) ? (!empty($_POST['pagu_diterima']) ? parseRupiah($_POST['pagu_diterima']) : null) : ($existing['pagu_diterima'] ?? null);
             $tahunAnggaran = !empty($_POST['tahun_anggaran']) ? (int)$_POST['tahun_anggaran'] : (!empty($existing['tahun_anggaran']) ? (int)$existing['tahun_anggaran'] : (int)date('Y'));
 
             // Potongan: pertahankan nilai paket yang sudah ada jika tidak dikirim dalam form edit dasar
@@ -630,6 +625,7 @@ class PaketController {
                 'progres_barang' => $_POST['progres_barang'] ?? ($existing['progres_barang'] ?? 'Belum'),
                 'pagu' => $pagu,
                 'pagu_nego' => $paguNego,
+                'pagu_diterima' => $paguDiterima,
                 'tipe_potongan' => $tipePotongan,
                 'persen_pasal' => $persenPasal,
                 'persen_admin' => $persenAdmin,
@@ -703,6 +699,35 @@ class PaketController {
         }
     }
     
+    /**
+     * Update Nilai Kontrak, Pagu Negosiasi, dan Pagu Diterima dari popup khusus
+     */
+    public function updatePagu($idOrKode) {
+        $this->requireUser();
+        $paket = $this->getAccessiblePaket($idOrKode);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('/paket');
+            return;
+        }
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Token CSRF tidak valid.');
+            redirect('/paket');
+            return;
+        }
+
+        $pagu = !empty($_POST['pagu']) ? parseRupiah($_POST['pagu']) : 0;
+        $paguNego = !empty($_POST['pagu_nego']) ? parseRupiah($_POST['pagu_nego']) : null;
+        $paguDiterima = !empty($_POST['pagu_diterima']) ? parseRupiah($_POST['pagu_diterima']) : null;
+
+        $this->paketModel->updatePagu($idOrKode, $pagu, $paguNego, $paguDiterima);
+        logActivity('update_pagu', 'paket', 'Memperbarui Nilai Kontrak / Pagu Nego / Pagu Diterima paket ' . ($paket['kode_paket'] ?: $paket['id']), $paket['id']);
+
+        flash('success', 'Nilai Kontrak & Pagu paket berhasil diperbarui.');
+        $redirectTo = !empty($_POST['redirect_to']) ? $_POST['redirect_to'] : '/paket';
+        redirect($redirectTo);
+    }
+
     public function delete($idOrKode) {
         $paket = $this->getAccessiblePaket($idOrKode);
 
@@ -850,7 +875,7 @@ class PaketController {
         $totalHarga = round($jumlah * $hargaSatuan);
 
         try {
-            $this->itemModel->create([
+            $newItemId = $this->itemModel->create([
                 'paket_id' => $paket['id'],
                 'komponen' => $komponen,
                 'spesifikasi' => trim($_POST['spesifikasi'] ?? ''),
@@ -859,6 +884,44 @@ class PaketController {
                 'harga_satuan' => $hargaSatuan,
                 'total_harga' => $totalHarga
             ]);
+
+            // Simpan alokasi distribusi awal jika diisi pada form Tambah Komponen
+            $lokIds = $_POST['alokasi_lokasi_id'] ?? [];
+            $allocQtys = $_POST['alokasi_jumlah'] ?? [];
+            if ($newItemId && is_array($lokIds) && is_array($allocQtys)) {
+                $allocatedSum = 0;
+                foreach ($lokIds as $idx => $lokIdRaw) {
+                    $lokId = (int)$lokIdRaw;
+                    $qtyVal = (float)($allocQtys[$idx] ?? 0);
+                    if ($lokId <= 0 || $qtyVal <= 0) {
+                        continue;
+                    }
+                    $sisa = $jumlah - $allocatedSum;
+                    if ($sisa <= 0) {
+                        break;
+                    }
+                    if ($qtyVal > $sisa) {
+                        $qtyVal = $sisa;
+                    }
+                    $lokasi = $this->lokasiModel->getById($lokId);
+                    if ($lokasi) {
+                        $this->distribusiModel->create([
+                            'paket_id' => $paket['id'],
+                            'item_id' => (int)$newItemId,
+                            'lokasi_id' => $lokId,
+                            'nama_tujuan' => $lokasi['nama_lokasi'],
+                            'kategori' => $lokasi['kategori'] ?: 'Sekolah',
+                            'jumlah' => $qtyVal,
+                            'status_barang' => 'Belum Dipesan',
+                            'kab_kota' => $lokasi['kab_kota'] ?: '',
+                            'nama_pic' => $lokasi['nama_pic'] ?: '',
+                            'no_kontak' => $lokasi['no_kontak'] ?: '',
+                            'alamat' => $lokasi['alamat_lengkap'] ?: ''
+                        ]);
+                        $allocatedSum += $qtyVal;
+                    }
+                }
+            }
 
             // Sinkronisasi pagu & potongan paket dengan total komponen item (Tab 2)
             $this->paketModel->syncPaguFromItems($paket['id']);
