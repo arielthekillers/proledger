@@ -18,6 +18,10 @@ class PaketKegiatan {
      */
     private function ensureDokSelesaiColumn() {
         if (self::$schemaChecked) return;
+        if (session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION['_schema_ok_pk'])) {
+            self::$schemaChecked = true;
+            return;
+        }
         self::$schemaChecked = true;
         try {
             $col = $this->db->query("SHOW COLUMNS FROM paket_kegiatan LIKE 'is_dok_selesai'")->fetch();
@@ -27,6 +31,9 @@ class PaketKegiatan {
             $colDiterima = $this->db->query("SHOW COLUMNS FROM paket_kegiatan LIKE 'pagu_diterima'")->fetch();
             if (!$colDiterima) {
                 $this->db->exec("ALTER TABLE paket_kegiatan ADD COLUMN pagu_diterima DECIMAL(15,2) NULL DEFAULT NULL AFTER pagu_nego");
+            }
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                $_SESSION['_schema_ok_pk'] = true;
             }
         } catch (Throwable $e) {
             // Abaikan jika permission terbatas
@@ -484,8 +491,10 @@ class PaketKegiatan {
             $existing = $this->getById($paketId);
             if (!$existing) return false;
 
+            $existingPagu = (float)($existing['pagu'] ?? 0);
+            $effectivePagu = ($existingPagu > 0) ? $existingPagu : $grandTotal;
             $hasNego = (!empty($existing['pagu_nego']) && (float)$existing['pagu_nego'] > 0);
-            $acuan = $hasNego ? (float)$existing['pagu_nego'] : $grandTotal;
+            $acuan = $hasNego ? (float)$existing['pagu_nego'] : $effectivePagu;
             $tipePotongan = $existing['tipe_potongan'] ?? 'dpp';
             $persenPasal = isset($existing['persen_pasal']) && $existing['persen_pasal'] !== '' ? (float)$existing['persen_pasal'] : 13.0;
             $persenAdmin = isset($existing['persen_admin']) && $existing['persen_admin'] !== '' ? (float)$existing['persen_admin'] : 2.0;
@@ -510,7 +519,7 @@ class PaketKegiatan {
                 WHERE id = ?
             ");
             return $stmtUpdate->execute([
-                $grandTotal,
+                $effectivePagu,
                 $dpp,
                 $pasal,
                 $admin,

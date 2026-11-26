@@ -117,7 +117,16 @@ class PaketController {
         $groups = $this->groupModel->getAll($activeCompId, $role === 'admin' ? null : (int)$userId);
         $skemas = $this->skemaModel->getAll($activeCompId);
         $kabupatenList = $this->lokasiModel->getAllKabupaten();
-        $allLokasiList = $this->lokasiModel->getAll();
+        $rawLokasiList = $this->lokasiModel->getAll();
+        $lokasiSeen = [];
+        $allLokasiList = [];
+        foreach ($rawLokasiList as $lok) {
+            $key = mb_strtoupper(trim((string)$lok['nama_lokasi'])) . '|' . mb_strtoupper(trim((string)($lok['kab_kota'] ?? '')));
+            if (!isset($lokasiSeen[$key])) {
+                $lokasiSeen[$key] = true;
+                $allLokasiList[] = $lok;
+            }
+        }
         
         $allTags = !empty($activeCompany['id']) ? $this->paketModel->getAllTags($activeCompany['id']) : [];
 
@@ -304,7 +313,6 @@ class PaketController {
         $paketKota = trim($paket['kab_kota'] ?? '');
         $lokasiList = !empty($paketKota) ? $this->lokasiModel->getAll(null, null, $paketKota) : $this->lokasiModel->getAll();
         $kabupatenList = $this->lokasiModel->getAllKabupaten();
-        $allLokasiList = $this->lokasiModel->getAll();
         $dokumenList = $this->dokumenModel->getByPaketId($paket['id']);
 
         // Calculate item allocation metrics
@@ -564,7 +572,6 @@ class PaketController {
         $groups = $this->groupModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null), $role === 'admin' ? null : $userId);
         $skemas = $this->skemaModel->getAll($paket['perusahaan_id'] ?? ($_SESSION['active_perusahaan_id'] ?? null));
         $kabupatenList = $this->lokasiModel->getAllKabupaten();
-        $allLokasiList = $this->lokasiModel->getAll();
         
         $data = [
             'title' => 'Edit Paket Kegiatan',

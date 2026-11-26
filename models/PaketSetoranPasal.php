@@ -15,6 +15,10 @@ class PaketSetoranPasal {
 
     private function ensureTable() {
         if (self::$schemaChecked) return;
+        if (session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION['_schema_ok_psp'])) {
+            self::$schemaChecked = true;
+            return;
+        }
         self::$schemaChecked = true;
         try {
             $this->db->exec("
@@ -29,6 +33,9 @@ class PaketSetoranPasal {
                     INDEX idx_psp_paket (paket_id)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             ");
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                $_SESSION['_schema_ok_psp'] = true;
+            }
         } catch (Throwable $e) {
             // Abaikan jika permission terbatas
         }

@@ -24,6 +24,9 @@ class AppSetting {
     }
 
     private function ensureTable() {
+        if (session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION['_schema_ok_appset'])) {
+            return;
+        }
         $this->db->exec("
             CREATE TABLE IF NOT EXISTS app_settings (
                 setting_key VARCHAR(80) PRIMARY KEY,
@@ -32,6 +35,9 @@ class AppSetting {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ");
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION['_schema_ok_appset'] = true;
+        }
     }
 
     public function getAll() {

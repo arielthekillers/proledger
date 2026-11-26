@@ -13,6 +13,9 @@ class ActivityLog {
     }
 
     private function ensureTable() {
+        if (session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION['_schema_ok_actlog'])) {
+            return;
+        }
         $this->db->exec("
             CREATE TABLE IF NOT EXISTS activity_logs (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -31,6 +34,9 @@ class ActivityLog {
                 INDEX idx_act_created (created_at)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ");
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION['_schema_ok_actlog'] = true;
+        }
     }
 
     /**
