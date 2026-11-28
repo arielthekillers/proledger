@@ -604,15 +604,15 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
 <!-- MODAL: DELEGASI AKSES KELOLA GROUP         -->
 <!-- ========================================== -->
 <div id="modalDelegasiGroup" class="app-modal fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 opacity-0 pointer-events-none hidden">
-    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-md w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden">
-        <div class="px-5 py-3.5 bg-indigo-50/70 border-b border-indigo-100 flex items-center justify-between">
+    <div class="modal-card bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full transform scale-95 opacity-0 transition-all duration-200 overflow-hidden max-h-[90vh] flex flex-col">
+        <div class="px-5 py-3.5 bg-indigo-50/70 border-b border-indigo-100 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-base shadow-xs">
                     <ion-icon name="person-add-outline"></ion-icon>
                 </div>
                 <div>
                     <h3 class="font-bold text-slate-800 text-sm">Akses Kelola Group (Delegasi)</h3>
-                    <p class="text-[11px] text-slate-500">Pelaksana dapat menambah & mengupdate paket di group ini</p>
+                    <p class="text-[11px] text-slate-500">Pilih paket spesifik yang dibagikan ke user pelaksana</p>
                 </div>
             </div>
             <button type="button" data-modal-close="modalDelegasiGroup" class="p-1 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
@@ -620,14 +620,56 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
             </button>
         </div>
 
-        <div class="p-5 space-y-4">
-            <form method="POST" action="<?= APP_URL ?>/group/addDelegation/<?= $group['id'] ?>" class="flex gap-2">
+        <div class="p-5 space-y-4 overflow-y-auto">
+            <form method="POST" action="<?= APP_URL ?>/group/addDelegation/<?= $group['id'] ?>" class="space-y-3">
                 <?= csrfField() ?>
-                <input type="email" name="email" required placeholder="Email user pelaksana..."
-                       class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 focus:bg-white">
-                <button type="submit" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs cursor-pointer shrink-0">
-                    Bagikan
-                </button>
+                <div class="flex gap-2">
+                    <input type="email" name="email" required placeholder="Email user pelaksana..."
+                           class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 focus:bg-white">
+                    <button type="submit" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs cursor-pointer shrink-0">
+                        Bagikan
+                    </button>
+                </div>
+
+                <div class="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <div class="flex items-center gap-3 text-xs">
+                            <label class="inline-flex items-center gap-1.5 cursor-pointer font-semibold text-slate-700">
+                                <input type="radio" name="share_mode" value="selected" <?= !empty($paketList) ? 'checked' : '' ?>
+                                       onchange="toggleDelegasiPaketBox('add', false)"
+                                       class="text-indigo-600 focus:ring-indigo-500">
+                                <span>Paket Tertentu</span>
+                            </label>
+                            <label class="inline-flex items-center gap-1.5 cursor-pointer font-semibold text-slate-700">
+                                <input type="radio" name="share_mode" value="all" <?= empty($paketList) ? 'checked' : '' ?>
+                                       onchange="toggleDelegasiPaketBox('add', true)"
+                                       class="text-indigo-600 focus:ring-indigo-500">
+                                <span>Semua Paket <span class="text-[10px] font-normal text-slate-400">(+ paket baru)</span></span>
+                            </label>
+                        </div>
+                        <?php if (!empty($paketList)): ?>
+                        <button type="button" id="btnToggleAll_add" onclick="toggleAllDelegasiCheckboxes('add')"
+                                class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer">
+                            Pilih Semua
+                        </button>
+                        <?php endif; ?>
+                    </div>
+
+                    <div id="delegasiPaketBox_add" class="<?= empty($paketList) ? 'hidden' : '' ?> space-y-1 max-h-40 overflow-y-auto pr-1">
+                        <?php if (empty($paketList)): ?>
+                            <p class="text-[11px] text-slate-400 italic">Belum ada paket di group ini.</p>
+                        <?php else: ?>
+                            <?php foreach ($paketList as $pkOpt): ?>
+                                <label class="flex items-center gap-2 px-2.5 py-1.5 bg-white hover:bg-indigo-50/40 rounded-lg border border-slate-200/70 cursor-pointer text-xs">
+                                    <input type="checkbox" name="paket_ids[]" value="<?= (int)$pkOpt['id'] ?>"
+                                           class="delegasi-chk-add rounded text-indigo-600 focus:ring-indigo-500 shrink-0">
+                                    <span class="truncate font-medium text-slate-700 flex-1"><?= htmlspecialchars($pkOpt['nama_paket']) ?></span>
+                                    <span class="text-[10px] text-slate-400 shrink-0"><?= htmlspecialchars($pkOpt['kode_paket'] ?? '') ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </form>
 
             <div>
@@ -637,18 +679,87 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
                 <?php if (empty($delegations)): ?>
                     <p class="text-xs text-slate-400 italic">Belum ada user lain yang diberi akses kelola.</p>
                 <?php else: ?>
-                    <div class="space-y-2 max-h-52 overflow-y-auto">
-                        <?php foreach ($delegations as $dl): ?>
-                            <div class="flex items-center justify-between gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200/70">
-                                <div class="min-w-0">
-                                    <div class="text-xs font-bold text-slate-800 truncate"><?= htmlspecialchars($dl['name']) ?></div>
-                                    <div class="text-[10px] text-slate-400 truncate"><?= htmlspecialchars($dl['email']) ?></div>
+                    <div class="space-y-2 max-h-64 overflow-y-auto pr-0.5">
+                        <?php foreach ($delegations as $dl):
+                            $dlUid = (int)$dl['delegate_user_id'];
+                            $dlAll = (int)($dl['all_pakets'] ?? 1) === 1;
+                            $dlIds = $dl['paket_ids'] ?? [];
+                            $dlBadge = $dlAll
+                                ? 'Semua Paket'
+                                : (count($dlIds) . ' / ' . count($paketList) . ' Paket');
+                        ?>
+                            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200/70 space-y-2">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-xs font-bold text-slate-800 truncate"><?= htmlspecialchars($dl['name']) ?></span>
+                                            <span class="px-1.5 py-0.5 rounded-md text-[10px] font-semibold <?= $dlAll ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700' ?>">
+                                                <?= $dlBadge ?>
+                                            </span>
+                                        </div>
+                                        <div class="text-[10px] text-slate-400 truncate"><?= htmlspecialchars($dl['email']) ?></div>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 shrink-0">
+                                        <button type="button"
+                                                onclick="document.getElementById('editDelegasiForm_<?= $dlUid ?>').classList.toggle('hidden')"
+                                                class="px-2.5 py-1 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50 rounded-lg border border-indigo-200 cursor-pointer">
+                                            Atur Paket
+                                        </button>
+                                        <a href="<?= APP_URL ?>/group/removeDelegation/<?= $group['id'] ?>/<?= $dlUid ?>"
+                                           onclick="return confirm('Cabut akses kelola dari <?= htmlspecialchars(addslashes($dl['name'])) ?>?')"
+                                           class="px-2.5 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-200">
+                                            Cabut
+                                        </a>
+                                    </div>
                                 </div>
-                                <a href="<?= APP_URL ?>/group/removeDelegation/<?= $group['id'] ?>/<?= (int)$dl['delegate_user_id'] ?>"
-                                   onclick="return confirm('Cabut akses kelola dari <?= htmlspecialchars(addslashes($dl['name'])) ?>?')"
-                                   class="px-2.5 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-200 shrink-0">
-                                    Cabut
-                                </a>
+
+                                <form id="editDelegasiForm_<?= $dlUid ?>" method="POST"
+                                      action="<?= APP_URL ?>/group/updateDelegation/<?= $group['id'] ?>"
+                                      class="hidden pt-2 border-t border-slate-200/80 space-y-2">
+                                    <?= csrfField() ?>
+                                    <input type="hidden" name="delegate_user_id" value="<?= $dlUid ?>">
+                                    <div class="flex items-center justify-between gap-2 flex-wrap text-[11px]">
+                                        <div class="flex items-center gap-3">
+                                            <label class="inline-flex items-center gap-1 cursor-pointer font-semibold text-slate-700">
+                                                <input type="radio" name="share_mode" value="selected" <?= !$dlAll ? 'checked' : '' ?>
+                                                       onchange="toggleDelegasiPaketBox('edit_<?= $dlUid ?>', false)"
+                                                       class="text-indigo-600">
+                                                <span>Paket Tertentu</span>
+                                            </label>
+                                            <label class="inline-flex items-center gap-1 cursor-pointer font-semibold text-slate-700">
+                                                <input type="radio" name="share_mode" value="all" <?= $dlAll ? 'checked' : '' ?>
+                                                       onchange="toggleDelegasiPaketBox('edit_<?= $dlUid ?>', true)"
+                                                       class="text-indigo-600">
+                                                <span>Semua Paket</span>
+                                            </label>
+                                        </div>
+                                        <?php if (!empty($paketList)): ?>
+                                        <button type="button" onclick="toggleAllDelegasiCheckboxes('edit_<?= $dlUid ?>')"
+                                                class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer">
+                                            Pilih/Batal Semua
+                                        </button>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <div id="delegasiPaketBox_edit_<?= $dlUid ?>" class="<?= $dlAll ? 'hidden' : '' ?> space-y-1 max-h-36 overflow-y-auto pr-1">
+                                        <?php foreach ($paketList as $pkOpt):
+                                            $isChecked = in_array((int)$pkOpt['id'], $dlIds, true);
+                                        ?>
+                                            <label class="flex items-center gap-2 px-2 py-1 bg-white rounded-lg border border-slate-200/70 cursor-pointer text-[11px]">
+                                                <input type="checkbox" name="paket_ids[]" value="<?= (int)$pkOpt['id'] ?>"
+                                                       <?= $isChecked ? 'checked' : '' ?>
+                                                       class="delegasi-chk-edit_<?= $dlUid ?> rounded text-indigo-600 shrink-0">
+                                                <span class="truncate text-slate-700 flex-1"><?= htmlspecialchars($pkOpt['nama_paket']) ?></span>
+                                            </label>
+                                        <?php endforeach; ?>
+                                    </div>
+
+                                    <div class="flex justify-end">
+                                        <button type="submit" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-[11px] cursor-pointer">
+                                            Simpan Akses
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -657,6 +768,20 @@ $renderTableRing = function (int $pct, string $strokeHex, string $textClass) {
         </div>
     </div>
 </div>
+<script>
+function toggleDelegasiPaketBox(key, isAll) {
+    const box = document.getElementById('delegasiPaketBox_' + key);
+    if (box) box.classList.toggle('hidden', isAll);
+    const btn = document.getElementById('btnToggleAll_' + key);
+    if (btn) btn.classList.toggle('hidden', isAll);
+}
+function toggleAllDelegasiCheckboxes(key) {
+    const chks = document.querySelectorAll('.delegasi-chk-' + key);
+    if (!chks.length) return;
+    const allChecked = Array.from(chks).every(c => c.checked);
+    chks.forEach(c => c.checked = !allChecked);
+}
+</script>
 <?php endif; ?>
 
 <?php require __DIR__ . '/_modals.php'; ?>

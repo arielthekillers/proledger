@@ -34,10 +34,27 @@ class PaketGroup {
                     group_id INT(11) NOT NULL,
                     owner_user_id INT(11) NOT NULL,
                     delegate_user_id INT(11) NOT NULL,
+                    all_pakets TINYINT(1) NOT NULL DEFAULT 1,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE KEY uniq_group_delegate (group_id, delegate_user_id),
                     INDEX idx_gd_delegate (delegate_user_id),
                     INDEX idx_gd_group (group_id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            ");
+            $allCol = $this->db->query("SHOW COLUMNS FROM group_delegasi LIKE 'all_pakets'")->fetch();
+            if (!$allCol) {
+                $this->db->exec("ALTER TABLE group_delegasi ADD COLUMN all_pakets TINYINT(1) NOT NULL DEFAULT 1 AFTER delegate_user_id");
+            }
+            $this->db->exec("
+                CREATE TABLE IF NOT EXISTS group_delegasi_pakets (
+                    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                    group_id INT(11) NOT NULL,
+                    delegate_user_id INT(11) NOT NULL,
+                    paket_id INT(11) NOT NULL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE KEY uniq_gdp (group_id, delegate_user_id, paket_id),
+                    INDEX idx_gdp_user (delegate_user_id, group_id),
+                    INDEX idx_gdp_paket (paket_id)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             ");
         } catch (Throwable $e) {
@@ -434,7 +451,7 @@ class PaketGroup {
     }
 
     /**
-     * Daftar user yang diberi akses kelola (delegasi) pada group tertentu
+     * Daftar user yang diberi akses kelola (delegasi) pada group tertentu beserta paket_ids spesifik
      */
     public function getDelegations(int $groupId): array {
         $stmt = $this->db->prepare("
@@ -445,24 +462,92 @@ class PaketGroup {
             ORDER BY gd.created_at DESC
         ");
         $stmt->execute([$groupId]);
-        return $stmt->fetchAll();
+        $rows = $stmt->fetchAll();
+        if (empty($rows)) return [];
+
+        $pStmt = $this->db->prepare("
+            SELECT delegate_user_id, paket_id
+            FROM group_delegasi_pakets
+            WHERE group_id = ?
+        ");
+        $pStmt->execute([$groupId]);
+        $paketMap = [];
+        foreach ($pStmt->fetchAll() as $pr) {
+            $paketMap[(int)$pr['delegate_user_id']][] = (int)$pr['paket_id'];
+        }
+
+        foreach ($rows as &$r) {
+            $r['all_pakets'] = isset($r['all_pakets']) ? (int)$r['all_pakets'] : 1;
+            $r['paket_ids'] = $paketMap[(int)$r['delegate_user_id']] ?? [];
+        }
+        unset($r);
+        return $rows;
     }
 
     /**
-     * Tambahkan akses kelola (delegasi) ke user lain
+     * Tambahkan atau perbarui akses kelola (delegasi) ke user lain
      */
-    public function addDelegation(int $groupId, int $ownerUserId, int $delegateUserId): bool {
+    public function addDelegation(int $groupId, int $ownerUserId, int $delegateUserId, bool $allPakets = true, array $paketIds = []): bool {
         $stmt = $this->db->prepare("
-            INSERT IGNORE INTO group_delegasi (group_id, owner_user_id, delegate_user_id)
-            VALUES (?, ?, ?)
+            INSERT INTO group_delegasi (group_id, owner_user_id, delegate_user_id, all_pakets)
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE all_pakets = VALUES(all_pakets)
         ");
-        return $stmt->execute([$groupId, $ownerUserId, $delegateUserId]);
+        $ok = $stmt->execute([$groupId, $ownerUserId, $delegateUserId, $allPakets ? 1 : 0]);
+        if ($ok) {
+            $this->setDelegationPakets($groupId, $delegateUserId, $allPakets, $paketIds);
+        }
+        return $ok;
+    }
+
+    /**
+     * Simpan daftar paket spesifik untuk delegasi user pada group tertentu
+     */
+    public function setDelegationPakets(int $groupId, int $delegateUserId, bool $allPakets, array $paketIds = []): void {
+        $upd = $this->db->prepare("UPDATE group_delegasi SET all_pakets = ? WHERE group_id = ? AND delegate_user_id = ?");
+        $upd->execute([$allPakets ? 1 : 0, $groupId, $delegateUserId]);
+
+        $del = $this->db->prepare("DELETE FROM group_delegasi_pakets WHERE group_id = ? AND delegate_user_id = ?");
+        $del->execute([$groupId, $delegateUserId]);
+
+        if ($allPakets) return;
+
+        $cleanIds = array_values(array_unique(array_filter(array_map('intval', $paketIds), fn($v) => $v > 0)));
+        if (empty($cleanIds)) return;
+
+        // Pastikan hanya paket yang benar-benar berada di group ini yang disimpan
+        $placeholders = implode(',', array_fill(0, count($cleanIds), '?'));
+        $validStmt = $this->db->prepare("SELECT id FROM paket_kegiatan WHERE group_id = ? AND id IN ($placeholders)");
+        $validStmt->execute(array_merge([$groupId], $cleanIds));
+        $validIds = array_map('intval', array_column($validStmt->fetchAll(), 'id'));
+
+        if (empty($validIds)) return;
+        $ins = $this->db->prepare("INSERT IGNORE INTO group_delegasi_pakets (group_id, delegate_user_id, paket_id) VALUES (?, ?, ?)");
+        foreach ($validIds as $pid) {
+            $ins->execute([$groupId, $delegateUserId, $pid]);
+        }
+    }
+
+    /**
+     * Tambahkan 1 paket ke akses delegasi user (misal saat delegasi membuat paket baru di group)
+     */
+    public function grantPaketToDelegate(int $groupId, int $delegateUserId, int $paketId): void {
+        if ($groupId <= 0 || $delegateUserId <= 0 || $paketId <= 0) return;
+        $stmt = $this->db->prepare("SELECT all_pakets FROM group_delegasi WHERE group_id = ? AND delegate_user_id = ? LIMIT 1");
+        $stmt->execute([$groupId, $delegateUserId]);
+        $row = $stmt->fetch();
+        if (!$row || (int)$row['all_pakets'] === 1) return;
+
+        $ins = $this->db->prepare("INSERT IGNORE INTO group_delegasi_pakets (group_id, delegate_user_id, paket_id) VALUES (?, ?, ?)");
+        $ins->execute([$groupId, $delegateUserId, $paketId]);
     }
 
     /**
      * Cabut akses kelola (delegasi) user dari group
      */
     public function removeDelegation(int $groupId, int $delegateUserId): bool {
+        $this->db->prepare("DELETE FROM group_delegasi_pakets WHERE group_id = ? AND delegate_user_id = ?")
+                 ->execute([$groupId, $delegateUserId]);
         $stmt = $this->db->prepare("DELETE FROM group_delegasi WHERE group_id = ? AND delegate_user_id = ?");
         return $stmt->execute([$groupId, $delegateUserId]);
     }
@@ -478,11 +563,45 @@ class PaketGroup {
     }
 
     /**
+     * Cek apakah paket tertentu di dalam group didelegasikan ke user
+     */
+    public function isPaketDelegatedToUser(int $paketId, int $groupId, int $userId): bool {
+        if ($paketId <= 0 || $groupId <= 0 || $userId <= 0) return false;
+        $stmt = $this->db->prepare("SELECT all_pakets FROM group_delegasi WHERE group_id = ? AND delegate_user_id = ? LIMIT 1");
+        $stmt->execute([$groupId, $userId]);
+        $row = $stmt->fetch();
+        if (!$row) return false;
+        if ((int)($row['all_pakets'] ?? 1) === 1) return true;
+
+        $pStmt = $this->db->prepare("SELECT 1 FROM group_delegasi_pakets WHERE group_id = ? AND delegate_user_id = ? AND paket_id = ? LIMIT 1");
+        $pStmt->execute([$groupId, $userId, $paketId]);
+        return (bool)$pStmt->fetchColumn();
+    }
+
+    /**
+     * Ambil daftar paket_id yang didelegasikan ke user pada group tertentu.
+     * Return null jika semua paket di group didelegasikan (all_pakets = 1),
+     * atau array int (bisa kosong) jika spesifik per paket.
+     */
+    public function getDelegatedPaketIds(int $groupId, int $userId): ?array {
+        if ($groupId <= 0 || $userId <= 0) return [];
+        $stmt = $this->db->prepare("SELECT all_pakets FROM group_delegasi WHERE group_id = ? AND delegate_user_id = ? LIMIT 1");
+        $stmt->execute([$groupId, $userId]);
+        $row = $stmt->fetch();
+        if (!$row) return [];
+        if ((int)($row['all_pakets'] ?? 1) === 1) return null;
+
+        $pStmt = $this->db->prepare("SELECT paket_id FROM group_delegasi_pakets WHERE group_id = ? AND delegate_user_id = ?");
+        $pStmt->execute([$groupId, $userId]);
+        return array_map('intval', array_column($pStmt->fetchAll(), 'paket_id'));
+    }
+
+    /**
      * Ambil daftar group yang didelegasikan ke user tertentu (beserta statistik ringkas)
      */
     public function getDelegatedGroupsForUser(int $userId): array {
         $stmt = $this->db->prepare("
-            SELECT pg.*, p.nama as perusahaan_nama, u.name as owner_name
+            SELECT pg.*, p.nama as perusahaan_nama, u.name as owner_name, gd.all_pakets
             FROM group_delegasi gd
             INNER JOIN paket_group pg ON gd.group_id = pg.id
             LEFT JOIN perusahaan p ON pg.perusahaan_id = p.id
@@ -501,6 +620,13 @@ class PaketGroup {
         $pStmt->execute($groupIds);
         $allPakets = $pStmt->fetchAll();
 
+        $dpStmt = $this->db->prepare("SELECT group_id, paket_id FROM group_delegasi_pakets WHERE delegate_user_id = ?");
+        $dpStmt->execute([$userId]);
+        $delegatedMap = [];
+        foreach ($dpStmt->fetchAll() as $dp) {
+            $delegatedMap[(int)$dp['group_id']][(int)$dp['paket_id']] = true;
+        }
+
         $paketsByGroup = [];
         foreach ($allPakets as $p) {
             $paketsByGroup[$p['group_id']][] = $p;
@@ -508,6 +634,10 @@ class PaketGroup {
 
         foreach ($groups as &$g) {
             $list = $paketsByGroup[$g['id']] ?? [];
+            if ((int)($g['all_pakets'] ?? 1) === 0) {
+                $allowed = $delegatedMap[(int)$g['id']] ?? [];
+                $list = array_values(array_filter($list, fn($pk) => isset($allowed[(int)$pk['id']])));
+            }
             $s = self::computeStatsFromList($list);
             $g['total_paket']  = $s['total_paket'];
             $g['total_acuan']  = $s['total_acuan'];

@@ -162,7 +162,20 @@ class PaketKegiatan {
 
         // Filter by delegated_user_id (Group Paket yang dibagikan akses kelolanya ke user)
         if (!empty($filters['delegated_user_id'])) {
-            $sql .= " AND EXISTS (SELECT 1 FROM group_delegasi gd WHERE gd.group_id = pk.group_id AND gd.delegate_user_id = ?)";
+            $sql .= " AND EXISTS (
+                SELECT 1 FROM group_delegasi gd
+                WHERE gd.group_id = pk.group_id
+                  AND gd.delegate_user_id = ?
+                  AND (
+                      gd.all_pakets = 1
+                      OR EXISTS (
+                          SELECT 1 FROM group_delegasi_pakets gdp
+                          WHERE gdp.group_id = pk.group_id
+                            AND gdp.delegate_user_id = gd.delegate_user_id
+                            AND gdp.paket_id = pk.id
+                      )
+                  )
+            )";
             $params[] = (int)$filters['delegated_user_id'];
         }
         

@@ -78,7 +78,7 @@ class PaketController {
 
         // Validasi kepemilikan paket ATAU akses delegasi group (pinjam perusahaan)
         $isOwner = $this->perusahaanModel->isOwnerOrAdmin($paket['perusahaan_id'], $userId, $role);
-        $isDelegated = !$isOwner && !empty($paket['group_id']) && $this->groupModel->isGroupDelegatedToUser((int)$paket['group_id'], $userId);
+        $isDelegated = !$isOwner && !empty($paket['group_id']) && $this->groupModel->isPaketDelegatedToUser((int)$paket['id'], (int)$paket['group_id'], $userId);
         if (!$isOwner && !$isDelegated) {
             if ($isAjax) {
                 header('Content-Type: application/json');
@@ -230,6 +230,10 @@ class PaketController {
             
             $created = $this->paketModel->create($data);
             $kode = is_array($created) ? $created['kode_paket'] : $created;
+            $newPaketId = is_array($created) ? (int)($created['id'] ?? 0) : 0;
+            if ($newPaketId > 0 && $groupId && $this->groupModel->isGroupDelegatedToUser($groupId, $userId)) {
+                $this->groupModel->grantPaketToDelegate($groupId, $userId, $newPaketId);
+            }
             
             flash('success', 'Paket kegiatan (' . $kode . ') berhasil ditambahkan!');
             $redirectTo = trim($_POST['redirect_to'] ?? '');
@@ -2044,7 +2048,7 @@ class PaketController {
         if ($this->perusahaanModel->isOwnerOrAdmin($paket['perusahaan_id'], $userId, $role)) {
             return true;
         }
-        if (!empty($paket['group_id']) && $this->groupModel->isGroupDelegatedToUser((int)$paket['group_id'], $userId)) {
+        if (!empty($paket['group_id']) && $this->groupModel->isPaketDelegatedToUser((int)$paket['id'], (int)$paket['group_id'], $userId)) {
             return true;
         }
         if (!empty($paket['group_id'])) {

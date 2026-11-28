@@ -112,6 +112,14 @@ class GroupController {
                 return empty($pk['perusahaan_id']) || in_array((int)$pk['perusahaan_id'], $myCompIds, true);
             }));
         }
+        if ($role !== 'admin' && $isDelegated) {
+            $allowedPaketIds = $this->groupModel->getDelegatedPaketIds((int)$id, $userId);
+            if ($allowedPaketIds !== null) {
+                $paketList = array_values(array_filter($paketList, function($pk) use ($allowedPaketIds) {
+                    return in_array((int)$pk['id'], $allowedPaketIds, true);
+                }));
+            }
+        }
         $stats = PaketGroup::computeStatsFromList($paketList);
         $delegations = $isGroupOwner ? $this->groupModel->getDelegations((int)$id) : [];
 
@@ -350,8 +358,63 @@ class GroupController {
             return;
         }
 
-        $this->groupModel->addDelegation($groupId, $userId, (int)$targetUser['id']);
-        flash('success', 'Akses kelola group berhasil diberikan ke <strong>' . htmlspecialchars($targetUser['name']) . '</strong>.');
+        $shareMode = $_POST['share_mode'] ?? 'selected';
+        $allPakets = ($shareMode === 'all');
+        $paketIds = isset($_POST['paket_ids']) && is_array($_POST['paket_ids']) ? $_POST['paket_ids'] : [];
+        if (!$allPakets && empty($paketIds)) {
+            flash('error', 'Pilih minimal satu paket yang ingin dibagikan, atau pilih opsi Semua Paket.');
+            redirect('/group/detail/' . $groupId);
+            return;
+        }
+
+        $this->groupModel->addDelegation($groupId, $userId, (int)$targetUser['id'], $allPakets, $paketIds);
+        $scopeLabel = $allPakets ? 'semua paket' : (count($paketIds) . ' paket terpilih');
+        flash('success', 'Akses kelola (' . $scopeLabel . ') berhasil diberikan ke <strong>' . htmlspecialchars($targetUser['name']) . '</strong>.');
+        redirect('/group/detail/' . $groupId);
+    }
+
+    /**
+     * Perbarui daftar paket spesifik yang dibagikan ke user pelaksana
+     */
+    public function updateDelegation($id) {
+        $this->requireAdminOrUser();
+        $groupId = (int)$id;
+        $group = $this->groupModel->getById($groupId);
+        $role = $_SESSION['admin_role'] ?? 'user';
+        $userId = (int)($_SESSION['admin_id'] ?? 0);
+        $myCompIds = $role === 'admin' ? [] : array_map('intval', array_column($this->perusahaanModel->getByUser($userId), 'id'));
+
+        if (!$group || !$this->groupModel->userCanAccess($group, $userId, $myCompIds, $role)) {
+            flash('error', 'Akses ditolak.');
+            redirect('/group');
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            flash('error', 'Permintaan tidak valid.');
+            redirect('/group/detail/' . $groupId);
+            return;
+        }
+
+        $targetUserId = (int)($_POST['delegate_user_id'] ?? 0);
+        if ($targetUserId <= 0) {
+            flash('error', 'User pelaksana tidak valid.');
+            redirect('/group/detail/' . $groupId);
+            return;
+        }
+
+        $shareMode = $_POST['share_mode'] ?? 'selected';
+        $allPakets = ($shareMode === 'all');
+        $paketIds = isset($_POST['paket_ids']) && is_array($_POST['paket_ids']) ? $_POST['paket_ids'] : [];
+        if (!$allPakets && empty($paketIds)) {
+            flash('error', 'Pilih minimal satu paket atau gunakan opsi Semua Paket.');
+            redirect('/group/detail/' . $groupId);
+            return;
+        }
+
+        $this->groupModel->setDelegationPakets($groupId, $targetUserId, $allPakets, $paketIds);
+        $scopeLabel = $allPakets ? 'semua paket' : (count($paketIds) . ' paket terpilih');
+        flash('success', 'Akses paket pelaksana diperbarui (' . $scopeLabel . ').');
         redirect('/group/detail/' . $groupId);
     }
 
