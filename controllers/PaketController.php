@@ -291,6 +291,27 @@ class PaketController {
         exit;
     }
 
+    /**
+     * AJAX JSON Endpoint: Ambil HTML terbaru 4 circular progress ring untuk 1 baris paket
+     */
+    public function rowProgress($idOrKode) {
+        header('Content-Type: application/json');
+        $paket = $this->getAccessiblePaket($idOrKode, true);
+        $prog = $this->paketModel->getProgressById((int)$paket['id']);
+        echo json_encode([
+            'success'    => true,
+            'paket_id'   => (int)$paket['id'],
+            'kode_paket' => $paket['kode_paket'] ?: (string)$paket['id'],
+            'html'       => [
+                'pemesanan'   => renderCircularProgress($prog['pesan_done'] ?? 0, $prog['total_dist'] ?? 0, 'pemesanan'),
+                'distribusi'  => renderCircularProgress($prog['dist_done'] ?? 0, $prog['total_dist'] ?? 0, 'distribusi'),
+                'dokumentasi' => renderCircularProgress($prog['dok_done'] ?? 0, $prog['total_dist'] ?? 0, 'dokumentasi'),
+                'bast'        => renderCircularProgress($prog['bast_done'] ?? 0, $prog['total_bast'] ?? 0, 'bast'),
+            ]
+        ]);
+        exit;
+    }
+
     private function prepareDetailData($idOrKode) {
         $paket = $this->getAccessiblePaket($idOrKode);
 

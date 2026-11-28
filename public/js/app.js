@@ -180,6 +180,7 @@ window.ProModal = {
         }
 
         modal.classList.add('opacity-0', 'pointer-events-none');
+        document.dispatchEvent(new CustomEvent('promodal:close', { detail: { id } }));
 
         setTimeout(() => {
             modal.classList.add('hidden');
@@ -900,37 +901,40 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // 12. Animate Circular Progress Rings & Percentages on Load (proportional duration)
-    requestAnimationFrame(() => {
-        setTimeout(() => {
-            document.querySelectorAll('.pro-progress-trigger').forEach(trigger => {
-                const pct = parseInt(trigger.getAttribute('data-prog-pct') || '0', 10);
-                const duration = Math.max(350, Math.round(250 + (pct / 100) * 1100));
+    // 12. Animate Circular Progress Rings & Percentages (reusable for AJAX updates)
+    window.animateCircularProgress = function (root = document) {
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                (root || document).querySelectorAll('.pro-progress-trigger').forEach(trigger => {
+                    const pct = parseInt(trigger.getAttribute('data-prog-pct') || '0', 10);
+                    const duration = Math.max(350, Math.round(250 + (pct / 100) * 1100));
 
-                const circle = trigger.querySelector('.pro-progress-ring[data-target-offset]');
-                if (circle) {
-                    circle.style.transitionDuration = duration + 'ms';
-                    circle.style.strokeDashoffset = circle.getAttribute('data-target-offset');
-                }
+                    const circle = trigger.querySelector('.pro-progress-ring[data-target-offset]');
+                    if (circle) {
+                        circle.style.transitionDuration = duration + 'ms';
+                        circle.style.strokeDashoffset = circle.getAttribute('data-target-offset');
+                    }
 
-                const pctEl = trigger.querySelector('.pro-progress-pct[data-target-pct]');
-                if (pctEl) {
-                    if (pct <= 0) {
-                        pctEl.textContent = '0%';
-                        return;
+                    const pctEl = trigger.querySelector('.pro-progress-pct[data-target-pct]');
+                    if (pctEl) {
+                        if (pct <= 0) {
+                            pctEl.textContent = '0%';
+                            return;
+                        }
+                        const start = performance.now();
+                        function step(now) {
+                            const progress = Math.min(1, (now - start) / duration);
+                            const eased = 1 - Math.pow(1 - progress, 3);
+                            pctEl.textContent = Math.round(pct * eased) + '%';
+                            if (progress < 1) requestAnimationFrame(step);
+                        }
+                        requestAnimationFrame(step);
                     }
-                    const start = performance.now();
-                    function step(now) {
-                        const progress = Math.min(1, (now - start) / duration);
-                        const eased = 1 - Math.pow(1 - progress, 3);
-                        pctEl.textContent = Math.round(pct * eased) + '%';
-                        if (progress < 1) requestAnimationFrame(step);
-                    }
-                    requestAnimationFrame(step);
-                }
-            });
-        }, 60);
-    });
+                });
+            }, 60);
+        });
+    };
+    window.animateCircularProgress(document);
 
     // 13. Generic Sleek Dark Floating Tooltip (.pro-dark-tooltip)
     const darkTooltip = document.createElement('div');

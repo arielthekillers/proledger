@@ -233,6 +233,7 @@
                         $normStatus = ($rawSt === 'cair') ? 'selesai' : $rawSt;
                     ?>
                         <tr class="hover:bg-slate-50/70 transition-colors group"
+                            data-paket-kode="<?= htmlspecialchars($p['kode_paket'] ?: (string)$p['id']) ?>"
                             data-group-name="<?= htmlspecialchars(strtolower($p['nama_group'] ?? '')) ?>"
                             data-tags="<?= htmlspecialchars(strtolower($p['tags'] ?? '')) ?>"
                             data-tahun="<?= htmlspecialchars((string)($p['tahun_anggaran'] ?? date('Y'))) ?>"
@@ -471,6 +472,7 @@
                             <!-- Progres Pemesanan (Lingkaran - Klik untuk Buka Popup) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
                                 <button type="button" 
+                                        data-progress-cell="pemesanan"
                                         onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'pemesanan', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
                                         class="hover:scale-105 transition-transform inline-block cursor-pointer">
                                     <?= renderCircularProgress($p['pesan_done'] ?? 0, $p['total_dist'] ?? 0, 'pemesanan') ?>
@@ -480,6 +482,7 @@
                             <!-- Progres Distribusi (Lingkaran - Klik untuk Buka Popup) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
                                 <button type="button" 
+                                        data-progress-cell="distribusi"
                                         onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'distribusi', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
                                         class="hover:scale-105 transition-transform inline-block cursor-pointer">
                                     <?= renderCircularProgress($p['dist_done'] ?? 0, $p['total_dist'] ?? 0, 'distribusi') ?>
@@ -489,6 +492,7 @@
                             <!-- Progres Dokumentasi (Lingkaran - Klik untuk Buka Popup) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
                                 <button type="button" 
+                                        data-progress-cell="dokumentasi"
                                         onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'dokumentasi', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
                                         class="hover:scale-105 transition-transform inline-block cursor-pointer">
                                     <?= renderCircularProgress($p['dok_done'] ?? 0, $p['total_dist'] ?? 0, 'dokumentasi') ?>
@@ -498,6 +502,7 @@
                             <!-- Progres BAST (Lingkaran - Klik untuk Buka Popup Berkas BAST) -->
                             <td class="py-2 px-2 text-center whitespace-nowrap">
                                 <button type="button" 
+                                        data-progress-cell="bast"
                                         onclick="openPaketModalTab('<?= $p['kode_paket'] ?: $p['id'] ?>', 'dokumen', '<?= htmlspecialchars(addslashes($p['nama_paket'])) ?>')" 
                                         class="hover:scale-105 transition-transform inline-block cursor-pointer">
                                     <?= renderCircularProgress($p['bast_done'] ?? 0, $p['total_bast'] ?? 0, 'bast') ?>
@@ -2131,18 +2136,54 @@ function openPaketNativeModal(idOrKode, module, namaPaket) {
         });
 }
 
+function syncPaketRowProgress(idOrKode) {
+    if (!idOrKode) return;
+    fetch('<?= APP_URL ?>/paket/rowProgress/' + encodeURIComponent(idOrKode))
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+            if (!data || !data.success || !data.html) return;
+            const kode = data.kode_paket || idOrKode;
+            const rows = document.querySelectorAll('tr[data-paket-kode]');
+            rows.forEach(tr => {
+                if (tr.getAttribute('data-paket-kode') !== String(kode)) return;
+                ['pemesanan', 'distribusi', 'dokumentasi', 'bast'].forEach(type => {
+                    const btn = tr.querySelector('[data-progress-cell="' + type + '"]');
+                    if (btn && data.html[type] !== undefined) {
+                        btn.innerHTML = data.html[type];
+                    }
+                });
+                if (typeof window.animateCircularProgress === 'function') {
+                    window.animateCircularProgress(tr);
+                }
+            });
+        })
+        .catch(() => {});
+}
+
 function closeModuleModal() {
+    const kodeToSync = currentOpenKode;
     window.ProModal.close('modalModuleDynamic');
     const headerActionEl = document.getElementById('modalModuleHeaderAction');
     if (headerActionEl) headerActionEl.innerHTML = '';
     currentOpenKode = null;
     currentOpenModule = null;
+    if (kodeToSync) syncPaketRowProgress(kodeToSync);
 }
+
+document.addEventListener('promodal:close', function (e) {
+    if (e.detail && e.detail.id === 'modalModuleDynamic' && currentOpenKode) {
+        const kodeToSync = currentOpenKode;
+        currentOpenKode = null;
+        currentOpenModule = null;
+        syncPaketRowProgress(kodeToSync);
+    }
+});
 
 function refreshCurrentNativeModal() {
     if (currentOpenKode && currentOpenModule) {
         const sub = document.getElementById('modalModuleSubtitle')?.textContent || '';
         openPaketNativeModal(currentOpenKode, currentOpenModule, sub);
+        syncPaketRowProgress(currentOpenKode);
     }
 }
 

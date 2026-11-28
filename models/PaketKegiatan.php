@@ -696,4 +696,50 @@ class PaketKegiatan {
         }
         return $result;
     }
+
+    /**
+     * Ambil ringkasan angka progres (Order, Distribusi, Dokumentasi, BAST) untuk 1 paket
+     */
+    public function getProgressById(int $paketId): array {
+        $stmt = $this->db->prepare("
+            SELECT
+                COALESCE(p_prog.total_dist, 0) as total_dist,
+                COALESCE(p_prog.pesan_done, 0) as pesan_done,
+                COALESCE(p_prog.dist_done, 0) as dist_done,
+                CASE WHEN COALESCE(pk.is_dok_selesai, 0) = 1 THEN COALESCE(p_prog.total_dist, 0) ELSE COALESCE(p_prog.dok_done, 0) END as dok_done,
+                COALESCE(p_prog.total_bast, 0) as total_bast,
+                COALESCE(p_prog.bast_done, 0) as bast_done
+            FROM paket_kegiatan pk
+            LEFT JOIN (
+                SELECT
+                    pd.paket_id,
+                    COUNT(DISTINCT pd.id) as total_dist,
+                    COUNT(DISTINCT CASE WHEN pd.status_barang = 'Sudah Dipesan' THEN pd.id END) as pesan_done,
+                    COUNT(DISTINCT CASE WHEN pd.status_distribusi IN ('Tiba di Tujuan', 'Tiba di Gudang') THEN pd.id END) as dist_done,
+                    COUNT(DISTINCT CASE WHEN pdk.distribusi_id IS NOT NULL THEN pdk.distribusi_id END) as dok_done,
+                    COUNT(DISTINCT pd.nama_tujuan) as total_bast,
+                    COUNT(DISTINCT CASE WHEN EXISTS (
+                        SELECT 1 FROM paket_dokumen pdoc
+                        WHERE pdoc.paket_id = pd.paket_id
+                          AND (pdoc.nama_dokumen LIKE CONCAT('%', pd.nama_tujuan, '%') OR pdoc.nama_file_asli LIKE CONCAT('%', pd.nama_tujuan, '%'))
+                    ) THEN pd.nama_tujuan END) as bast_done
+                FROM paket_distribusi pd
+                LEFT JOIN paket_dokumentasi pdk ON pd.id = pdk.distribusi_id
+                WHERE pd.paket_id = ?
+                GROUP BY pd.paket_id
+            ) p_prog ON pk.id = p_prog.paket_id
+            WHERE pk.id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$paketId, $paketId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: [
+            'total_dist' => 0,
+            'pesan_done' => 0,
+            'dist_done' => 0,
+            'dok_done' => 0,
+            'total_bast' => 0,
+            'bast_done' => 0,
+        ];
+    }
 }
