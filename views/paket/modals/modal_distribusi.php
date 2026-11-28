@@ -199,8 +199,19 @@ sort($kotaList);
                                     ?>
                                         <tr class="pkt-dist-item-row hover:bg-slate-50/70" data-bucket="<?= $it['_bucket'] ?>">
                                             <td class="py-2 px-3 text-center text-slate-400 font-mono text-[11px]"><?= $subNo++ ?></td>
-                                            <td class="py-2 px-3 font-semibold text-slate-800">
-                                                <?= htmlspecialchars($it['nama_barang'] ?? $it['nama_komponen'] ?? '-') ?>
+                                            <td class="py-2 px-3">
+                                                <?php
+                                                $itNama = $it['nama_barang'] ?? $it['nama_komponen'] ?? '-';
+                                                $itSpek = trim((string)($it['spesifikasi'] ?? ''));
+                                                ?>
+                                                <div class="font-semibold text-slate-800 break-words"><?= htmlspecialchars($itNama) ?></div>
+                                                <?php if ($itSpek !== ''): ?>
+                                                    <div class="text-[11px] font-normal text-slate-500 truncate mt-0.5 pro-dark-tooltip cursor-help"
+                                                         data-tooltip-title="<?= htmlspecialchars($itNama) ?>"
+                                                         data-tooltip-body="<?= htmlspecialchars($itSpek) ?>">
+                                                        <?= htmlspecialchars($itSpek) ?>
+                                                    </div>
+                                                <?php endif; ?>
                                             </td>
                                             <td class="py-2 px-2 text-center font-bold whitespace-nowrap">
                                                 <?= (float)$it['jumlah'] ?> <?= htmlspecialchars($it['satuan'] ?? 'Unit') ?>
@@ -258,7 +269,7 @@ sort($kotaList);
             <thead class="bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
                 <tr>
                     <th class="py-2.5 px-3 w-10 text-center">NO</th>
-                    <th class="py-2.5 px-3 w-44">KOMPONEN BARANG</th>
+                    <th class="py-2.5 px-3 w-52">KOMPONEN BARANG</th>
                     <th class="py-2.5 px-3">TITIK TUJUAN</th>
                     <th class="py-2.5 px-2 text-center w-16">QTY</th>
                     <th class="py-2.5 px-2 text-center w-36">STATUS DISTRIBUSI</th>
@@ -299,8 +310,19 @@ sort($kotaList);
                         ?>
                         <tr class="hover:bg-slate-50/70 transition-colors">
                             <td class="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]"><?= $no++ ?></td>
-                            <td class="py-2.5 px-3 text-xs font-bold text-slate-800 break-words">
-                                <?= htmlspecialchars($dist['nama_barang'] ?? $dist['nama_komponen'] ?? '-') ?>
+                            <td class="py-2.5 px-3 text-xs">
+                                <?php
+                                $dNama = $dist['nama_barang'] ?? $dist['nama_komponen'] ?? '-';
+                                $dSpek = trim((string)($dist['spesifikasi'] ?? ''));
+                                ?>
+                                <div class="font-bold text-slate-800 break-words"><?= htmlspecialchars($dNama) ?></div>
+                                <?php if ($dSpek !== ''): ?>
+                                    <div class="text-[11px] font-normal text-slate-500 truncate mt-0.5 pro-dark-tooltip cursor-help"
+                                         data-tooltip-title="<?= htmlspecialchars($dNama) ?>"
+                                         data-tooltip-body="<?= htmlspecialchars($dSpek) ?>">
+                                        <?= htmlspecialchars($dSpek) ?>
+                                    </div>
+                                <?php endif; ?>
                             </td>
                             <td class="py-2.5 px-3 text-xs text-slate-700 font-normal">
                                 <div class="truncate" title="<?= htmlspecialchars($dist['nama_tujuan'] ?? '-') ?>">
